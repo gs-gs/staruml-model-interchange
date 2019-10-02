@@ -4,6 +4,7 @@ const forEach = require('async-foreach');
 
 function _projectSaved() {
      console.log("project saved");
+     git.projectLoaded();
 }
 
 function _projectCreated() {
