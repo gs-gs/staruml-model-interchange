@@ -1,7 +1,7 @@
 {
-    "name": "model-interchange",
-    "title": "model-interchange",
-    "description": "model-interchange repository",
+    "name": "staruml-model-interchange",
+    "title": "staruml-model-interchange",
+    "description": "staruml-model-interchange repository",
     "version": "0.1",
     "engines": {
         "staruml": ">=3.0.0"
