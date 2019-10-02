@@ -1,3 +1,4 @@
+var forEach = require('async-foreach').forEach;
 var path = require('path');
 const fs = require('fs');
 
