@@ -25,8 +25,8 @@ async function _gitInit() {
     try {
          let isRepo = await git(_dirname).checkIsRepo();
          if (!isRepo) {
-              let isInit = await git(_dirname).init();
-              git(_dirname).add('./*');
+              await git(_dirname).init();
+              await git(_dirname).add('./*');
               app.dialogs.showInfoDialog(constant.repo_initialized);
          } else {
               app.dialogs.showInfoDialog(constant.repo_already_initialized);
@@ -48,7 +48,7 @@ async function _gitAddRemote() {
     if (resAddRemote.buttonId == 'ok') {
          if (resAddRemote.returnValue) {
               try {
-                   git(_dirname).addRemote('origin', resAddRemote.returnValue);
+                   await git(_dirname).addRemote('origin', resAddRemote.returnValue);
                    app.dialogs.showInfoDialog(constant.repo_added_success);
               } catch (error) {
                    app.dialogs.showErrorDialog(error.message);
@@ -162,7 +162,7 @@ async function _gitPush(){
          }
 
          let result = await git(_dirname).push(['-u', 'origin', 'master'])
-         // let result = await git(_dirname).push('origin', 'master');
+         app.dialogs.showInfoDialog(result);
          console.log(result);
     }catch(error){
          app.dialogs.showErrorDialog(error.message);
