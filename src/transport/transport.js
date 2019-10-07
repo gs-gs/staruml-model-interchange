@@ -233,7 +233,27 @@ function importModel() {
     });
     console.log(app.factory.getModelIds());
 }
-
+function replaceAll(str, term, replacement) {
+    return str.replace(new RegExp(escapeRegExp(term), 'g'), replacement);
+}
+function escapeRegExp(string){
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function findVal(object, key, value) {
+    var value;
+    Object.keys(object).some(function(k) {
+        if (k === key && object[k]==value) {
+            
+            value = object[k];
+            return true;
+        }
+        if (object[k] && typeof object[k] === 'object') {
+            value = findVal(object[k], key,value);
+            return value !== undefined;
+        }
+    });
+    return value;
+}
 function exportModel() {
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */
@@ -280,6 +300,35 @@ function exportModel() {
                     if (filename) {
                         console.log("Filename : ", filename);
                         let packageString=app.repository.writeObject(umlPackage);
+                        let replace=replaceAll(packageString,'_type','type');
+                        replace=replaceAll(replace,'UMLClass','Entity');
+                        replace=replaceAll(replace,'UMLAssociation','Relationship');
+                        replace=replaceAll(replace,'UMLPackage','Package');
+                        replace=replaceAll(replace,'UMLGeneralization','Generalization');
+                        replace=replaceAll(replace,'UMLInterface','Event');
+                        replace=replaceAll(replace,'end1','source');
+                        replace=replaceAll(replace,'end2','target');
+                        replace=replaceAll(replace,'attributes','properties');
+                        replace=replaceAll(replace,'documentation','description');
+                        replace=replaceAll(replace,'UMLInterfaceRealization','InterfaceRealization');
+                        
+                        
+
+                        
+                        let result=findVal(JSON.parse(replace),'type','EntityDiagram');
+                        console.log("result",result);
+
+                        fs.writeFile(filename, replace, 'utf-8', function (err) {
+                            if (err) {
+                                app.dialogs.showErrorDialog(err.message);
+                                return;
+                            } else {
+                                app.dialogs.showInfoDialog("Package is exported to path : " + filename);
+                                return;
+                            }
+                        });
+                        return ;
+
                         let package=JSON.parse(packageString);
                         let pkgArr=[];
                         let pkgobj={
@@ -327,3 +376,18 @@ function exportModel() {
 
 module.exports.exportModel=exportModel;
 module.exports.importModel=importModel;
+
+
+
+/* 
+'_type','type'
+'UMLClass','Entity'
+'UMLAssociation','Relationship'
+'UMLPackage','Package'
+'UMLGeneralization','Generalization'
+'UMLInterface','Event'
+UMLInterfaceRealization
+
+
+replace propert term with 'ownedElements'
+remove '_id', '_parent', 'EntityDiagram', '$ref', 'end1', 'end2', 'attributes', 'documentation' */
