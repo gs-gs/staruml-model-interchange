@@ -3311,11 +3311,7 @@
             ]
         },
         {
-            "type": "UMLEnumeration",
-            "_id": "AAAAAAFq4t/crmTYhN8=",
-            "_parent": {
-                "$ref": "AAAAAAFq3Y9iE2VU3DM="
-            },
+            "type": "Enumeration",
             "name": "TransportMeansPartyRole_Code",
             "literals": [
                 {
@@ -3362,99 +3358,44 @@
         },
         {
             "type": "Event",
-            "_id": "AAAAAAFq5F2ToO3D8Xw=",
-            "_parent": {
-                "$ref": "AAAAAAFq3Y9iE2VU3DM="
-            },
             "name": "TransportEvents",
             "ownedElements": [
                 {
                     "type": "Association",
-                    "_id": "AAAAAAFq7UePURIsc9A=",
-                    "_parent": {
-                        "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                    },
                     "source": {
-                        "name":"",
-                        "type":"",
-                        "type": "UMLAssociationEnd",
-                        "_id": "AAAAAAFq7UePURItMSY=",
-                        "_parent": {
-                            "$ref": "AAAAAAFq7UePURIsc9A="
-                        },
-                        "reference": {
-                            "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                        }
+                        "name":"TransportEvents",
+                        "type":"Event"
                     },
                     "target": {
-                        "type": "UMLAssociationEnd",
-                        "_id": "AAAAAAFq7UePURIuGME=",
-                        "_parent": {
-                            "$ref": "AAAAAAFq7UePURIsc9A="
-                        },
-                        "reference": {
-                            "$ref": "AAAAAAFp3TgylCFM2uM="
-                        },
+                        "name":"Journeys",
+                        "type":"Event",
                         "aggregation": "composite"
                     }
                 },
                 {
                     "type": "Association",
-                    "_id": "AAAAAAFq7Uf71hOBMxw=",
-                    "_parent": {
-                        "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                    },
                     "source": {
-                        "name":"",
-                        "type":"",
-                        "type": "UMLAssociationEnd",
-                        "_id": "AAAAAAFq7Uf71hOCDho=",
-                        "_parent": {
-                            "$ref": "AAAAAAFq7Uf71hOBMxw="
-                        },
-                        "reference": {
-                            "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                        }
+                        "name":"TransportEvents",
+                        "type":"Event"
                     },
                     "target": {
-                        "type": "UMLAssociationEnd",
-                        "_id": "AAAAAAFq7Uf71hODMi4=",
-                        "_parent": {
-                            "$ref": "AAAAAAFq7Uf71hOBMxw="
-                        },
-                        "reference": {
-                            "$ref": "AAAAAAFquNGlpMKQ7eM="
-                        },
+                        "name":"Voyages",
+                        "type":"Event",
                         "aggregation": "composite"
                     }
                 }
             ],
             "properties": [
                 {
-                    "type": "UMLAttribute",
-                    "_id": "AAAAAAFq5GCuyfZQt0w=",
-                    "_parent": {
-                        "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                    },
                     "name": "id",
                     "type": "string"
                 }
             ],
             "operations": [
                 {
-                    "type": "UMLOperation",
-                    "_id": "AAAAAAFq5GEpE/hHZTU=",
-                    "_parent": {
-                        "$ref": "AAAAAAFq5F2ToO3D8Xw="
-                    },
                     "name": "POST",
                     "parameters": [
                         {
-                            "type": "UMLParameter",
-                            "_id": "AAAAAAFq5GGAdfjzrdQ=",
-                            "_parent": {
-                                "$ref": "AAAAAAFq5GEpE/hHZTU="
-                            },
                             "name": "TransportEvent",
                             "type": ""
                         }
@@ -3463,11 +3404,6 @@
             ]
         },
         {
-            "type": "UMLEnumeration",
-            "_id": "AAAAAAFq5Ju6LwLdWVk=",
-            "_parent": {
-                "$ref": "AAAAAAFq3Y9iE2VU3DM="
-            },
             "name": "TransportEventType_Code",
             "literals": [
                 {
