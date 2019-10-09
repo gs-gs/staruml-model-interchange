@@ -2,6 +2,7 @@ var forEach = require('async-foreach').forEach;
 var path = require('path');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
+const utils=require('./utils');
 
 const XMI_FILE_FILTERS = [{
         name: 'XMI Files',
@@ -307,12 +308,12 @@ function exportModel() {
                             'name':umlPackage.name
                         };
 
-                        let entityArr=[];
-                        // jsonProcess.Entity=entityArr;
                         forEach(allEntities,function(entity){
+
+                            /* Entity binding--- */
                             let entityObj={};
                             jsonProcess[entity.name]=entityObj;
-                            entityObj['type']='Entity';
+                            entityObj['type']=utils.getElementType(entity);
                             entityObj['name']=entity.name;
                             entityObj['description']=entity.documentation;
                             entityObj['version']='';
@@ -321,33 +322,160 @@ function exportModel() {
                             let requiredObj=[];
                             entityObj['required']=requiredObj;
 
+                            /* Property binding--- */
                             let propertyArr=[];
                             entityObj['Property']=propertyArr;
+                            let attribute=entity.attributes;
+                            forEach(attribute,function(attr){
+                                let propertyObj={};
+                                propertyObj['name']=attr.name;  
 
-                                let attribute=entity.attributes;
-                                forEach(attribute,function(attr){
-                                    let propertyObj={};
-                                    propertyObj['name']=attr.name;  
+                                propertyObj['description']=attr.documentation;
 
-                                    propertyObj['description']=attr.documentation;
+                                propertyObj['status']='';
+                                
+                                /* DataType binding--- */
+                                let dType={};
+                                if(utils.isString(attr.type)){
 
-                                    propertyObj['status']='';
-                                    
-                                    let dType={};
                                     dType.type=attr.type;
                                     propertyObj['DataType']=dType;
                                     dType['name']=attr.name;
-                                    if(attr.multiplicity=='0..1' || attr.multiplicity=='1'){
-                                        dType['minCardinality']=attr.multiplicity;
-                                        dType['maxCardinality']='';
-                                    }else{
-                                        dType['minCardinality']='';
-                                        dType['maxCardinality']=attr.multiplicity;
-                                    }
-                                    propertyArr.push(propertyObj);
-                                });
+                                    dType['cardinality']=attr.multiplicity;
+                                }else if(attr.type instanceof type.UMLClass){
+                                    propertyObj['DataType']=dType;
+                                    dType.type=utils.getElementType(attr.type);
+                                    dType['name']=attr.type.name;
+                                    dType['cardinality']=attr.multiplicity;
+                                }else if(attr.type instanceof type.UMLEnumeration){
+                                    propertyObj['DataType']=dType;
+                                    dType.type=utils.getElementType(attr.type);
+                                    dType['name']=attr.type.name;
+                                    dType['cardinality']=attr.multiplicity;
+
+                                    /* binding literals  */
+                                    let arrliterals=[];
+                                    dType['enum']=arrliterals;
+                                    let literals=attr.type.literals;
+                                    forEach(literals,function(itemLiterals){
+                                        arrliterals.push(itemLiterals.name);
+                                    });
+
+                                    dType['cardinality']=attr.multiplicity;
+                                }
+                                if(attr.name=='Type'){
+                                    console.log("Type");
+                                }
+                                propertyArr.push(propertyObj);
+                            });
+
+                            /* Relationship binding */
+                            let Relationship=[];
+                            entityObj['Relationship']=Relationship;
+                            forEach(entity.ownedElements,function(element){
+                                let objRelationship={};
                                 
-                            // entityArr.push(entityObj);
+                                objRelationship['name']=element.name;
+                                objRelationship['description']=element.documentation;
+
+                                if(element instanceof type.UMLAssociation){
+
+                                    let end1=element.end1;
+                                    let end2=element.end2;
+                                    if(end1.aggregation=='shared' && end2.aggregation=='none'){
+                                        /* Aggregation */
+                                        objRelationship['type']='aggregation';
+                                    } else if(end1.aggregation=='composite' && end2.aggregation=='none'){
+                                        /* Composition */
+                                        objRelationship['type']='composition';
+                                    }
+
+                                    let objSource={};
+                                    let source=end1.reference;
+                                    objRelationship['source']=objSource;
+                                    objSource['name']=source.name;
+                                    objSource['type']=utils.getElementType(source);
+
+                                    let objTarget={};
+                                    let target=end2.reference;
+                                    objRelationship['target']=objTarget;
+                                    objTarget['name']=target.name;
+                                    objTarget['type']=utils.getElementType(target);
+
+                                } else if(element instanceof type.UMLGeneralization){
+
+                                    objRelationship['type']=utils.getElementType(element);
+
+                                    let objSource={};
+                                    let source=element.source;
+                                    objRelationship['source']=objSource;
+                                    objSource['name']=source.name;
+                                    objSource['type']=utils.getElementType(source);
+
+
+                                    let objTarget={};
+                                    let target=element.target;
+                                    objRelationship['target']=objTarget;
+                                    objTarget['name']=target.name;
+                                    objTarget['type']=utils.getElementType(target);
+
+                                } else if(element instanceof type.UMLAssociationClassLink){
+
+                                    objRelationship['type']=utils.getElementType(element);
+                                    let objAssociation={};
+                                    /* association binding */
+                                    objRelationship['association']=objAssociation;
+
+                                    let end1=element.associationSide.end1;
+                                    let end2=element.associationSide.end2;
+                                    if(end1.aggregation=='shared' && end2.aggregation=='none'){
+                                        /* Aggregation */
+                                        objAssociation['type']='aggregation';
+                                    } else if(end1.aggregation=='composite' && end2.aggregation=='none'){
+                                        /* Composition */
+                                        objAssociation['type']='composition';
+                                    }
+
+                                    let objSource={};
+                                    let source=end1.reference;
+                                    objAssociation['source']=objSource;
+                                    objSource['name']=source.name;
+                                    objSource['type']=utils.getElementType(source);
+
+                                    let objTarget={};
+                                    let target=end2.reference;
+                                    objAssociation['target']=objTarget;
+                                    objTarget['name']=target.name;
+                                    objTarget['type']=utils.getElementType(target);
+
+                                    /* class side association binding */
+                                    let objClass={};
+                                    let classSide=element.classSide;
+                                    objRelationship['class']=objClass;
+
+                                    objClass['name']=classSide.name
+                                    objClass['type']=utils.getElementType(classSide);
+
+
+                                }else if(element instanceof type.UMLInterfaceRealization){
+                                    objRelationship['type']=utils.getElementType(element);
+
+                                    let objSource={};
+                                    let source=element.source;
+                                    objRelationship['source']=objSource;
+                                    objSource['name']=source.name;
+                                    objSource['type']=utils.getElementType(source);
+
+
+                                    let objTarget={};
+                                    let target=element.target;
+                                    objRelationship['target']=objTarget;
+                                    objTarget['name']=target.name;
+                                    objTarget['type']=utils.getElementType(target);
+                                }
+                                Relationship.push(objRelationship);
+                            })
+
                         });
 
                         /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
@@ -427,7 +555,9 @@ module.exports.importModel=importModel;
 'UMLPackage','Package'
 'UMLGeneralization','Generalization'
 'UMLInterface','Event'
-UMLInterfaceRealization
+'UMLInterfaceRealization'
+'UMLAssociationClassLink'
+
 
 
 replace propert term with 'ownedElements'
