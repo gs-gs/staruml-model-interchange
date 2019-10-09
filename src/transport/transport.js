@@ -300,25 +300,61 @@ function exportModel() {
                     if (filename) {
                         console.log("Filename : ", filename);
                         let packageString=app.repository.writeObject(umlPackage);
-                        let replace=replaceAll(packageString,'_type','type');
-                        replace=replaceAll(replace,'UMLClass','Entity');
-                        replace=replaceAll(replace,'UMLAssociation','Relationship');
-                        replace=replaceAll(replace,'UMLPackage','Package');
-                        replace=replaceAll(replace,'UMLGeneralization','Generalization');
-                        replace=replaceAll(replace,'UMLInterface','Event');
-                        replace=replaceAll(replace,'end1','source');
-                        replace=replaceAll(replace,'end2','target');
-                        replace=replaceAll(replace,'attributes','properties');
-                        replace=replaceAll(replace,'documentation','description');
-                        replace=replaceAll(replace,'UMLInterfaceRealization','InterfaceRealization');
-                        
-                        
+                        let allEntities=app.repository.select(umlPackage.name+'::@UMLClass')
+                        let jsonProcess={
+                            'type':'Package',
+                            'name':umlPackage.name
+                        };
 
-                        
-                        let result=findVal(JSON.parse(replace),'type','EntityDiagram');
-                        console.log("result",result);
+                        let entityArr=[];
+                        // jsonProcess.Entity=entityArr;
+                        forEach(allEntities,function(entity){
+                            let entityObj={};
+                            jsonProcess[entity.name]=entityObj;
+                            entityObj['type']='Entity';
+                            entityObj['name']=entity.name;
+                            entityObj['description']=entity.documentation;
+                            entityObj['version']='';
+                            entityObj['status']='';
 
-                        fs.writeFile(filename, replace, 'utf-8', function (err) {
+                            let requiredObj=[];
+                            entityObj['required']=requiredObj;
+
+                            let propertyArr=[];
+                            entityObj['Property']=propertyArr;
+
+                                let attribute=entity.attributes;
+                                forEach(attribute,function(attr){
+                                    let propertyObj={};
+                                    propertyObj['name']=attr.name;  
+
+                                    propertyObj['description']=attr.documentation;
+
+                                    propertyObj['status']='';
+                                    
+                                    let dType={};
+                                    propertyObj.dataType=dType;
+                                    dType.type=attr.type;
+                                    // dataType['type']=attr.type;
+                                    /* dataType['name']=attr.name;
+                                    if(attr.multiplicity=='0..1' || attr.multiplicity=='1'){
+                                        dataType['minCardinality']=attr.multiplicity;
+                                        dataType['maxCardinality']='';
+                                    }else{
+                                        dataType['minCardinality']='';
+                                        dataType['maxCardinality']=attr.multiplicity;
+                                    } */
+                                    propertyArr.push(propertyObj);
+                                });
+                                
+                            // entityArr.push(entityObj);
+                        });
+
+                        /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
+                        console.log("result",result); */
+                        console.log('Json Processed',jsonProcess);
+                        
+                        fs.writeFile(filename, JSON.stringify(jsonProcess,null,4), 'utf-8', function (err) {
                             if (err) {
                                 app.dialogs.showErrorDialog(err.message);
                                 return;
