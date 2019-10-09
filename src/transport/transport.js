@@ -1,6 +1,7 @@
 var forEach = require('async-foreach').forEach;
 var path = require('path');
 const fs = require('fs');
+const CircularJSON = require('circular-json');
 
 const XMI_FILE_FILTERS = [{
         name: 'XMI Files',
@@ -333,17 +334,16 @@ function exportModel() {
                                     propertyObj['status']='';
                                     
                                     let dType={};
-                                    propertyObj.dataType=dType;
                                     dType.type=attr.type;
-                                    // dataType['type']=attr.type;
-                                    /* dataType['name']=attr.name;
+                                    propertyObj['DataType']=dType;
+                                    dType['name']=attr.name;
                                     if(attr.multiplicity=='0..1' || attr.multiplicity=='1'){
-                                        dataType['minCardinality']=attr.multiplicity;
-                                        dataType['maxCardinality']='';
+                                        dType['minCardinality']=attr.multiplicity;
+                                        dType['maxCardinality']='';
                                     }else{
-                                        dataType['minCardinality']='';
-                                        dataType['maxCardinality']=attr.multiplicity;
-                                    } */
+                                        dType['minCardinality']='';
+                                        dType['maxCardinality']=attr.multiplicity;
+                                    }
                                     propertyArr.push(propertyObj);
                                 });
                                 
@@ -353,8 +353,13 @@ function exportModel() {
                         /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
                         console.log("result",result); */
                         console.log('Json Processed',jsonProcess);
-                        
-                        fs.writeFile(filename, JSON.stringify(jsonProcess,null,4), 'utf-8', function (err) {
+                        /*  
+                            CircularJSON.stringify : 
+                            Dealing with "TypeError: Converting circular structure to JSON" 
+                            on JavaScript JavaScript structures that include circular references can't be 
+                            serialized with a"plain" JSON.stringify. 
+                        */
+                        fs.writeFile(filename, CircularJSON.stringify(jsonProcess,null,4)/* JSON.stringify(jsonProcess,null,4) */, 'utf-8', function (err) {
                             if (err) {
                                 app.dialogs.showErrorDialog(err.message);
                                 return;
