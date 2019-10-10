@@ -16,6 +16,8 @@ const fields={
     'source':'source',
     'target':'target',
     'association':'association',
-    'class':'class'
+    'class':'class',
+    'from':'from',
+    'to':'to'
 };
 module.exports=fields;

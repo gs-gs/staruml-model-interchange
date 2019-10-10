@@ -314,9 +314,10 @@ function exportModel() {
                         jsonProcess[fields.type]='Package';
                         jsonProcess[fields.name]=umlPackage.name;
 
+                        /* Entity binding--- */
+                        let allEntities=app.repository.select(umlPackage.name+'::@UMLInterface');
                         forEach(allEntities,function(entity){
 
-                            /* Entity binding--- */
                             let entityObj={};
                             jsonProcess[entity.name]=entityObj;
                             entityObj[fields.type]=utils.getElementType(entity);
@@ -543,6 +544,12 @@ function exportModel() {
                                 Relationship.push(objRelationship);
                             })
 
+                        });
+
+                        /* Event binding */
+                        let allEvents=app.repository.select(umlPackage.name+'::@UMLInterface');
+                        forEach(allEvents,function(event){
+                            
                         });
 
                         /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
