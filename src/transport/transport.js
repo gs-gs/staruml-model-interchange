@@ -333,6 +333,10 @@ function exportModel() {
 
                                 propertyObj['description']=attr.documentation;
 
+                                if(attr.isID){
+                                    propertyObj['isID']=attr.isID;
+                                }
+
                                 propertyObj['status']='';
                                 
                                 /* DataType binding--- */
