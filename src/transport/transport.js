@@ -383,10 +383,10 @@ function exportModel() {
                                     let end1=element.end1;
                                     let end2=element.end2;
                                     if(end1.aggregation=='shared' && end2.aggregation=='none'){
-                                        /* Aggregation */
+                                        /* aggregation */
                                         objRelationship['type']='aggregation';
                                     } else if(end1.aggregation=='composite' && end2.aggregation=='none'){
-                                        /* Composition */
+                                        /* composition */
                                         objRelationship['type']='composition';
                                     }
 
@@ -429,10 +429,10 @@ function exportModel() {
                                     let end1=element.associationSide.end1;
                                     let end2=element.associationSide.end2;
                                     if(end1.aggregation=='shared' && end2.aggregation=='none'){
-                                        /* Aggregation */
+                                        /* aggregation */
                                         objAssociation['type']='aggregation';
                                     } else if(end1.aggregation=='composite' && end2.aggregation=='none'){
-                                        /* Composition */
+                                        /* composition */
                                         objAssociation['type']='composition';
                                     }
 
@@ -455,6 +455,55 @@ function exportModel() {
 
                                     objClass['name']=classSide.name
                                     objClass['type']=utils.getElementType(classSide);
+
+                                    /* association class side properties */
+                                    /* Property binding--- */
+                                    let propertyArr=[];
+                                    objClass['Property']=propertyArr;
+                                    let attribute=classSide.attributes;
+                                    forEach(attribute,function(attr){
+                                        let propertyObj={};
+                                        propertyObj['name']=attr.name;  
+
+                                        propertyObj['description']=attr.documentation;
+
+                                        propertyObj['status']='';
+                                        
+                                        /* DataType binding--- */
+                                        let dType={};
+                                        if(utils.isString(attr.type)){
+
+                                            dType.type=attr.type;
+                                            propertyObj['DataType']=dType;
+                                            dType['name']=attr.name;
+                                            dType['cardinality']=attr.multiplicity;
+                                        }else if(attr.type instanceof type.UMLClass){
+                                            propertyObj['DataType']=dType;
+                                            dType.type=utils.getElementType(attr.type);
+                                            dType['name']=attr.type.name;
+                                            dType['cardinality']=attr.multiplicity;
+                                        }else if(attr.type instanceof type.UMLEnumeration){
+                                            propertyObj['DataType']=dType;
+                                            dType.type=utils.getElementType(attr.type);
+                                            dType['name']=attr.type.name;
+                                            dType['cardinality']=attr.multiplicity;
+
+                                            /* binding literals  */
+                                            let arrliterals=[];
+                                            dType['enum']=arrliterals;
+                                            let literals=attr.type.literals;
+                                            forEach(literals,function(itemLiterals){
+                                                arrliterals.push(itemLiterals.name);
+                                            });
+
+                                            dType['cardinality']=attr.multiplicity;
+                                        }
+                                        propertyArr.push(propertyObj);
+                                    });
+                                    /* ---- */
+
+
+
 
 
                                 }else if(element instanceof type.UMLInterfaceRealization){
