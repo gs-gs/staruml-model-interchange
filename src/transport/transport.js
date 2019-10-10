@@ -1,4 +1,5 @@
 var forEach = require('async-foreach').forEach;
+var constant = require('./constant');
 var path = require('path');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
@@ -337,6 +338,9 @@ function exportModel() {
                                 /* DataType binding--- */
                                 let dType={};
                                 if(utils.isString(attr.type)){
+                                    if(attr.type=='URL'){
+                                        dType["pattern"]=constant.regex_email;
+                                    }
 
                                     dType.type=attr.type;
                                     propertyObj['DataType']=dType;
@@ -363,9 +367,7 @@ function exportModel() {
 
                                     dType['cardinality']=attr.multiplicity;
                                 }
-                                if(attr.name=='Type'){
-                                    console.log("Type");
-                                }
+                                
                                 propertyArr.push(propertyObj);
                             });
 
@@ -458,6 +460,7 @@ function exportModel() {
 
                                     /* association class side properties */
                                     /* Property binding--- */
+                                    /* 
                                     let propertyArr=[];
                                     objClass['Property']=propertyArr;
                                     let attribute=classSide.attributes;
@@ -469,7 +472,7 @@ function exportModel() {
 
                                         propertyObj['status']='';
                                         
-                                        /* DataType binding--- */
+                                        // DataType binding--- 
                                         let dType={};
                                         if(utils.isString(attr.type)){
 
@@ -488,7 +491,7 @@ function exportModel() {
                                             dType['name']=attr.type.name;
                                             dType['cardinality']=attr.multiplicity;
 
-                                            /* binding literals  */
+                                            // binding literals  
                                             let arrliterals=[];
                                             dType['enum']=arrliterals;
                                             let literals=attr.type.literals;
@@ -500,7 +503,7 @@ function exportModel() {
                                         }
                                         propertyArr.push(propertyObj);
                                     });
-                                    /* ---- */
+                                     */
 
 
 
