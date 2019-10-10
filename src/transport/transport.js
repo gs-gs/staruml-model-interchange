@@ -306,6 +306,7 @@ function exportModel() {
                         console.log("Filename : ", filename);
                         let packageString=app.repository.writeObject(umlPackage);
                         let allEntities=app.repository.select(umlPackage.name+'::@UMLClass')
+                        let jsonProcess={};
                         /* ddd let jsonProcess={
                             'type':'Package',
                             'name':umlPackage.name
@@ -349,7 +350,6 @@ function exportModel() {
                                 }
 
                                 propertyObj[fields.status]='';
-                                --1
                                 /* DataType binding--- */
                                 let dType={};
                                 if(utils.isString(attr.type)){
@@ -362,15 +362,15 @@ function exportModel() {
                                     dType[fields.name]=attr.name;
                                     dType[fields.cardinality]=attr.multiplicity;
                                 }else if(attr.type instanceof type.UMLClass){
-                                    propertyObjfields.DataType=dType;
+                                    propertyObj[fields.DataType]=dType;
                                     dType.type=utils.getElementType(attr.type);
                                     dType[fields.name]=attr.type.name;
-                                    dTypefields.cardinality=attr.multiplicity;
+                                    dType[fields.cardinality]=attr.multiplicity;
                                 }else if(attr.type instanceof type.UMLEnumeration){
-                                    propertyObjfields.DataType=dType;
+                                    propertyObj[fields.DataType]=dType;
                                     dType.type=utils.getElementType(attr.type);
                                     dType[fields.name]=attr.type.name;
-                                    dTypefields.cardinality=attr.multiplicity;
+                                    dType[fields.cardinality]=attr.multiplicity;
 
                                     /* binding literals  */
                                     let arrliterals=[];
@@ -380,7 +380,7 @@ function exportModel() {
                                         arrliterals.push(itemLiterals.name);
                                     });
 
-                                    dTypefields.cardinality=attr.multiplicity;
+                                    dType[fields.cardinality]=attr.multiplicity;
                                 }
                                 
                                 propertyArr.push(propertyObj);
@@ -492,19 +492,19 @@ function exportModel() {
                                         if(utils.isString(attr.type)){
 
                                             dType.type=attr.type;
-                                            propertyObjfields.DataType=dType;
+                                            propertyObj[fields.DataType=dType;
                                             dType[fields.name]=attr.name;
-                                            dTypefields.cardinality=attr.multiplicity;
+                                            dType[fields.cardinality=attr.multiplicity;
                                         }else if(attr.type instanceof type.UMLClass){
-                                            propertyObjfields.DataType=dType;
+                                            propertyObj[fields.DataType=dType;
                                             dType.type=utils.getElementType(attr.type);
                                             dType[fields.name]=attr.type.name;
-                                            dTypefields.cardinality=attr.multiplicity;
+                                            dType[fields.cardinality=attr.multiplicity;
                                         }else if(attr.type instanceof type.UMLEnumeration){
-                                            propertyObjfields.DataType=dType;
+                                            propertyObj[fields.DataType=dType;
                                             dType.type=utils.getElementType(attr.type);
                                             dType[fields.name]=attr.type.name;
-                                            dTypefields.cardinality=attr.multiplicity;
+                                            dType[fields.cardinality=attr.multiplicity;
 
                                             // binding literals  
                                             let arrliterals=[];
@@ -514,7 +514,7 @@ function exportModel() {
                                                 arrliterals.push(itemLiterals.name);
                                             });
 
-                                            dTypefields.cardinality=attr.multiplicity;
+                                            dType[fields.cardinality=attr.multiplicity;
                                         }
                                         propertyArr.push(propertyObj);
                                     });
