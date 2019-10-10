@@ -320,8 +320,15 @@ function exportModel() {
                             entityObj['version']='';
                             entityObj['status']='';
 
-                            let requiredObj=[];
-                            entityObj['required']=requiredObj;
+                            /* Required property binding */
+                            let requiredArr=[];
+                            entityObj['required']=requiredArr;
+                            let attributeForRequired=entity.attributes;
+                            forEach(attributeForRequired,function(attrForRequired){
+                                if (attrForRequired.multiplicity == "1" || attrForRequired.multiplicity == "1..*") {
+                                    requiredArr.push(attrForRequired.name);
+                                }
+                            });
 
                             /* Property binding--- */
                             let propertyArr=[];
