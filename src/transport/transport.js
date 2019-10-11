@@ -346,6 +346,9 @@ function exportModel() {
                             /* Event Relationship array binding */
                             mEvent.addEventRelationshipFields(eventObj, event);
 
+                            /* Event Operation array binding */
+                            mEvent.addEventOperationFields(eventObj, event);
+
                         });
 
                         /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');

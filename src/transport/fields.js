@@ -13,6 +13,8 @@ const fields = {
     'cardinality': 'cardinality',
     'enum': 'enum',
     'Relationship': 'Relationship',
+    'Operation': 'Operation',
+    'Parameter': 'Parameter',
     'source': 'source',
     'target': 'target',
     'association': 'association',
