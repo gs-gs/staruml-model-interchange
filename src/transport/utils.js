@@ -1,3 +1,6 @@
+var forEach = require('async-foreach').forEach;
+var fields = require('./fields');
+var datatype = require('./datatype');
 function getElementType(element) {
     if (element instanceof type.UMLClass) {
         return "Entity";
@@ -33,6 +36,41 @@ function getRelationshipType(end1, end2) {
 function isString(s) {
     return typeof (s) === 'string' || s instanceof String;
 }
+
+function addDatatype(propertyObj,attr){
+    let dType = {};
+    if (isString(attr.type)) {
+        if (attr.type == datatype.url) {
+            dType[fields.pattern] = constant.regex_email;
+        }
+
+        dType.type = attr.type;
+        propertyObj[fields.DataType] = dType;
+        dType[fields.name] = attr.name;
+        dType[fields.cardinality] = attr.multiplicity;
+    } else if (attr.type instanceof type.UMLClass) {
+        propertyObj[fields.DataType] = dType;
+        dType.type = getElementType(attr.type);
+        dType[fields.name] = attr.type.name;
+        dType[fields.cardinality] = attr.multiplicity;
+    } else if (attr.type instanceof type.UMLEnumeration) {
+        propertyObj[fields.DataType] = dType;
+        dType.type = getElementType(attr.type);
+        dType[fields.name] = attr.type.name;
+        dType[fields.cardinality] = attr.multiplicity;
+
+        /* binding literals  */
+        let arrliterals = [];
+        dType[fields.enum] = arrliterals;
+        let literals = attr.type.literals;
+        forEach(literals, function (itemLiterals) {
+            arrliterals.push(itemLiterals.name);
+        });
+
+        dType[fields.cardinality] = attr.multiplicity;
+    }
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
+module.exports.addDatatype = addDatatype;
