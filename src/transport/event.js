@@ -3,18 +3,20 @@ var utils = require('./utils');
 var forEach = require('async-foreach').forEach;
 var datatype = require('./datatype');
 
-function addEntityFields(entityObj, entity) {
-    entityObj[fields.type] = utils.getElementType(entity);
-    entityObj[fields.name] = entity.name;
-    entityObj[fields.description] = entity.documentation;
-    entityObj[fields.version] = '';
-    entityObj[fields.status] = '';
+function addEventFields(eventObj, event) {
+    eventObj[fields.type] = utils.getElementType(event);
+    eventObj[fields.name] = event.name;
+    eventObj[fields.description] = event.documentation;
+    let objFrom = {};
+    let objTo = {};
+    eventObj[fields.from] = objFrom;
+    eventObj[fields.to] = objTo;
 }
 
-function addEntityRequiredFields(entityObj, entity) {
+function addEventRequiredFields(eventObj, event) {
     let requiredArr = [];
-    entityObj[fields.Required] = requiredArr;
-    let attributeForRequired = entity.attributes;
+    eventObj[fields.Required] = requiredArr;
+    let attributeForRequired = event.attributes;
     forEach(attributeForRequired, function (attrForRequired) {
         if (attrForRequired.multiplicity == "1" || attrForRequired.multiplicity == "1..*") {
             requiredArr.push(attrForRequired.name);
@@ -22,10 +24,10 @@ function addEntityRequiredFields(entityObj, entity) {
     });
 }
 
-function addEntityPropertyFields(entityObj, entity) {
+function addEventPropertyFields(eventObj, event) {
     let propertyArr = [];
-    entityObj[fields.Property] = propertyArr;
-    let attribute = entity.attributes;
+    eventObj[fields.Property] = propertyArr;
+    let attribute = event.attributes;
     forEach(attribute, function (attr) {
         let propertyObj = {};
         propertyObj[fields.name] = attr.name;
@@ -36,7 +38,6 @@ function addEntityPropertyFields(entityObj, entity) {
             propertyObj[fields.isID] = attr.isID;
         }
 
-        propertyObj[fields.status] = '';
         /* Property DataType binding */
         let dType = {};
         if (utils.isString(attr.type)) {
@@ -74,10 +75,10 @@ function addEntityPropertyFields(entityObj, entity) {
     });
 }
 
-function addEntityRelationshipFields(entityObj, entity) {
+function addEventRelationshipFields(eventObj, event) {
     let Relationship = [];
-    entityObj[fields.Relationship] = Relationship;
-    forEach(entity.ownedElements, function (element) {
+    eventObj[fields.Relationship] = Relationship;
+    forEach(event.ownedElements, function (element) {
         let objRelationship = {};
 
         objRelationship[fields.name] = element.name;
@@ -106,7 +107,7 @@ function addEntityRelationshipFields(entityObj, entity) {
 
         } else if (element instanceof type.UMLGeneralization) {
 
-            /* adding relationship type 'generalization' */
+            /* adding relationship type 'generation' */
             objRelationship[fields.type] = utils.getElementType(element);
 
             /* adding 'source' object */
@@ -115,7 +116,6 @@ function addEntityRelationshipFields(entityObj, entity) {
             objRelationship[fields.source] = objSource;
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
-
 
             /* adding 'target' object */
             let objTarget = {};
@@ -131,6 +131,7 @@ function addEntityRelationshipFields(entityObj, entity) {
             let objAssociation = {};
             /* association binding */
             objRelationship[fields.association] = objAssociation;
+
 
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.associationSide.end1;
@@ -181,7 +182,7 @@ function addEntityRelationshipFields(entityObj, entity) {
         Relationship.push(objRelationship);
     })
 }
-module.exports.addEntityFields = addEntityFields;
-module.exports.addEntityRequiredFields = addEntityRequiredFields;
-module.exports.addEntityPropertyFields = addEntityPropertyFields;
-module.exports.addEntityRelationshipFields = addEntityRelationshipFields;
+module.exports.addEventFields = addEventFields;
+module.exports.addEventRequiredFields = addEventRequiredFields;
+module.exports.addEventPropertyFields = addEventPropertyFields;
+module.exports.addEventRelationshipFields = addEventRelationshipFields;

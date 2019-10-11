@@ -1,6 +1,7 @@
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var mEntity = require('./entity');
+var mEvent = require('./event');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
 
@@ -64,7 +65,7 @@ function importModel() {
             var XMIData = content;
 
             app.elementPickerDialog
-                .showDialog("Select the package in which you want to import this package.", null, null) 
+                .showDialog("Select the package in which you want to import this package.", null, null)
                 .then(function ({
                     buttonId,
                     returnValue
@@ -77,27 +78,27 @@ function importModel() {
                             umlPackage = returnValue;
                             // app.modelExplorer.collapse(app.project.getProject());
                             XMIData.reverse();
-                            let expandedIds=[];
-                            let allPackages=app.repository.select("@UMLPackage");
+                            let expandedIds = [];
+                            let allPackages = app.repository.select("@UMLPackage");
 
                             forEach(XMIData, function (pkg) {
 
-                                let flterPkg=allPackages.filter(function(mPkg){
-                                    return mPkg._id==pkg.package._id
+                                let flterPkg = allPackages.filter(function (mPkg) {
+                                    return mPkg._id == pkg.package._id
                                 });
 
-                                if(flterPkg.length==0){
+                                if (flterPkg.length == 0) {
                                     let result = app.project.importFromJson(umlPackage, pkg.package)
                                     console.log("result", result);
-                                    if(!pkg.isAbstract){
-                                        expandedIds.push(app.repository.get(pkg.package._id));                                        
+                                    if (!pkg.isAbstract) {
+                                        expandedIds.push(app.repository.get(pkg.package._id));
                                     }
                                 }
-                                
+
                             });
                             app.modelExplorer.rebuild();
                             app.modelExplorer.expand(app.project.getProject());
-                            forEach(expandedIds,function(expIds){
+                            forEach(expandedIds, function (expIds) {
                                 app.modelExplorer.expand(expIds);
                             });
                             app.dialogs.showInfoDialog("Package is imported successfully please check in model exporer.");
@@ -153,7 +154,7 @@ function importModel() {
 
 
     // var filename = app.dialogs.showOpenDialog('Import package As JSON', _filename + '.json', JSON_FILE_FILTERS)
-    
+
     let project = null;
     if (content._type == type.Project.name) {
         project = {
@@ -226,27 +227,31 @@ function importModel() {
     });
     console.log(app.factory.getModelIds());
 }
+
 function replaceAll(str, term, replacement) {
     return str.replace(new RegExp(escapeRegExp(term), 'g'), replacement);
 }
-function escapeRegExp(string){
+
+function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
 function findVal(object, key, value) {
     var value;
-    Object.keys(object).some(function(k) {
-        if (k === key && object[k]==value) {
-            
+    Object.keys(object).some(function (k) {
+        if (k === key && object[k] == value) {
+
             value = object[k];
             return true;
         }
         if (object[k] && typeof object[k] === 'object') {
-            value = findVal(object[k], key,value);
+            value = findVal(object[k], key, value);
             return value !== undefined;
         }
     });
     return value;
 }
+
 function exportModel() {
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */
@@ -273,7 +278,7 @@ function exportModel() {
                         }
                     });
 
-                    
+
 
                     console.log("Total library packages", expPackages);
                     /* let absClassView=getAbstractClassView(umlPackage,absClass);
@@ -292,88 +297,105 @@ function exportModel() {
 
                     if (filename) {
                         console.log("Filename : ", filename);
-                        let packageString=app.repository.writeObject(umlPackage);
-                        let jsonProcess={};
+                        let packageString = app.repository.writeObject(umlPackage);
+                        let jsonProcess = {};
                         /* ddd let jsonProcess={
                             'type':'Package',
                             'name':umlPackage.name
                         }; */
-                        jsonProcess[fields.type]='Package';
-                        jsonProcess[fields.name]=umlPackage.name;
+                        jsonProcess[fields.type] = 'Package';
+                        jsonProcess[fields.name] = umlPackage.name;
 
                         /* Entity binding--- */
-                        let allEntities=app.repository.select(umlPackage.name+'::@UMLInterface');
-                        forEach(allEntities,function(entity){
+                        let allEntities = app.repository.select(umlPackage.name + '::@UMLClass');
+                        forEach(allEntities, function (entity) {
 
-                            let entityObj={};
-                            jsonProcess[entity.name]=entityObj;
+                            let entityObj = {};
+                            jsonProcess[entity.name] = entityObj;
 
                             /* Entity property fields binding */
-                            mEntity.addEntityFields(entityObj,entity)
+                            mEntity.addEntityFields(entityObj, entity)
 
                             /* Entity Required fields properties binding */
-                            mEntity.addEntityRequiredFields(entityObj,entity);
+                            mEntity.addEntityRequiredFields(entityObj, entity);
 
                             /* Entity Properties array binding */
-                            mEntity.addEntityPropertyFields(entityObj,entity);
-                            
+                            mEntity.addEntityPropertyFields(entityObj, entity);
+
                             /* Entity Relationship array binding */
-                            mEntity.addEntityRelationshipFields(entityObj,entity);
+                            mEntity.addEntityRelationshipFields(entityObj, entity);
 
                         });
 
                         /* Event binding */
-                        let allEvents=app.repository.select(umlPackage.name+'::@UMLInterface');
-                        forEach(allEvents,function(event){
-                            
+                        let allEvents = app.repository.select(umlPackage.name + '::@UMLInterface');
+                        forEach(allEvents, function (event) {
+
+                            let eventObj = {};
+                            jsonProcess[event.name] = eventObj;
+
+                            /* Event property fields binding */
+                            mEvent.addEventFields(eventObj, event)
+
+                            /* Event Required fields properties binding */
+                            mEvent.addEventRequiredFields(eventObj, event);
+
+                            /* Event Properties array binding */
+                            mEvent.addEventPropertyFields(eventObj, event);
+
+                            /* Event Relationship array binding */
+                            mEvent.addEventRelationshipFields(eventObj, event);
+
                         });
 
                         /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
                         console.log("result",result); */
-                        console.log('Json Processed',jsonProcess);
+                        console.log('Json Processed', jsonProcess);
                         /*  
                             CircularJSON.stringify : 
                             Dealing with "TypeError: Converting circular structure to JSON" 
                             on JavaScript JavaScript structures that include circular references can't be 
                             serialized with a"plain" JSON.stringify. 
                         */
-                        fs.writeFile(filename, CircularJSON.stringify(jsonProcess,null,4)/* JSON.stringify(jsonProcess,null,4) */, 'utf-8', function (err) {
-                            if (err) {
-                                app.dialogs.showErrorDialog(err.message);
-                                return;
-                            } else {
-                                app.dialogs.showInfoDialog("Package is exported to path : " + filename);
-                                return;
-                            }
-                        });
-                        return ;
+                        setTimeout(function () {
+                            fs.writeFile(filename, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
+                                if (err) {
+                                    app.dialogs.showErrorDialog(err.message);
+                                    return;
+                                } else {
+                                    app.dialogs.showInfoDialog("Package is exported to path : " + filename);
+                                    return;
+                                }
+                            });
+                        }, 10)
+                        return;
 
-                        let package=JSON.parse(packageString);
-                        let pkgArr=[];
-                        let pkgobj={
-                            package:package,
-                            isAbstract:false
+                        let package = JSON.parse(packageString);
+                        let pkgArr = [];
+                        let pkgobj = {
+                            package: package,
+                            isAbstract: false
                         };
 
                         pkgArr.push(pkgobj);
-                        console.log("package (Not Abstrackt)",package);
+                        console.log("package (Not Abstrackt)", package);
 
 
-                        forEach(expPackages,function(item){
-                            let itemPackageString=app.repository.writeObject(item);
-                            let itemPackage=JSON.parse(itemPackageString);
-                            let pkgobj={
-                                package:itemPackage,
-                                isAbstract:true
+                        forEach(expPackages, function (item) {
+                            let itemPackageString = app.repository.writeObject(item);
+                            let itemPackage = JSON.parse(itemPackageString);
+                            let pkgobj = {
+                                package: itemPackage,
+                                isAbstract: true
                             };
 
                             pkgArr.push(pkgobj);
                         });
 
-                        console.log("package (All)",pkgArr);
-                        
+                        console.log("package (All)", pkgArr);
 
-                        fs.writeFile(filename, JSON.stringify(pkgArr,null,4), 'utf-8', function (err) {
+
+                        fs.writeFile(filename, JSON.stringify(pkgArr, null, 4), 'utf-8', function (err) {
                             if (err) {
                                 app.dialogs.showErrorDialog(err.message);
                             } else {
@@ -393,8 +415,8 @@ function exportModel() {
 }
 
 
-module.exports.exportModel=exportModel;
-module.exports.importModel=importModel;
+module.exports.exportModel = exportModel;
+module.exports.importModel = importModel;
 
 
 
