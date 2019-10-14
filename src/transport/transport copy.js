@@ -77,7 +77,6 @@ function importModel() {
         // let mObject=XMIData[key];
         if(XMIData.type==fields.package){
             // let mPackage=XMIData[key];
-            /* Import class & interface*/
             Object.keys(XMIData).forEach(function eachKey(key){
                 let mSubObject=XMIData[key];
                 /* UMLClass */
@@ -103,124 +102,17 @@ function importModel() {
                         attributes.push(objAttr);
                     });
 
-                    mainOwnedElements.push(entityObject);
-
-                } else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
-    
-                    let interfaceObject={};
-
-                    /* UMLClass fields */
-                    interfaceObject._type='UMLInterface';
-                    interfaceObject.name=mSubObject.name;
-                    interfaceObject.documentation=mSubObject.description;
-                    mainOwnedElements.push(interfaceObject);
-                }
-            });
-
-            let mProject=app.project.getProject();
-            let result = app.project.importFromJson(mProject, Package);
-            console.log("result", result);
-            
-            forEach(result.ownedElements,function(element){
-                let mSubObject=XMIData[element.name];
-
-
-
-                /* UMLClass */
-                if(mSubObject instanceof Object && mSubObject.type==fields.Entity){
-                    let entityObject={};
-
                     /* ownElements ( Relationship ) */
                     let ownedElements=[];
-                    // entityObject.ownedElements=ownedElements;
-
-                    // let eleOwnedElements=[];
-                    // element.ownedElements=eleOwnedElements;
+                    entityObject.ownedElements=ownedElements;
 
                     forEach(mSubObject.Relationship,function(attr){
                         let objRelationship={};
-                        let eleObjRelationship={};
-                        // if(attr.type==fields.aggregation){
-                        //     /* UMLAssociation (aggregation) */
-                        //     objRelationship._type='UMLAssociation';
-                        //     objRelationship.name=attr.name;
-
-                        //     eleObjRelationship.name=attr.name;
-
-                        //     objRelationship.documentation=attr.description;
-
-                        //     eleObjRelationship.documentation=attr.description;
-
-                            
-                        //     let objEnd1={};
-                        //     objRelationship.end1=objEnd1;
-                        //     objEnd1._type='UMLAssociationEnd';
-                        //     objEnd1.aggregation='shared'; 
-
-                        //     /* Reference to UMLClass or UMLInterface */
-
-                        //     let objReferenceEnd1={} 
-                        //     let source=attr.source; 
-                        //     if(source.type==fields.Entity){
-                        //         objReferenceEnd1._type='UMLClass';
-                        //         objReferenceEnd1.name=source.name;
-                        //     }else if(source.type==fields.Event){
-                        //         objReferenceEnd1._type='UMLInterface';
-                        //         objReferenceEnd1.name=source.name;
-                        //     }
-
-
-                        //     objEnd1.reference=objReferenceEnd1;
-
-                        //     let objEnd2={};
-                        //     objEnd2._type='UMLAssociationEnd';
-                        //     objRelationship.end2=objEnd2;
-                        //     objEnd2.aggregation='none';
-
-                        //     let objReferenceEnd2={} 
-                        //     let target=attr.target; 
-                        //     if(target.type==fields.Entity){
-                        //         objReferenceEnd2._type='UMLClass';
-                        //         objReferenceEnd2.name=target.name;
-                        //     }else if(target.type==fields.Event){
-                        //         objReferenceEnd2._type='UMLInterface';
-                        //         objReferenceEnd2.name=target.name;
-                        //     }
-
-                        //     objEnd2.reference=objReferenceEnd2;
-                        //     eleOwnedElements.push(objRelationship);
-                        // } 
-                        // else if(attr.type==fields.composition){
-                        //     /* UMLAssociation (composition) */
-                        //     objRelationship._type='UMLAssociation';
-
-                        //     let objEnd1={};
-                        //     objRelationship.end1=objEnd1;
-                        //     objEnd1._type='UMLAssociationEnd';
-
-                        //     let objEnd2={};
-                        //     objEnd2._type='UMLAssociationEnd';
-                        //     objRelationship.end2=objEnd2;
-
-                        //} else 
                         if(attr.type==fields.aggregation){
-                            /* UMLGeneralization (generalization) */
-                            objRelationship._type='UMLGeneralization';
-
-                            
-
-                            
-
-
                             /* UMLAssociation (aggregation) */
                             objRelationship._type='UMLAssociation';
                             objRelationship.name=attr.name;
-
-                            eleObjRelationship.name=attr.name;
-
                             objRelationship.documentation=attr.description;
-
-                            eleObjRelationship.documentation=attr.description;
 
                             
                             let objEnd1={};
@@ -259,205 +151,57 @@ function importModel() {
                             }
 
                             objEnd2.reference=objReferenceEnd2;
-                            ownedElements.push(objRelationship);
-                            let mResult=app.engine.addItem(element,'ownedElements',objRelationship)
-                            console.log('mResult',mResult);
-                        } 
-                        // else if(attr.type==fields.composition){
-                        //     /* UMLAssociation (composition) */
-                        //     objRelationship._type='UMLAssociation';
 
-                        //     let objEnd1={};
-                        //     objRelationship.end1=objEnd1;
-                        //     objEnd1._type='UMLAssociationEnd';
+                        } else if(attr.type==fields.composition){
+                            /* UMLAssociation (composition) */
+                            objRelationship._type='UMLAssociation';
 
-                        //     let objEnd2={};
-                        //     objEnd2._type='UMLAssociationEnd';
-                        //     objRelationship.end2=objEnd2;
+                            let objEnd1={};
+                            objRelationship.end1=objEnd1;
+                            objEnd1._type='UMLAssociationEnd';
 
+                            let objEnd2={};
+                            objEnd2._type='UMLAssociationEnd';
+                            objRelationship.end2=objEnd2;
 
+                        } else if(attr.type==fields.generalization){
+                            /* UMLGeneralization (generalization) */
+                            objRelationship._type='UMLGeneralization';
 
-                            // let arrTailModel=app.repository.search(attr.source.name);
-                            // let arrHeadModel=app.repository.search(attr.source.target);
+                        } else  if(attr.type==fields.interface){
+                            /* UMLAssociation (interface) */
+                            objRelationship._type='UMLAssociation';
 
-                            // app.factory.createModel({ 
-                            //     id: "UMLGeneralization", 
-                            //     parent: element, 
-                            //     field: "ownedElements" 
-                            // })
+                        } else if(attr.type==fields.interfaceRealization){
+                            /* UMLInterfaceRealization (interface realization) */
+                            objRelationship._type='UMLInterfaceRealization';
 
-                            // var options3 = {
-                            //     id: "UMLAssociation",
-                            //     parent: element,
-                            //     tailModel: arrTailModel[0],
-                            //     headModel: arrHeadModel[0]
-                            // }
-                            // app.factory.createModel(options3);
-                        //}
-                        // if(attr.type==fields.generalization){
-                        //     /* UMLGeneralization (generalization) */
-                        //     objRelationship._type='UMLGeneralization';
+                        } else if(attr.type==fields.associationClassLink){
+                            /* UMLAssociationClassLink (association class link) */
+                            objRelationship._type='UMLAssociationClassLink';
 
-                        //     console.log("MyName:",element.name);
-                        //     app.factory.createModel({ 
-                        //         id: "UMLGeneralization", 
-                        //         parent: element, 
-                        //         field: "ownedElements" 
-                        //     })
-
-                        // } 
-                        //else  if(attr.type==fields.interface){
-                        //     /* UMLAssociation (interface) */
-                        //     objRelationship._type='UMLAssociation';
-
-                        // } else if(attr.type==fields.interfaceRealization){
-                        //     /* UMLInterfaceRealization (interface realization) */
-                        //     objRelationship._type='UMLInterfaceRealization';
-
-                        // } else if(attr.type==fields.associationClassLink){
-                        //     /* UMLAssociationClassLink (association class link) */
-                        //     objRelationship._type='UMLAssociationClassLink';
-
-                        // }
-                        // objRelationship.name=attr.name;
-                        // // objRelationship.type=attr.DataType.type;
-                        // // objRelationship.multiplicity=attr.cardinality;
-                        // ownedElements.push(objRelationship);
-                        // eleOwnedElements.push(objRelationship);
+                        }
+                        objRelationship.name=attr.name;
+                        // objRelationship.type=attr.DataType.type;
+                        // objRelationship.multiplicity=attr.cardinality;
+                        ownedElements.push(objRelationship);
                     });
-                    //let resultUpdated=app.engine.setProperty(element, 'ownedElements', ownedElements);
-                    //console.log("resultUpdated",resultUpdated);
 
+                    mainOwnedElements.push(entityObject);
+
+                } /* UMLInterface */
+                else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
+
+                    let interfaceObject={};
+
+                    /* UMLClass fields */
+                    interfaceObject._type='UMLInterface';
+                    interfaceObject.name=mSubObject.name;
+                    interfaceObject.documentation=mSubObject.description;
+                    mainOwnedElements.push(interfaceObject);
                 }
-                
+                /*  */
             });
-            // let result = app.project.importFromJson(result, Package);
-
-            // Object.keys(XMIData).forEach(function eachKey(key){
-            //     let mSubObject=XMIData[key];
-            //     /* UMLClass */
-            //     if(mSubObject instanceof Object && mSubObject.type==fields.Entity){
-            //         let entityObject={};
-
-            //         /* UMLClass fields */
-            //         entityObject._type='UMLClass';
-            //         entityObject.name=mSubObject.name;
-            //         entityObject.documentation=mSubObject.description;
-
-            //         /* UMLAttribute */
-            //         let attributes=[];
-            //         entityObject.attributes=attributes;
-
-            //         forEach(mSubObject.Property,function(attr){
-            //             let objAttr={};
-            //             objAttr._type='UMLAttribute';
-            //             objAttr.name=attr.name;
-            //             objAttr.type=attr.DataType.type;
-            //             objAttr.isID=attr.isID;
-            //             objAttr.multiplicity=attr.cardinality;
-            //             attributes.push(objAttr);
-            //         });
-
-            //         /* ownElements ( Relationship ) */
-            //         let ownedElements=[];
-            //         entityObject.ownedElements=ownedElements;
-
-            //         forEach(mSubObject.Relationship,function(attr){
-            //             let objRelationship={};
-            //             if(attr.type==fields.aggregation){
-            //                 /* UMLAssociation (aggregation) */
-            //                 objRelationship._type='UMLAssociation';
-            //                 objRelationship.name=attr.name;
-            //                 objRelationship.documentation=attr.description;
-
-                            
-            //                 let objEnd1={};
-            //                 objRelationship.end1=objEnd1;
-            //                 objEnd1._type='UMLAssociationEnd';
-            //                 objEnd1.aggregation='shared'; 
-
-            //                 /* Reference to UMLClass or UMLInterface */
-
-            //                 let objReferenceEnd1={} 
-            //                 let source=attr.source; 
-            //                 if(source.type==fields.Entity){
-            //                     objReferenceEnd1._type='UMLClass';
-            //                     objReferenceEnd1.name=source.name;
-            //                 }else if(source.type==fields.Event){
-            //                     objReferenceEnd1._type='UMLInterface';
-            //                     objReferenceEnd1.name=source.name;
-            //                 }
-
-
-            //                 objEnd1.reference=objReferenceEnd1;
-
-            //                 let objEnd2={};
-            //                 objEnd2._type='UMLAssociationEnd';
-            //                 objRelationship.end2=objEnd2;
-            //                 objEnd2.aggregation='none';
-
-            //                 let objReferenceEnd2={} 
-            //                 let target=attr.target; 
-            //                 if(target.type==fields.Entity){
-            //                     objReferenceEnd2._type='UMLClass';
-            //                     objReferenceEnd2.name=target.name;
-            //                 }else if(target.type==fields.Event){
-            //                     objReferenceEnd2._type='UMLInterface';
-            //                     objReferenceEnd2.name=target.name;
-            //                 }
-
-            //                 objEnd2.reference=objReferenceEnd2;
-
-            //             } else if(attr.type==fields.composition){
-            //                 /* UMLAssociation (composition) */
-            //                 objRelationship._type='UMLAssociation';
-
-            //                 let objEnd1={};
-            //                 objRelationship.end1=objEnd1;
-            //                 objEnd1._type='UMLAssociationEnd';
-
-            //                 let objEnd2={};
-            //                 objEnd2._type='UMLAssociationEnd';
-            //                 objRelationship.end2=objEnd2;
-
-            //             } else if(attr.type==fields.generalization){
-            //                 /* UMLGeneralization (generalization) */
-            //                 objRelationship._type='UMLGeneralization';
-
-            //             } else  if(attr.type==fields.interface){
-            //                 /* UMLAssociation (interface) */
-            //                 objRelationship._type='UMLAssociation';
-
-            //             } else if(attr.type==fields.interfaceRealization){
-            //                 /* UMLInterfaceRealization (interface realization) */
-            //                 objRelationship._type='UMLInterfaceRealization';
-
-            //             } else if(attr.type==fields.associationClassLink){
-            //                 /* UMLAssociationClassLink (association class link) */
-            //                 objRelationship._type='UMLAssociationClassLink';
-
-            //             }
-            //             objRelationship.name=attr.name;
-            //             // objRelationship.type=attr.DataType.type;
-            //             // objRelationship.multiplicity=attr.cardinality;
-            //             ownedElements.push(objRelationship);
-            //         });
-
-            //         mainOwnedElements.push(entityObject);
-
-            //     } /* UMLInterface */
-            //     else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
-
-            //         let interfaceObject={};
-
-            //         /* UMLClass fields */
-            //         interfaceObject._type='UMLInterface';
-            //         interfaceObject.name=mSubObject.name;
-            //         interfaceObject.documentation=mSubObject.description;
-            //         mainOwnedElements.push(interfaceObject);
-            //     }
-            //     /*  */
-            // });
         }
         
     // });
@@ -465,7 +209,9 @@ function importModel() {
 
 
 
-    
+    let mProject=app.project.getProject();
+    let result = app.project.importFromJson(mProject, Package);
+    console.log("result", result);
 
     return;
 

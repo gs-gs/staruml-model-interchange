@@ -32,14 +32,17 @@ function addEntityPropertyFields(entityObj, entity) {
 
         propertyObj[fields.description] = attr.documentation;
 
-        if (attr.isID) {
-            propertyObj[fields.isID] = attr.isID;
-        }
+        // if (attr.isID) {
+        propertyObj[fields.isID] = attr.isID;
+        // }
 
         propertyObj[fields.status] = '';
         
+        propertyObj[fields.cardinality] = attr.multiplicity;
+
         /* Property DataType binding */
         utils.addDatatype(propertyObj,attr);
+
 
         propertyArr.push(propertyObj);
     });

@@ -3,17 +3,17 @@ var fields = require('./fields');
 var datatype = require('./datatype');
 function getElementType(element) {
     if (element instanceof type.UMLClass) {
-        return "Entity";
+        return fields.Entity;
     } else if (element instanceof type.UMLInterface) {
-        return "Event"
+        return fields.Event;
     } else if (element instanceof type.UMLInterfaceRealization) {
-        return 'interfaceRealization';
+        return fields.interfaceRealization;
     } else if (element instanceof type.UMLGeneralization) {
-        return 'generalization';
+        return fields.generalization;
     } else if (element instanceof type.UMLAssociationClassLink) {
-        return 'associationClassLink';
+        return fields.associationClassLink;
     } else if (element instanceof type.UMLEnumeration) {
-        return 'enum';
+        return fields.enum;
     } else {
         return 'UN_DEFINED';
     }
@@ -23,13 +23,13 @@ function getElementType(element) {
 function getRelationshipType(end1, end2) {
     if (end1.aggregation == 'shared' && end2.aggregation == 'none') {
         /* aggregation */
-        return 'aggregation';
+        return fields.aggregation;
     } else if (end1.aggregation == 'composite' && end2.aggregation == 'none') {
         /* composition */
-        return 'composition';
+        return fields.composition;
     } else if (end1.aggregation == 'none' && end2.aggregation == 'none') {
         /* event (interface) : when relationship between interface to interface */
-        return 'interface';
+        return fields.interface;
     }
 }
 
@@ -47,17 +47,17 @@ function addDatatype(propertyObj,attr){
         dType.type = attr.type;
         propertyObj[fields.DataType] = dType;
         dType[fields.name] = attr.name;
-        dType[fields.cardinality] = attr.multiplicity;
+        /* dType[fields.cardinality] = attr.multiplicity; */
     } else if (attr.type instanceof type.UMLClass) {
         propertyObj[fields.DataType] = dType;
         dType.type = getElementType(attr.type);
         dType[fields.name] = attr.type.name;
-        dType[fields.cardinality] = attr.multiplicity;
+        /* dType[fields.cardinality] = attr.multiplicity; */
     } else if (attr.type instanceof type.UMLEnumeration) {
         propertyObj[fields.DataType] = dType;
         dType.type = getElementType(attr.type);
         dType[fields.name] = attr.type.name;
-        dType[fields.cardinality] = attr.multiplicity;
+        /* dType[fields.cardinality] = attr.multiplicity; */
 
         /* binding literals  */
         let arrliterals = [];
@@ -67,7 +67,7 @@ function addDatatype(propertyObj,attr){
             arrliterals.push(itemLiterals.name);
         });
 
-        dType[fields.cardinality] = attr.multiplicity;
+        /* dType[fields.cardinality] = attr.multiplicity; */
     }
 }
 module.exports.getElementType = getElementType;

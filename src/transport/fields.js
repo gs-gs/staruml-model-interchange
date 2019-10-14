@@ -1,4 +1,5 @@
 const fields = {
+    'package':'Package',
     'type': 'type',
     'name': 'name',
     'description': 'description',
@@ -20,6 +21,15 @@ const fields = {
     'association': 'association',
     'class': 'class',
     'from': 'from',
-    'to': 'to'
+    'to': 'to',
+    'Entity' : 'Entity',
+    'Event' : 'Event',
+    'interfaceRealization' : 'interfaceRealization',
+    'generalization' : 'generalization',
+    'associationClassLink' : 'associationClassLink',
+    'enum' : 'enum',
+    'aggregation':'aggregation',
+    'composition':'composition',
+    'interface':'interface',
 };
 module.exports = fields;

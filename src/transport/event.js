@@ -34,9 +34,9 @@ function addEventPropertyFields(eventObj, event) {
 
         propertyObj[fields.description] = attr.documentation;
 
-        if (attr.isID) {
+        // if (attr.isID) {
             propertyObj[fields.isID] = attr.isID;
-        }
+        // }
 
         /* Property DataType binding */
         utils.addDatatype(propertyObj,attr);
