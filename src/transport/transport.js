@@ -928,26 +928,18 @@ function importModel() {
             var MainXMIData = content;
             console.log("Main XMIData",MainXMIData);
 
-            if(MainXMIData.hasOwnProperty(fields.hasAbstractFiles) && MainXMIData.hasAbstractFiles){
-                let absFiles=MainXMIData.abstractFiles;
-                if(absFiles.length>0){``
-                    forEach(absFiles,function(filePath){
+            if(MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length>0){
+                let absFiles=MainXMIData.dependent;
+                if(absFiles.length>0){
+                    forEach(absFiles,function(AbstractXMIData){
 
                         /* Abstract file XMIData */
-                        var contentStr = fs.readFileSync(filePath, 'utf8');
-                        var content = JSON.parse(contentStr);
-                        var AbstractXMIData = content;
-                        console.log("Abstract XMIData",AbstractXMIData);
-
                         importParty(AbstractXMIData);
                     });
                 }
             }
 
-            setTimeout(function(){
-
-                importParty(MainXMIData);
-            },1000)
+            importParty(MainXMIData);
 
         }catch(error){
             console.error(error.message);
@@ -1649,51 +1641,55 @@ function exportModel() {
                 if (varSel == valPackagename) {
                     let umlPackage = returnValue;
                     let expPackages = [];
-                    let fileName = umlPackage.name;
+                    let filename = umlPackage.name;
+                    /* Export main package */
+                    let jsonProcess={};
+                    if (filename) {
+                        console.log("Filename : ", filename);
+                        jsonProcess[fields.type] = fields.package;
+                        jsonProcess[fields.name] = umlPackage.name;
+                        /* Entity binding--- */
+                        mEntity.bindEntity(umlPackage, jsonProcess);
+
+                        /* Event binding */
+                        mEvent.bindEvent(umlPackage, jsonProcess);
+
+                    } else {
+                        console.log("Dialog cancelled");
+                        return
+                    }
+
                     /* Finds and return abstrack class from the selected package */
                     let absClass = getAbstractClass(umlPackage);
                     console.log("Abstrack Class", absClass);
 
-
-                    var _filename = fileName;
+                    var _filename = filename;
                     var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
-                    let _dirname;
-                    if (fName) {
-                        _dirname = path.dirname(fName);
-                    }
 
-                    let mainPackage={
-                        filename:fName,
-                        package:umlPackage,
-                    };
-
-                    /* Add 'hasAbstractFiles' */
-                    if(absClass.length>0){
-                        mainPackage[fields.hasAbstractFiles]=true;
+                    /* Add 'isAbstract' */
+                    /* if(absClass.length>0){
+                        mainPackage[fields.isAbstract]=true;
                     }else{
-                        mainPackage[fields.hasAbstractFiles]=false;
-                    }
+                        mainPackage[fields.isAbstract]=false;
+                    } */
                     
                     /* Add 'abstractFiles' paths */
-                    let abstractFiles=[];
-                    mainPackage[fields.abstractFiles]=abstractFiles;
-                    expPackages.push(mainPackage);
+                    /* let abstractFiles=[];
+                    mainPackage[fields.abstractFiles]=abstractFiles; */
 
                     /* Add all abstrack class in array */
                     forEach(absClass, function (item) {
                         if (item._parent instanceof type.UMLPackage) {
-                            let mPath=_dirname+path.sep+item._parent.name+'.json';
-                            abstractFiles.push(mPath);
                             expPackages.push({
-                                filename:mPath,
-                                package:item._parent
+                                package:item._parent,
+                                [fields.isAbstract]:true
                             });
                         }
                     });
 
 
 
-                    console.log("Total library packages", expPackages);
+                    console.log("library packages", expPackages);
                     /* let absClassView=getAbstractClassView(umlPackage,absClass);
                     console.log("Abstrack View",absClassView); */
 
@@ -1704,86 +1700,46 @@ function exportModel() {
                          }
 
                     }); */
-
+                    /* Export Abstract Packages */
+                    let dependent=[];
+                    jsonProcess[fields.dependent]=dependent
                     forEach(expPackages, function (item) {
-                        let filename=item.filename;
+
                         let mPackage=item.package;
-                        if (filename) {
-                            console.log("Filename : ", filename);
-                            let packageString = app.repository.writeObject(mPackage);
-                            let jsonProcess = {};
-                            jsonProcess[fields.type] = fields.package;
-                            jsonProcess[fields.name] = mPackage.name;
-                            if(item.hasOwnProperty(fields.hasAbstractFiles)){
-                                jsonProcess[fields.abstractFiles] = item.abstractFiles;
-                                jsonProcess[fields.hasAbstractFiles] = item.hasAbstractFiles;
-                            }
-                            /* Entity binding--- */
-                            mEntity.bindEntity(jsonProcess);
 
-                            /* Event binding */
-                            mEvent.bindEvent(jsonProcess);
+                        let abstractJsonProcess = {};
+                        abstractJsonProcess[fields.type] = fields.package;
+                        abstractJsonProcess[fields.name] = mPackage.name;
+                        abstractJsonProcess[fields.isAbstract] = item.isAbstract;
+                        /* Entity binding--- */
+                        mEntity.bindEntity(mPackage, abstractJsonProcess);
 
-                            /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
-                            console.log("result",result); */
-                            console.log('Json Processed', jsonProcess);
-                            /*  
-                                CircularJSON.stringify : 
-                                Dealing with "TypeError: Converting circular structure to JSON" 
-                                on JavaScript JavaScript structures that include circular references can't be 
-                                serialized with a"plain" JSON.stringify. 
-                            */
-                            setTimeout(function () {
-                                fs.writeFile(filename, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
-                                    if (err) {
-                                        app.dialogs.showErrorDialog(err.message);
-                                        return;
-                                    } else {
-                                        app.dialogs.showInfoDialog("Package \'"+mPackage.name+"\' is exported to path : " + filename);
-                                        return;
-                                    }
-                                });
-                            }, 10)
-                            return;
+                        /* Event binding */
+                        mEvent.bindEvent(mPackage, abstractJsonProcess);
 
-                            let package = JSON.parse(packageString);
-                            let pkgArr = [];
-                            let pkgobj = {
-                                package: package,
-                                isAbstract: false
-                            };
+                        console.log('Json Processed', abstractJsonProcess);
 
-                            pkgArr.push(pkgobj);
-                            console.log("package (Not Abstrackt)", package);
-
-
-                            forEach(expPackages, function (item) {
-                                let itemPackageString = app.repository.writeObject(item);
-                                let itemPackage = JSON.parse(itemPackageString);
-                                let pkgobj = {
-                                    package: itemPackage,
-                                    isAbstract: true
-                                };
-
-                                pkgArr.push(pkgobj);
-                            });
-
-                            console.log("package (All)", pkgArr);
-
-
-                            fs.writeFile(filename, JSON.stringify(pkgArr, null, 4), 'utf-8', function (err) {
-                                if (err) {
-                                    app.dialogs.showErrorDialog(err.message);
-                                } else {
-                                    app.dialogs.showInfoDialog("Package is exported to path : " + filename);
-                                }
-                            });
-
-                        } else {
-                            console.log("Dialog cancelled");
-                        }
+                        dependent.push(abstractJsonProcess);
+    
 
                     });
+                    /*  
+                        CircularJSON.stringify : 
+                        Dealing with "TypeError: Converting circular structure to JSON" 
+                        on JavaScript JavaScript structures that include circular references can't be 
+                        serialized with a"plain" JSON.stringify. 
+                    */
+                    setTimeout(function () {
+                        fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
+                            if (err) {
+                                app.dialogs.showErrorDialog(err.message);
+                                return;
+                            } else {
+                                app.dialogs.showInfoDialog("Package \'"+umlPackage.name+"\' is exported to path : " + fName);
+                                return;
+                            }
+                        });
+                    }, 10)
                 } else {
                     app.dialogs.showErrorDialog("Please select a package");
                 }

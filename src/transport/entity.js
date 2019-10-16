@@ -155,7 +155,7 @@ function addEntityRelationshipFields(entityObj, entity) {
         Relationship.push(objRelationship);
     })
 }
-function bindEntity(jsonProcess){
+function bindEntity(mPackage,jsonProcess){
     let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
     forEach(allEntities, function (entity) {
 
@@ -163,16 +163,16 @@ function bindEntity(jsonProcess){
         jsonProcess[entity.name] = entityObj;
 
         /* Entity property fields binding */
-        mEntity.addEntityFields(entityObj, entity)
+        addEntityFields(entityObj, entity)
 
         /* Entity Required fields properties binding */
-        mEntity.addEntityRequiredFields(entityObj, entity);
+        addEntityRequiredFields(entityObj, entity);
 
         /* Entity Properties array binding */
-        mEntity.addEntityPropertyFields(entityObj, entity);
+        addEntityPropertyFields(entityObj, entity);
 
         /* Entity Relationship array binding */
-        mEntity.addEntityRelationshipFields(entityObj, entity);
+        addEntityRelationshipFields(entityObj, entity);
 
     });
 }
