@@ -2,6 +2,8 @@ const fields = {
     'package':'Package',
     'type': 'type',
     'name': 'name',
+    'abstractFiles':'abstractFiles',
+    'hasAbstractFiles':'hasAbstractFiles',
     'description': 'description',
     'version': 'version',
     'status': 'status',

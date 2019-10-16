@@ -177,8 +177,33 @@ function addEventOperationFields(eventObj, event) {
         Operations.push(objOperation);
     })
 }
+function bindEvent(jsonProcess) {
+    let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
+    forEach(allEvents, function (event) {
+
+        let eventObj = {};
+        jsonProcess[event.name] = eventObj;
+
+        /* Event property fields binding */
+        mEvent.addEventFields(eventObj, event)
+
+        /* Event Required fields properties binding */
+        mEvent.addEventRequiredFields(eventObj, event);
+
+        /* Event Properties array binding */
+        mEvent.addEventPropertyFields(eventObj, event);
+
+        /* Event Relationship array binding */
+        mEvent.addEventRelationshipFields(eventObj, event);
+
+        /* Event Operation array binding */
+        mEvent.addEventOperationFields(eventObj, event);
+
+    });
+}
 module.exports.addEventFields = addEventFields;
 module.exports.addEventRequiredFields = addEventRequiredFields;
 module.exports.addEventPropertyFields = addEventPropertyFields;
 module.exports.addEventRelationshipFields = addEventRelationshipFields;
 module.exports.addEventOperationFields = addEventOperationFields;
+module.exports.bindEvent = bindEvent;

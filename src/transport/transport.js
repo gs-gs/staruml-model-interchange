@@ -4,6 +4,7 @@ var mEntity = require('./entity');
 var mEvent = require('./event');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
+var path = require('path');
 
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
@@ -25,6 +26,17 @@ function getAbstractClass(umlPackage) {
 
         }
     });
+    forEach(umlPackage.ownedElements, (element) => {
+        if (element instanceof type.UMLClass) {
+            let associations=getPackageWiseUMLAssociation(umlPackage);
+            forEach(associations, (itemGen) => {
+                if (itemGen.end2.aggregation=='none' && itemGen.end2.reference.isAbstract == true) {
+                    abstractClassList.push(itemGen.end2.reference);
+                }
+            });
+
+        }
+    });
     forEach(abstractClassList, function (item, index) {
         let filter = uniqueAbstractArr.filter(subItem => {
             return item.name == subItem.name;
@@ -36,7 +48,31 @@ function getAbstractClass(umlPackage) {
 
     return uniqueAbstractArr;
 }
-
+function getPackageWiseUMLAssociation(package) {
+         let associations = app.repository.select("@UMLAssociation");
+         filteredAssociation=[];
+         forEach(associations,  (item) => {
+              findParentPackage(package,item,item);
+         });
+         return filteredAssociation;
+}
+let filteredAssociation = [];
+function findParentPackage(package,ele,item) {
+    // return new Promise((resolve, reject) => {
+    if (ele instanceof type.UMLPackage) {
+         if (ele != null && ele.name == 'Movements'/* openAPI.getUMLPackage().name */) {
+              // console.log("ele",ele);
+              // console.log("item",item);
+              filteredAssociation.push(item);
+              // return item;
+         }
+         
+         // resolve(assocItem);
+    } else if (ele.hasOwnProperty('_parent') && ele._parent != null) {
+         findParentPackage(package,ele._parent,item);
+    }
+    // return null;
+}
 function getAbstractClassView(umlPackage, uniqueAbstractArr) {
     let abstractClassViewList = [];
 
@@ -55,7 +91,875 @@ function getAbstractClassView(umlPackage, uniqueAbstractArr) {
     return abstractClassViewList;
 }
 
+function importMovement() {
+
+    
+    ///home/vi109/Faizan-Vahevaria/StarUML/samplemodel.json
+    let filePath = '/home/vi109/Faizan-Vahevaria/StarUML/EXI-FILES/Movementsabs.json';
+    // let filePath='/home/vi109/Faizan-Vahevaria/StarUML/Package1.json';
+    var contentStr = fs.readFileSync(filePath, 'utf8');
+    var content = JSON.parse(contentStr);
+    var XMIData = content;
+
+
+    let mainOwnedElements = []
+    let Package = {
+        '_type': 'UMLPackage',
+        'name': 'Movements',
+        'ownedElements': mainOwnedElements
+    };
+    console.log("XMIData", XMIData);
+
+    if (XMIData.type == fields.package) {
+        // let mPackage=XMIData[key];
+        /* Adding Entity & Interface*/
+        Object.keys(XMIData).forEach(function eachKey(key) {
+            let mSubObject = XMIData[key];
+            /* UMLClass */
+            if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+                let entityObject = {};
+
+                /* UMLClass fields */
+                entityObject._type = 'UMLClass';
+                entityObject.name = mSubObject.name;
+                entityObject.documentation = mSubObject.description;
+
+                /* UMLAttribute */
+                let attributes = [];
+                entityObject.attributes = attributes;
+
+                forEach(mSubObject.Property, function (attr) {
+                    let objAttr = {};
+                    objAttr._type = 'UMLAttribute';
+                    objAttr.name = attr.name;
+                    objAttr.type = attr.DataType.type;
+                    objAttr.isID = attr.isID;
+                    objAttr.multiplicity = attr.cardinality;
+                    attributes.push(objAttr);
+                });
+
+
+
+                mainOwnedElements.push(entityObject);
+
+            }
+            else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
+
+                let interfaceObject={};
+
+                /* UMLInterface fields */
+                interfaceObject._type='UMLInterface';
+                interfaceObject.name=mSubObject.name;
+                console.log("Event",mSubObject.name);
+                interfaceObject.documentation=mSubObject.description;
+
+                /* UMLAttribute */
+                let attributes=[];
+                interfaceObject.attributes=attributes;
+
+                forEach(mSubObject.Property,function(attr){
+                    let objAttr={};
+                    objAttr._type='UMLAttribute';
+                    objAttr.name=attr.name;
+                    // objAttr.type=attr.DataType.type;
+                    objAttr.isID=attr.isID;
+                    objAttr.multiplicity=attr.cardinality;
+                    attributes.push(objAttr);
+                });
+
+                /* UMLOperation */
+                let operations=[];
+                interfaceObject.operations=operations;
+
+                forEach(mSubObject.Operation,function(attr){
+                    let objOpr={};
+                    objOpr._type='UMLOperation';
+                    objOpr.name=attr.name;
+
+
+                    let params=attr.Parameter;
+                    let arrParam=[];
+                    objOpr.parameters=arrParam;
+                    /* UMLParameter */
+                    forEach(params,function(param){
+                        let objParam={};
+                        objParam._type='UMLParameter';
+                        objParam.name=param.name;
+                        //TODO : Remove below comment and resolve issue
+                        // objParam.type=param.DataType.type;
+                        objParam.isID=param.isID;
+                        objParam.multiplicity=param.cardinality;
+
+                        arrParam.push(objParam);
+                    });
+
+                    operations.push(objOpr);
+                });
+                mainOwnedElements.push(interfaceObject);
+            }
+        });
+
+        let mProject = app.project.getProject();
+        let result = app.project.importFromJson(mProject, Package);
+        console.log("result", result);
+
+        /* Adding Relationship */
+        forEach(result.ownedElements, function (entity) {
+            let mSubObject = XMIData[entity.name];
+
+            let entityString = app.repository.writeObject(entity);
+            let entityJson = JSON.parse(entityString, null, 4);
+
+
+            /* ownElements ( Relationship ) */
+            let ownedElements = [];
+            entityJson.ownedElements = ownedElements;
+
+            forEach(mSubObject.Relationship, function (attr) {
+                let objRelationship = {};
+                if (attr.type == fields.aggregation) {
+                    /* UMLAssociation (aggregation) */
+                    console.log("-----aggregation", entity.name);
+
+                    // objRelationship._id="";
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'shared';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if (attr.type == fields.composition) {
+                    /* UMLAssociation (composition) */
+                    console.log("-----composition", entity.name);
+
+
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'composite';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.generalization) {
+                    /* UMLGeneralization (generalization) */
+                    console.log("-----generalization", entity.name);
+
+
+                    objRelationship._type = 'UMLGeneralization';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.source = objEnd1;
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+                    
+                    
+                    if(fRefEnd1.length>0){
+                        objEnd1['$ref']=fRefEnd1[0]._id;
+                    }
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLClass';
+                    objRelationship.target = objEnd2;
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0) {
+                        objEnd2['$ref'] = fRefEnd2[0]._id;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.interfaceRealization){
+                    /* UMLInterfaceRealization (interfaceRealization) */
+                    console.log("-----interfaceRealization", entity.name);
+
+
+                    objRelationship._type = 'UMLInterfaceRealization';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.source = objEnd1;
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+                    
+                    
+                    if(fRefEnd1.length>0){
+                        objEnd1['$ref']=fRefEnd1[0]._id;
+                    }
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLClass';
+                    objRelationship.target = objEnd2;
+
+                    let target = attr.target;
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0) {
+                        objEnd2['$ref'] = fRefEnd2[0]._id;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.interface){
+
+                    /* UMLAssociation (aggregation) */
+                    console.log("-----aggregation", entity.name);
+
+
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'none';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                
+                }
+            });
+
+
+        });
+    }
+}
+
+function importParty(XMIData) {
+    
+    let mainOwnedElements = []
+    let Package = {
+        '_type': 'UMLPackage',
+        'name': XMIData.name,
+        'ownedElements': mainOwnedElements
+    };
+
+    if (XMIData.type == fields.package) {
+        // let mPackage=XMIData[key];
+        /* Adding Entity & Interface*/
+        Object.keys(XMIData).forEach(function eachKey(key) {
+            let mSubObject = XMIData[key];
+            /* UMLClass */
+            if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+                let entityObject = {};
+
+                /* UMLClass fields */
+                entityObject._type = 'UMLClass';
+                entityObject.name = mSubObject.name;
+                entityObject.documentation = mSubObject.description;
+
+                /* UMLAttribute */
+                let attributes = [];
+                entityObject.attributes = attributes;
+
+                forEach(mSubObject.Property, function (attr) {
+                    let objAttr = {};
+                    objAttr._type = 'UMLAttribute';
+                    objAttr.name = attr.name;
+                    objAttr.type = attr.DataType.type;
+                    objAttr.isID = attr.isID;
+                    objAttr.multiplicity = attr.cardinality;
+                    attributes.push(objAttr);
+                });
+
+
+
+                mainOwnedElements.push(entityObject);
+
+            }
+            else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
+
+                let interfaceObject={};
+
+                /* UMLInterface fields */
+                interfaceObject._type='UMLInterface';
+                interfaceObject.name=mSubObject.name;
+                console.log("Event",mSubObject.name);
+                interfaceObject.documentation=mSubObject.description;
+
+                /* UMLAttribute */
+                let attributes=[];
+                interfaceObject.attributes=attributes;
+
+                forEach(mSubObject.Property,function(attr){
+                    let objAttr={};
+                    objAttr._type='UMLAttribute';
+                    objAttr.name=attr.name;
+                    // objAttr.type=attr.DataType.type;
+                    objAttr.isID=attr.isID;
+                    objAttr.multiplicity=attr.cardinality;
+                    attributes.push(objAttr);
+                });
+
+                /* UMLOperation */
+                let operations=[];
+                interfaceObject.operations=operations;
+
+                forEach(mSubObject.Operation,function(attr){
+                    let objOpr={};
+                    objOpr._type='UMLOperation';
+                    objOpr.name=attr.name;
+
+
+                    let params=attr.Parameter;
+                    let arrParam=[];
+                    objOpr.parameters=arrParam;
+                    /* UMLParameter */
+                    forEach(params,function(param){
+                        let objParam={};
+                        objParam._type='UMLParameter';
+                        objParam.name=param.name;
+                        //TODO : Remove below comment and resolve issue
+                        // objParam.type=param.DataType.type;
+                        objParam.isID=param.isID;
+                        objParam.multiplicity=param.cardinality;
+
+                        arrParam.push(objParam);
+                    });
+
+                    operations.push(objOpr);
+                });
+                mainOwnedElements.push(interfaceObject);
+            }
+        });
+
+        let mProject = app.project.getProject();
+        let result = app.project.importFromJson(mProject, Package);
+        console.log("result", result);
+
+        /* Adding Relationship */
+        forEach(result.ownedElements, function (entity) {
+            let mSubObject = XMIData[entity.name];
+
+            let entityString = app.repository.writeObject(entity);
+            let entityJson = JSON.parse(entityString, null, 4);
+
+
+            /* ownElements ( Relationship ) */
+            let ownedElements = [];
+            entityJson.ownedElements = ownedElements;
+
+            forEach(mSubObject.Relationship, function (attr) {
+                let objRelationship = {};
+                if (attr.type == fields.aggregation) {
+                    /* UMLAssociation (aggregation) */
+                    console.log("-----aggregation", entity.name);
+
+                    // objRelationship._id="";
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'shared';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if (attr.type == fields.composition) {
+                    /* UMLAssociation (composition) */
+                    console.log("-----composition", entity.name);
+
+
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'composite';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.generalization) {
+                    /* UMLGeneralization (generalization) */
+                    console.log("-----generalization", entity.name);
+
+
+                    objRelationship._type = 'UMLGeneralization';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.source = objEnd1;
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+                    
+                    
+                    if(fRefEnd1.length>0){
+                        objEnd1['$ref']=fRefEnd1[0]._id;
+                    }
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLClass';
+                    objRelationship.target = objEnd2;
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0) {
+                        objEnd2['$ref'] = fRefEnd2[0]._id;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.interfaceRealization){
+                    /* UMLInterfaceRealization (interfaceRealization) */
+                    console.log("-----interfaceRealization", entity.name);
+
+
+                    objRelationship._type = 'UMLInterfaceRealization';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.source = objEnd1;
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+                    
+                    
+                    if(fRefEnd1.length>0){
+                        objEnd1['$ref']=fRefEnd1[0]._id;
+                    }
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLClass';
+                    objRelationship.target = objEnd2;
+
+                    let target = attr.target;
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0) {
+                        objEnd2['$ref'] = fRefEnd2[0]._id;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                } else if(attr.type == fields.interface){
+
+                    /* UMLAssociation (aggregation) */
+                    console.log("-----aggregation", entity.name);
+
+
+                    objRelationship._type = 'UMLAssociation';
+                    objRelationship.name = attr.name;
+                    objRelationship.documentation = attr.description;
+
+                    /* Source */
+                    let objEnd1 = {};
+                    objRelationship.end1 = objEnd1;
+                    objEnd1._type = 'UMLAssociationEnd';
+                    objEnd1.aggregation = 'none';
+
+                    /* Reference to UMLClass or UMLInterface */
+
+                    let source = attr.source;
+                    let refEnd1 = app.repository.search(source.name);
+
+                    let fRefEnd1 = refEnd1.filter(function (item) {
+                        return item.name == source.name;
+                    });
+
+                    let objReferenceEnd1 = {}
+                    /* if(fRefEnd1.length>0){
+                        objReferenceEnd1['$ref']=fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    } */
+                    /* target */
+                    let objEnd2 = {};
+                    objEnd2._type = 'UMLAssociationEnd';
+                    objRelationship.end2 = objEnd2;
+                    objEnd2.aggregation = 'none';
+
+                    let target = attr.target;
+                    let objReferenceEnd2 = {}
+                    let refEnd2 = app.repository.search(target.name);
+
+                    let fRefEnd2 = refEnd2.filter(function (item) {
+                        return item.name == target.name;
+                    });
+
+                    if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
+                        objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
+                        objEnd2.reference = objReferenceEnd2;
+
+                        objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
+                        objEnd1.reference = objReferenceEnd1;
+                    }
+
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    //TODO
+                    //objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    //ownedElements.push(rel);
+                    let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+                    console.log("mResult", mResult);
+                
+                }
+            });
+
+
+        });
+    }
+}
+
+
 function importModel() {
+
+    var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
+    if (mFiles && mFiles.length > 0) {
+        try {
+            /* Main XMIData */
+            let filePath = mFiles[0];
+            var contentStr = fs.readFileSync(filePath, 'utf8');
+            var content = JSON.parse(contentStr);
+            var MainXMIData = content;
+            console.log("Main XMIData",MainXMIData);
+
+            if(MainXMIData.hasOwnProperty(fields.hasAbstractFiles) && MainXMIData.hasAbstractFiles){
+                let absFiles=MainXMIData.abstractFiles;
+                if(absFiles.length>0){``
+                    forEach(absFiles,function(filePath){
+
+                        /* Abstract file XMIData */
+                        var contentStr = fs.readFileSync(filePath, 'utf8');
+                        var content = JSON.parse(contentStr);
+                        var AbstractXMIData = content;
+                        console.log("Abstract XMIData",AbstractXMIData);
+
+                        importParty(AbstractXMIData);
+                    });
+                }
+            }
+
+            setTimeout(function(){
+
+                importParty(MainXMIData);
+            },1000)
+
+        }catch(error){
+            console.error(error.message);
+        }
+    }
+
+    return;
+
+    importParty();
+    importMovement();
+
+    return;
     ///home/vi109/Faizan-Vahevaria/StarUML/samplemodel.json
     let filePath = '/home/vi109/Faizan-Vahevaria/StarUML/tempImport.json';
     // let filePath='/home/vi109/Faizan-Vahevaria/StarUML/Package1.json';
@@ -183,7 +1087,7 @@ function importModel() {
                     /* UMLAssociation (aggregation) */
                     console.log("-----aggregation", entity.name);
 
-
+                    // objRelationship._id="";
                     objRelationship._type = 'UMLAssociation';
                     objRelationship.name = attr.name;
                     objRelationship.documentation = attr.description;
@@ -476,11 +1380,11 @@ function importModel() {
 
     return;
 
-    var files = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
-    if (files && files.length > 0) {
+    var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
+    if (mFiles && mFiles.length > 0) {
         try {
-            console.log("Files : ", files[0]);
-            var contentStr = fs.readFileSync(files[0], 'utf8');
+            console.log("mFiles : ", mFiles[0]);
+            var contentStr = fs.readFileSync(mFiles[0], 'utf8');
             console.log("Temp log", contentStr);
             var content = JSON.parse(contentStr);
             var XMIData = content;
@@ -751,10 +1655,39 @@ function exportModel() {
                     console.log("Abstrack Class", absClass);
 
 
+                    var _filename = fileName;
+                    var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
+                    let _dirname;
+                    if (fName) {
+                        _dirname = path.dirname(fName);
+                    }
+
+                    let mainPackage={
+                        filename:fName,
+                        package:umlPackage,
+                    };
+
+                    /* Add 'hasAbstractFiles' */
+                    if(absClass.length>0){
+                        mainPackage[fields.hasAbstractFiles]=true;
+                    }else{
+                        mainPackage[fields.hasAbstractFiles]=false;
+                    }
+                    
+                    /* Add 'abstractFiles' paths */
+                    let abstractFiles=[];
+                    mainPackage[fields.abstractFiles]=abstractFiles;
+                    expPackages.push(mainPackage);
+
                     /* Add all abstrack class in array */
                     forEach(absClass, function (item) {
                         if (item._parent instanceof type.UMLPackage) {
-                            expPackages.push(item._parent);
+                            let mPath=_dirname+path.sep+item._parent.name+'.json';
+                            abstractFiles.push(mPath);
+                            expPackages.push({
+                                filename:mPath,
+                                package:item._parent
+                            });
                         }
                     });
 
@@ -772,124 +1705,85 @@ function exportModel() {
 
                     }); */
 
-                    var _filename = fileName;
-                    var filename = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS)
+                    forEach(expPackages, function (item) {
+                        let filename=item.filename;
+                        let mPackage=item.package;
+                        if (filename) {
+                            console.log("Filename : ", filename);
+                            let packageString = app.repository.writeObject(mPackage);
+                            let jsonProcess = {};
+                            jsonProcess[fields.type] = fields.package;
+                            jsonProcess[fields.name] = mPackage.name;
+                            if(item.hasOwnProperty(fields.hasAbstractFiles)){
+                                jsonProcess[fields.abstractFiles] = item.abstractFiles;
+                                jsonProcess[fields.hasAbstractFiles] = item.hasAbstractFiles;
+                            }
+                            /* Entity binding--- */
+                            mEntity.bindEntity(jsonProcess);
 
-                    if (filename) {
-                        console.log("Filename : ", filename);
-                        let packageString = app.repository.writeObject(umlPackage);
-                        let jsonProcess = {};
-                        /* ddd let jsonProcess={
-                            'type':'Package',
-                            'name':umlPackage.name
-                        }; */
-                        jsonProcess[fields.type] = fields.package;
-                        jsonProcess[fields.name] = umlPackage.name;
+                            /* Event binding */
+                            mEvent.bindEvent(jsonProcess);
 
-                        /* Entity binding--- */
-                        let allEntities = app.repository.select(umlPackage.name + '::@UMLClass');
-                        forEach(allEntities, function (entity) {
+                            /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
+                            console.log("result",result); */
+                            console.log('Json Processed', jsonProcess);
+                            /*  
+                                CircularJSON.stringify : 
+                                Dealing with "TypeError: Converting circular structure to JSON" 
+                                on JavaScript JavaScript structures that include circular references can't be 
+                                serialized with a"plain" JSON.stringify. 
+                            */
+                            setTimeout(function () {
+                                fs.writeFile(filename, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
+                                    if (err) {
+                                        app.dialogs.showErrorDialog(err.message);
+                                        return;
+                                    } else {
+                                        app.dialogs.showInfoDialog("Package \'"+mPackage.name+"\' is exported to path : " + filename);
+                                        return;
+                                    }
+                                });
+                            }, 10)
+                            return;
 
-                            let entityObj = {};
-                            jsonProcess[entity.name] = entityObj;
-
-                            /* Entity property fields binding */
-                            mEntity.addEntityFields(entityObj, entity)
-
-                            /* Entity Required fields properties binding */
-                            mEntity.addEntityRequiredFields(entityObj, entity);
-
-                            /* Entity Properties array binding */
-                            mEntity.addEntityPropertyFields(entityObj, entity);
-
-                            /* Entity Relationship array binding */
-                            mEntity.addEntityRelationshipFields(entityObj, entity);
-
-                        });
-
-                        /* Event binding */
-                        let allEvents = app.repository.select(umlPackage.name + '::@UMLInterface');
-                        forEach(allEvents, function (event) {
-
-                            let eventObj = {};
-                            jsonProcess[event.name] = eventObj;
-
-                            /* Event property fields binding */
-                            mEvent.addEventFields(eventObj, event)
-
-                            /* Event Required fields properties binding */
-                            mEvent.addEventRequiredFields(eventObj, event);
-
-                            /* Event Properties array binding */
-                            mEvent.addEventPropertyFields(eventObj, event);
-
-                            /* Event Relationship array binding */
-                            mEvent.addEventRelationshipFields(eventObj, event);
-
-                            /* Event Operation array binding */
-                            mEvent.addEventOperationFields(eventObj, event);
-
-                        });
-
-                        /* let result=findVal(JSON.parse(replace),'type','EntityDiagram');
-                        console.log("result",result); */
-                        console.log('Json Processed', jsonProcess);
-                        /*  
-                            CircularJSON.stringify : 
-                            Dealing with "TypeError: Converting circular structure to JSON" 
-                            on JavaScript JavaScript structures that include circular references can't be 
-                            serialized with a"plain" JSON.stringify. 
-                        */
-                        setTimeout(function () {
-                            fs.writeFile(filename, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
-                                if (err) {
-                                    app.dialogs.showErrorDialog(err.message);
-                                    return;
-                                } else {
-                                    app.dialogs.showInfoDialog("Package is exported to path : " + filename);
-                                    return;
-                                }
-                            });
-                        }, 10)
-                        return;
-
-                        let package = JSON.parse(packageString);
-                        let pkgArr = [];
-                        let pkgobj = {
-                            package: package,
-                            isAbstract: false
-                        };
-
-                        pkgArr.push(pkgobj);
-                        console.log("package (Not Abstrackt)", package);
-
-
-                        forEach(expPackages, function (item) {
-                            let itemPackageString = app.repository.writeObject(item);
-                            let itemPackage = JSON.parse(itemPackageString);
+                            let package = JSON.parse(packageString);
+                            let pkgArr = [];
                             let pkgobj = {
-                                package: itemPackage,
-                                isAbstract: true
+                                package: package,
+                                isAbstract: false
                             };
 
                             pkgArr.push(pkgobj);
-                        });
-
-                        console.log("package (All)", pkgArr);
+                            console.log("package (Not Abstrackt)", package);
 
 
-                        fs.writeFile(filename, JSON.stringify(pkgArr, null, 4), 'utf-8', function (err) {
-                            if (err) {
-                                app.dialogs.showErrorDialog(err.message);
-                            } else {
-                                app.dialogs.showInfoDialog("Package is exported to path : " + filename);
-                            }
-                        });
+                            forEach(expPackages, function (item) {
+                                let itemPackageString = app.repository.writeObject(item);
+                                let itemPackage = JSON.parse(itemPackageString);
+                                let pkgobj = {
+                                    package: itemPackage,
+                                    isAbstract: true
+                                };
 
-                    } else {
-                        console.log("Dialog cancelled");
-                    }
+                                pkgArr.push(pkgobj);
+                            });
 
+                            console.log("package (All)", pkgArr);
+
+
+                            fs.writeFile(filename, JSON.stringify(pkgArr, null, 4), 'utf-8', function (err) {
+                                if (err) {
+                                    app.dialogs.showErrorDialog(err.message);
+                                } else {
+                                    app.dialogs.showInfoDialog("Package is exported to path : " + filename);
+                                }
+                            });
+
+                        } else {
+                            console.log("Dialog cancelled");
+                        }
+
+                    });
                 } else {
                     app.dialogs.showErrorDialog("Please select a package");
                 }

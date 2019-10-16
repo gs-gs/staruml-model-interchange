@@ -155,7 +155,29 @@ function addEntityRelationshipFields(entityObj, entity) {
         Relationship.push(objRelationship);
     })
 }
+function bindEntity(jsonProcess){
+    let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
+    forEach(allEntities, function (entity) {
+
+        let entityObj = {};
+        jsonProcess[entity.name] = entityObj;
+
+        /* Entity property fields binding */
+        mEntity.addEntityFields(entityObj, entity)
+
+        /* Entity Required fields properties binding */
+        mEntity.addEntityRequiredFields(entityObj, entity);
+
+        /* Entity Properties array binding */
+        mEntity.addEntityPropertyFields(entityObj, entity);
+
+        /* Entity Relationship array binding */
+        mEntity.addEntityRelationshipFields(entityObj, entity);
+
+    });
+}
 module.exports.addEntityFields = addEntityFields;
 module.exports.addEntityRequiredFields = addEntityRequiredFields;
 module.exports.addEntityPropertyFields = addEntityPropertyFields;
 module.exports.addEntityRelationshipFields = addEntityRelationshipFields;
+module.exports.bindEntity = bindEntity;
