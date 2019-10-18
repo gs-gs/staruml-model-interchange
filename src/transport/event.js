@@ -37,7 +37,7 @@ function addEventPropertyFields(eventObj, event) {
         // if (attr.isID) {
         propertyObj[fields.isID] = attr.isID;
         // }
-
+        propertyObj[fields.cardinality] = attr.multiplicity;
         /* Property DataType binding */
         utils.addDatatype(propertyObj, attr);
 
@@ -202,6 +202,32 @@ function bindEventToExport(mPackage, jsonProcess) {
 
     });
 }
+function bindAbstractEventToExport(mPackage, jsonProcess) {
+    //let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
+    forEach(mPackage.ownedElements, function (event) {
+        if(event instanceof type.UMLInterface){
+
+            let eventObj = {};
+            jsonProcess[event.name] = eventObj;
+            
+            /* Event property fields binding */
+            addEventFields(eventObj, event)
+            
+            /* Event Required fields properties binding */
+            addEventRequiredFields(eventObj, event);
+            
+            /* Event Properties array binding */
+            addEventPropertyFields(eventObj, event);
+            
+            /* Event Relationship array binding */
+            addEventRelationshipFields(eventObj, event);
+            
+            /* Event Operation array binding */
+            addEventOperationFields(eventObj, event);
+        }
+
+    });
+}
 
 function bindEventToImport(interfaceObject, mSubObject) {
     /* UMLInterface fields */
@@ -218,7 +244,7 @@ function bindEventToImport(interfaceObject, mSubObject) {
         let objAttr = {};
         objAttr._type = 'UMLAttribute';
         objAttr.name = attr.name;
-        // objAttr.type=attr.DataType.type;
+        objAttr.type=attr.DataType.type;
         objAttr.isID = attr.isID;
         objAttr.multiplicity = attr.cardinality;
         attributes.push(objAttr);
@@ -260,3 +286,4 @@ module.exports.addEventRelationshipFields = addEventRelationshipFields;
 module.exports.addEventOperationFields = addEventOperationFields;
 module.exports.bindEventToExport = bindEventToExport;
 module.exports.bindEventToImport = bindEventToImport;
+module.exports.bindAbstractEventToExport = bindAbstractEventToExport;

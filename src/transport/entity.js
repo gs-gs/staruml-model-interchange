@@ -179,6 +179,32 @@ function bindEntityToExport(mPackage, jsonProcess) {
     });
 }
 
+function bindAbstractEntityToExport(mPackage, jsonProcess) {
+    //let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
+    forEach(mPackage.ownedElements /* allEntities */ , function (entity) {
+
+        if (entity instanceof type.UMLClass) {
+
+
+            let entityObj = {};
+            jsonProcess[entity.name] = entityObj;
+
+            /* Entity property fields binding */
+            addEntityFields(entityObj, entity)
+
+            /* Entity Required fields properties binding */
+            addEntityRequiredFields(entityObj, entity);
+
+            /* Entity Properties array binding */
+            addEntityPropertyFields(entityObj, entity);
+
+            /* Entity Relationship array binding */
+            addEntityRelationshipFields(entityObj, entity);
+
+        }
+    });
+}
+
 function bindEntityToImport(entityObject, mSubObject) {
     /* UMLClass fields */
     entityObject._type = 'UMLClass';
@@ -208,3 +234,4 @@ module.exports.addEntityPropertyFields = addEntityPropertyFields;
 module.exports.addEntityRelationshipFields = addEntityRelationshipFields;
 module.exports.bindEntityToExport = bindEntityToExport;
 module.exports.bindEntityToImport = bindEntityToImport;
+module.exports.bindAbstractEntityToExport = bindAbstractEntityToExport;

@@ -44,21 +44,21 @@ function addDatatype(propertyObj, attr) {
         if (attr.type == datatype.url) {
             dType[fields.pattern] = constant.regex_email;
         }
-
         dType.type = attr.type;
         propertyObj[fields.DataType] = dType;
         dType[fields.name] = attr.name;
-        /* dType[fields.cardinality] = attr.multiplicity; */
     } else if (attr.type instanceof type.UMLClass) {
         propertyObj[fields.DataType] = dType;
         dType.type = getElementType(attr.type);
         dType[fields.name] = attr.type.name;
-        /* dType[fields.cardinality] = attr.multiplicity; */
+    } else if (attr.type instanceof type.UMLInterface) {
+        propertyObj[fields.DataType] = dType;
+        dType.type = getElementType(attr.type);
+        dType[fields.name] = attr.type.name;
     } else if (attr.type instanceof type.UMLEnumeration) {
         propertyObj[fields.DataType] = dType;
         dType.type = getElementType(attr.type);
         dType[fields.name] = attr.type.name;
-        /* dType[fields.cardinality] = attr.multiplicity; */
 
         /* binding literals  */
         let arrliterals = [];
@@ -68,7 +68,6 @@ function addDatatype(propertyObj, attr) {
             arrliterals.push(itemLiterals.name);
         });
 
-        /* dType[fields.cardinality] = attr.multiplicity; */
     }
 }
 module.exports.getElementType = getElementType;

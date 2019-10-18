@@ -6,7 +6,7 @@ const fs = require('fs');
 const CircularJSON = require('circular-json');
 var path = require('path');
 
-function addAggregationToImport(objRelationship,entity, attr) {
+function addAggregationToImport(objRelationship, entity, attr) {
     /* UMLAssociation (aggregation) */
     console.log("-----aggregation", entity.name);
 
@@ -61,7 +61,7 @@ function addAggregationToImport(objRelationship,entity, attr) {
     return objRelationship;
 }
 
-function addCompositionToImport(objRelationship,entity, attr) {
+function addCompositionToImport(objRelationship, entity, attr) {
     /* UMLAssociation (composition) */
     console.log("-----composition", entity.name);
 
@@ -115,7 +115,7 @@ function addCompositionToImport(objRelationship,entity, attr) {
     return objRelationship;
 }
 
-function addGeneralizationToImport(objRelationship,entity, attr) {
+function addGeneralizationToImport(objRelationship, entity, attr) {
     console.log("-----generalization", entity.name);
 
 
@@ -159,7 +159,7 @@ function addGeneralizationToImport(objRelationship,entity, attr) {
     return objRelationship;
 }
 
-function addInterfaceRealizationToImport(objRelationship,entity, attr) {
+function addInterfaceRealizationToImport(objRelationship, entity, attr) {
     console.log("-----interfaceRealization", entity.name);
 
     objRelationship._type = 'UMLInterfaceRealization';
@@ -257,7 +257,7 @@ function bindRelationshipToImport(entity, attr) {
     let objRelationship = {};
     if (attr.type == fields.aggregation) {
 
-        objRelationship = addAggregationToImport(objRelationship,entity, attr);
+        objRelationship = addAggregationToImport(objRelationship, entity, attr);
         if (objRelationship != null) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
@@ -271,7 +271,7 @@ function bindRelationshipToImport(entity, attr) {
         }
     } else if (attr.type == fields.composition) {
 
-        objRelationship = addCompositionToImport(objRelationship,entity, attr);
+        objRelationship = addCompositionToImport(objRelationship, entity, attr);
 
         let rel = app.repository.readObject(objRelationship);
         rel._parent = entity;
@@ -285,7 +285,7 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.generalization) {
         /* UMLGeneralization (generalization) */
 
-        objRelationship = addGeneralizationToImport(objRelationship,entity, attr)
+        objRelationship = addGeneralizationToImport(objRelationship, entity, attr)
 
         let rel = app.repository.readObject(objRelationship);
         rel._parent = entity;
@@ -299,7 +299,7 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.interfaceRealization) {
         /* UMLInterfaceRealization (interfaceRealization) */
 
-        objRelationship = addInterfaceRealizationToImport(objRelationship,entity, attr);
+        objRelationship = addInterfaceRealizationToImport(objRelationship, entity, attr);
 
         let rel = app.repository.readObject(objRelationship);
         rel._parent = entity;
@@ -313,7 +313,7 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.interface) {
 
         /* UMLAssociation (aggregation) */
-        objRelationship = addInterfaceToImport(objRelationship,entity, attr);
+        objRelationship = addInterfaceToImport(objRelationship, entity, attr);
 
         let rel = app.repository.readObject(objRelationship);
         rel._parent = entity;
@@ -330,19 +330,21 @@ function bindRelationshipToImport(entity, attr) {
 
 function addRelationship(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
-        let mSubObject = XMIData[entity.name];
+        if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
+            let mSubObject = XMIData[entity.name];
 
-        let entityString = app.repository.writeObject(entity);
-        let entityJson = JSON.parse(entityString, null, 4);
+            let entityString = app.repository.writeObject(entity);
+            let entityJson = JSON.parse(entityString, null, 4);
 
 
-        /* ownElements ( Relationship ) */
-        let ownedElements = [];
-        entityJson.ownedElements = ownedElements;
+            /* ownElements ( Relationship ) */
+            let ownedElements = [];
+            entityJson.ownedElements = ownedElements;
 
-        forEach(mSubObject.Relationship, function (attr) {
-            bindRelationshipToImport(entity, attr);
-        });
+            forEach(mSubObject.Relationship, function (attr) {
+                bindRelationshipToImport(entity, attr);
+            });
+        }
     });
 }
 module.exports.addAggregationToImport = addAggregationToImport;

@@ -14,6 +14,7 @@ const fields = {
     'status': 'status',
     'pattern': 'pattern',
     'DataType': 'DataType',
+    '_parent': '_parent',
     'cardinality': 'cardinality',
     'enum': 'enum',
     'Relationship': 'Relationship',

@@ -29,13 +29,13 @@ function getAbstractClass(umlPackage) {
     });
     forEach(umlPackage.ownedElements, (element) => {
         if (element instanceof type.UMLClass) {
-            let associations = getPackageWiseUMLAssociation(umlPackage);
+            // let associations = getPackageWiseUMLAssociation(umlPackage);
+            let associations = getClasswiseAssociations(element);
             forEach(associations, (itemGen) => {
                 if (itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
                     abstractClassList.push(itemGen.end2.reference);
                 }
             });
-
         }
     });
     forEach(abstractClassList, function (item, index) {
@@ -48,6 +48,12 @@ function getAbstractClass(umlPackage) {
     });
 
     return uniqueAbstractArr;
+}
+function getClasswiseAssociations(element){
+    let association=element.ownedElements.filter(function(item){
+        return item instanceof type.UMLAssociation
+    });
+    return association;
 }
 
 function getPackageWiseUMLAssociation(package) {
@@ -113,68 +119,83 @@ function importParty(XMIData) {
             /* Updating Entity and Event Elements */
 
 
-            result = searchedPackage[0];
+            forEach(searchedPackage, function (selPkg) {
+                if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
-            Object.keys(XMIData).forEach(function eachKey(key) {
-                let mSubObject = XMIData[key];
-                /* UMLClass */
-                let mSname = key;
-                if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
 
-                    let entityObject = {};
-                    /* Binding Entity fields and attribute */
-                    mEntity.bindEntityToImport(entityObject, mSubObject);
+                    result = selPkg;
 
-                    let selectedEntity = app.repository.select(mSname);
-                    if (selectedEntity.length > 0) {
-                        forEach(selectedEntity, function (ety) {
-                            console.log("Updated : Updated : ", ety.name);
+                    let arrElements=[];
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        /* UMLClass */
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
 
-                            if (ety instanceof type.UMLClass) {
-                                let mResult = app.repository.readObject(entityObject)
-                                app.engine.setProperties(ety, mResult);
+                            let entityObject = {};
+                            /* Binding Entity fields and attribute */
+                            mEntity.bindEntityToImport(entityObject, mSubObject);
+
+                            let selectedEntity = app.repository.select(mSname);
+                            if (selectedEntity.length > 0) {
+                                forEach(selectedEntity, function (ety) {
+                                    console.log("Updated : Updated : ", ety.name);
+
+                                    if (ety instanceof type.UMLClass) {
+                                        let mResult = app.repository.readObject(entityObject)
+                                        let prpr=app.engine.setProperties(ety, mResult);
+                                        console.log("prpr",prpr);
+                                        
+                                    }
+                                });
+                            } else {
+
+                                let newAdded = app.repository.readObject(entityObject);
+                                console.log("New Element : ", newAdded);
+                                newAdded._parent = result;
+                                //TODO
+                                //objRelationship.type=attr.DataType.type;
+                                // objRelationship.multiplicity=attr.cardinality;
+                                //ownedElements.push(rel);
+                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                                console.log("New Added Item", mResult);
+                                console.log("prpr",mResult);
+
                             }
-                        });
-                    } else {
+                            //mainOwnedElements.push(entityObject);
 
-                        let newAdded = app.repository.readObject(entityObject);
-                        console.log("New Element : ", newAdded);
-                        newAdded._parent = result;
-                        //TODO
-                        //objRelationship.type=attr.DataType.type;
-                        // objRelationship.multiplicity=attr.cardinality;
-                        //ownedElements.push(rel);
-                        let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                        console.log("New Added Item", mResult);
+                        } else if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
 
-                    }
-                    //mainOwnedElements.push(entityObject);
+                            let interfaceObject = {};
+                            /* Binding Event fields, attribute, operation & parameters*/
+                            mEvent.bindEventToImport(interfaceObject, mSubObject);
+                            let selectedEvent = app.repository.select(mSname);
+                            if (selectedEvent.length > 0) {
+                                forEach(selectedEvent, function (evt) {
 
-                } else if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
-
-                    let interfaceObject = {};
-                    /* Binding Event fields, attribute, operation & parameters*/
-                    mEvent.bindEventToImport(interfaceObject, mSubObject);
-                    let selectedEvent = app.repository.select(mSname);
-                    if (selectedEvent.length > 0) {
-                        forEach(selectedEvent, function (evt) {
-
-                            if (evt instanceof type.UMLInterface) {
-                                let mResult = app.repository.readObject(interfaceObject)
-                                app.engine.setProperties(evt, mResult);
+                                    if (evt instanceof type.UMLInterface) {
+                                        let mResult = app.repository.readObject(interfaceObject)
+                                        let prpr=app.engine.setProperties(evt, mResult);
+                                        console.log("prpr",prpr);
+                                    }
+                                });
                             }
-                        });
-                    }
 
+                        }
+                    });
+
+                    /* Updating Relationship */
+                    mRelationship.addRelationship(result.ownedElements, XMIData);
                 }
             });
-
-            /* Updating Relationship */
-            mRelationship.addRelationship(result.ownedElements, XMIData);
 
         } else {
             /* Adding Entity & Interface*/
 
+            /* Bind referenct of parent element (UMLPackage) */
+            let objParent=app.repository.readObject(Package);
+            let _parent={};
+            _parent['$ref']=objParent._id;
             Object.keys(XMIData).forEach(function eachKey(key) {
                 let mSubObject = XMIData[key];
                 /* UMLClass */
@@ -182,6 +203,7 @@ function importParty(XMIData) {
                     let entityObject = {};
 
                     /* Binding Entity fields and attribute */
+                    entityObject[fields._parent]=_parent;
                     mEntity.bindEntityToImport(entityObject, mSubObject);
                     mainOwnedElements.push(entityObject);
 
@@ -190,6 +212,7 @@ function importParty(XMIData) {
                     let interfaceObject = {};
 
                     /* Binding Event fields, attribute, operation & parameters*/
+                    interfaceObject[fields._parent]=Package;
                     mEvent.bindEventToImport(interfaceObject, mSubObject);
                     mainOwnedElements.push(interfaceObject);
                 }
@@ -293,13 +316,26 @@ function exportModel() {
                     mainPackage[fields.abstractFiles]=abstractFiles; */
 
                     /* Add all abstrack class in array */
+                    /* let dependentOwnedElement=[];
+                    let pkgDependent = {
+                        '_type': 'UMLPackage',
+                        'name': 'Dependent',
+                        'ownedElements': dependentOwnedElement
+                    };
+                    forEach(absClass, function (item) {
+                        dependentOwnedElement.push(item);
+                    });
+                    expPackages.push({
+                        package:pkgDependent,
+                        [fields.isAbstract]: true
+                    }); */
                     forEach(absClass, function (item) {
                         if (item._parent instanceof type.UMLPackage) {
                             expPackages.push({
                                 package: item._parent,
                                 [fields.isAbstract]: true
                             });
-                        }
+                        } 
                     });
 
 
@@ -328,9 +364,11 @@ function exportModel() {
                         abstractJsonProcess[fields.isAbstract] = item.isAbstract;
                         /* Entity binding--- */
                         mEntity.bindEntityToExport(mPackage, abstractJsonProcess);
+                        // mEntity.bindAbstractEntityToExport(mPackage, abstractJsonProcess);
 
                         /* Event binding */
                         mEvent.bindEventToExport(mPackage, abstractJsonProcess);
+                        // mEvent.bindAbstractEventToExport(mPackage, abstractJsonProcess);
 
                         console.log('Json Processed', abstractJsonProcess);
 
