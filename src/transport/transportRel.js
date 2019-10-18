@@ -58,17 +58,17 @@ function getAbstractClassView(umlPackage, uniqueAbstractArr) {
 function importModel() {
     ///home/vi109/Faizan-Vahevaria/StarUML/samplemodel.json
     // let filePath='/home/vi109/Faizan-Vahevaria/StarUML/tempImport.json';
-    let filePath='/home/vi109/Faizan-Vahevaria/StarUML/Package1.json';
+    let filePath = '/home/vi109/Faizan-Vahevaria/StarUML/Package1.json';
     var contentStr = fs.readFileSync(filePath, 'utf8');
     var content = JSON.parse(contentStr);
     var XMIData = content;
 
 
-    let mainOwnedElements=[]
-    let Package={
-        '_type':'UMLPackage',
+    let mainOwnedElements = []
+    let Package = {
+        '_type': 'UMLPackage',
         'name': 'TempImport',
-        'ownedElements':mainOwnedElements
+        'ownedElements': mainOwnedElements
     };
     console.log("XMIData", XMIData);
 
@@ -99,7 +99,7 @@ function importModel() {
                     attributes.push(objAttr);
                 });
 
-                
+
 
                 mainOwnedElements.push(entityObject);
 
@@ -112,11 +112,11 @@ function importModel() {
 
     /* Adding Relationship */
 
-    forEach(result.ownedElements,function(entity){
-        let mSubObject=XMIData[entity.name];
+    forEach(result.ownedElements, function (entity) {
+        let mSubObject = XMIData[entity.name];
 
         let entityString = app.repository.writeObject(entity);
-        let entityJson=JSON.parse(entityString,null,4);
+        let entityJson = JSON.parse(entityString, null, 4);
 
 
         /* ownElements ( Relationship ) */
@@ -128,7 +128,7 @@ function importModel() {
             if (attr.type == fields.aggregation) {
                 /* UMLAssociation (aggregation) */
 
-                
+
 
                 objRelationship._type = 'UMLAssociation';
                 objRelationship.name = attr.name;
@@ -143,9 +143,9 @@ function importModel() {
                 /* Reference to UMLClass or UMLInterface */
 
                 let source = attr.source;
-                let refEnd1=app.repository.search(source.name);
+                let refEnd1 = app.repository.search(source.name);
                 let objReferenceEnd1 = {}
-                objReferenceEnd1['$ref']=refEnd1[0]._id;
+                objReferenceEnd1['$ref'] = refEnd1[0]._id;
                 /*
                 if (source.type == fields.Entity) {
                     objReferenceEnd1._type = 'UMLClass';
@@ -167,8 +167,8 @@ function importModel() {
 
                 let target = attr.target;
                 let objReferenceEnd2 = {}
-                let refEnd2=app.repository.search(target.name);
-                objReferenceEnd2['$ref']=refEnd2[0]._id;
+                let refEnd2 = app.repository.search(target.name);
+                objReferenceEnd2['$ref'] = refEnd2[0]._id;
                 /*
                 if (target.type == fields.Entity) {
                     objReferenceEnd2._type = 'UMLClass';
@@ -180,16 +180,16 @@ function importModel() {
                 objEnd2.reference = objReferenceEnd2;
                 // objReferenceEnd2['$ref']=ref[1];
 
-            } 
+            }
             objRelationship.name = attr.name;
-            let rel=app.repository.readObject(objRelationship);
-            console.log("rel",rel);
+            let rel = app.repository.readObject(objRelationship);
+            console.log("rel", rel);
             //TODO
             //objRelationship.type=attr.DataType.type;
-            objRelationship.multiplicity=attr.cardinality;
+            objRelationship.multiplicity = attr.cardinality;
             //ownedElements.push(rel);
-            let mResult=app.engine.addItem(entity,'ownedElements',rel);
-            console.log("mResult",mResult);
+            let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+            console.log("mResult", mResult);
 
             // let res = app.project.importFromJson(entity, ownedElements);
             // let res = app.engine.setProperty(entity, 'ownedElements', ownedElements)
@@ -210,7 +210,7 @@ function importModel() {
         try {
             console.log("Files : ", files[0]);
             var contentStr = fs.readFileSync(files[0], 'utf8');
-            console.log("Temp log",contentStr);
+            console.log("Temp log", contentStr);
             var content = JSON.parse(contentStr);
             var XMIData = content;
 

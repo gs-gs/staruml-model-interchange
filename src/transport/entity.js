@@ -6,6 +6,7 @@ var datatype = require('./datatype');
 function addEntityFields(entityObj, entity) {
     entityObj[fields.type] = utils.getElementType(entity);
     entityObj[fields.name] = entity.name;
+    entityObj[fields.isAbstract] = entity.isAbstract;
     entityObj[fields.description] = entity.documentation;
     entityObj[fields.version] = '';
     entityObj[fields.status] = '';
@@ -37,11 +38,11 @@ function addEntityPropertyFields(entityObj, entity) {
         // }
 
         propertyObj[fields.status] = '';
-        
+
         propertyObj[fields.cardinality] = attr.multiplicity;
 
         /* Property DataType binding */
-        utils.addDatatype(propertyObj,attr);
+        utils.addDatatype(propertyObj, attr);
 
 
         propertyArr.push(propertyObj);
@@ -155,7 +156,8 @@ function addEntityRelationshipFields(entityObj, entity) {
         Relationship.push(objRelationship);
     })
 }
-function bindEntity(mPackage,jsonProcess){
+
+function bindEntityToExport(mPackage, jsonProcess) {
     let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
     forEach(allEntities, function (entity) {
 
@@ -176,8 +178,33 @@ function bindEntity(mPackage,jsonProcess){
 
     });
 }
+
+function bindEntityToImport(entityObject, mSubObject) {
+    /* UMLClass fields */
+    entityObject._type = 'UMLClass';
+    entityObject.name = mSubObject.name;
+    entityObject[fields.isAbstract] = mSubObject.isAbstract;
+    entityObject.documentation = mSubObject.description;
+
+    /* UMLAttribute */
+    let attributes = [];
+    entityObject.attributes = attributes;
+
+    forEach(mSubObject.Property, function (attr) {
+        let objAttr = {};
+        objAttr._type = 'UMLAttribute';
+        objAttr.name = attr.name;
+        objAttr.type = attr.DataType.type;
+        objAttr.isID = attr.isID;
+        objAttr.multiplicity = attr.cardinality;
+        objAttr.documentation = attr.description;
+        attributes.push(objAttr);
+    });
+
+}
 module.exports.addEntityFields = addEntityFields;
 module.exports.addEntityRequiredFields = addEntityRequiredFields;
 module.exports.addEntityPropertyFields = addEntityPropertyFields;
 module.exports.addEntityRelationshipFields = addEntityRelationshipFields;
-module.exports.bindEntity = bindEntity;
+module.exports.bindEntityToExport = bindEntityToExport;
+module.exports.bindEntityToImport = bindEntityToImport;

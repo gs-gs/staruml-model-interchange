@@ -35,11 +35,11 @@ function addEventPropertyFields(eventObj, event) {
         propertyObj[fields.description] = attr.documentation;
 
         // if (attr.isID) {
-            propertyObj[fields.isID] = attr.isID;
+        propertyObj[fields.isID] = attr.isID;
         // }
 
         /* Property DataType binding */
-        utils.addDatatype(propertyObj,attr);
+        utils.addDatatype(propertyObj, attr);
 
         propertyArr.push(propertyObj);
     });
@@ -157,18 +157,18 @@ function addEventOperationFields(eventObj, event) {
     let Operations = [];
     eventObj[fields.Operation] = Operations;
     forEach(event.operations, function (element) {
-        let objOperation={};
-        objOperation[fields.name]=element.name;
-        let arrParameters=[];
-        objOperation[fields.Parameter]=arrParameters;
-        forEach(element.parameters,function(params){
-            let objParam={};;
-            objParam[fields.name]=params.name;
-            objParam[fields.description]=params.documentation;
-            objParam[fields.status]='';
+        let objOperation = {};
+        objOperation[fields.name] = element.name;
+        let arrParameters = [];
+        objOperation[fields.Parameter] = arrParameters;
+        forEach(element.parameters, function (params) {
+            let objParam = {};;
+            objParam[fields.name] = params.name;
+            objParam[fields.description] = params.documentation;
+            objParam[fields.status] = '';
 
             /* Property DataType binding */
-            utils.addDatatype(objParam,params);
+            utils.addDatatype(objParam, params);
 
 
             arrParameters.push(objParam);
@@ -177,7 +177,8 @@ function addEventOperationFields(eventObj, event) {
         Operations.push(objOperation);
     })
 }
-function bindEvent(mPackage,jsonProcess) {
+
+function bindEventToExport(mPackage, jsonProcess) {
     let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
     forEach(allEvents, function (event) {
 
@@ -201,9 +202,61 @@ function bindEvent(mPackage,jsonProcess) {
 
     });
 }
+
+function bindEventToImport(interfaceObject, mSubObject) {
+    /* UMLInterface fields */
+    interfaceObject._type = 'UMLInterface';
+    interfaceObject.name = mSubObject.name;
+    console.log("Event", mSubObject.name);
+    interfaceObject.documentation = mSubObject.description;
+
+    /* UMLAttribute */
+    let attributes = [];
+    interfaceObject.attributes = attributes;
+
+    forEach(mSubObject.Property, function (attr) {
+        let objAttr = {};
+        objAttr._type = 'UMLAttribute';
+        objAttr.name = attr.name;
+        // objAttr.type=attr.DataType.type;
+        objAttr.isID = attr.isID;
+        objAttr.multiplicity = attr.cardinality;
+        attributes.push(objAttr);
+    });
+
+    /* UMLOperation */
+    let operations = [];
+    interfaceObject.operations = operations;
+
+    forEach(mSubObject.Operation, function (attr) {
+        let objOpr = {};
+        objOpr._type = 'UMLOperation';
+        objOpr.name = attr.name;
+
+
+        let params = attr.Parameter;
+        let arrParam = [];
+        objOpr.parameters = arrParam;
+        /* UMLParameter */
+        forEach(params, function (param) {
+            let objParam = {};
+            objParam._type = 'UMLParameter';
+            objParam.name = param.name;
+            //TODO : Remove below comment and resolve issue
+            // objParam.type=param.DataType.type;
+            objParam.isID = param.isID;
+            objParam.multiplicity = param.cardinality;
+
+            arrParam.push(objParam);
+        });
+
+        operations.push(objOpr);
+    });
+}
 module.exports.addEventFields = addEventFields;
 module.exports.addEventRequiredFields = addEventRequiredFields;
 module.exports.addEventPropertyFields = addEventPropertyFields;
 module.exports.addEventRelationshipFields = addEventRelationshipFields;
 module.exports.addEventOperationFields = addEventOperationFields;
-module.exports.bindEvent = bindEvent;
+module.exports.bindEventToExport = bindEventToExport;
+module.exports.bindEventToImport = bindEventToImport;

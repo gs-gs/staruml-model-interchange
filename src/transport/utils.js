@@ -1,6 +1,7 @@
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var datatype = require('./datatype');
+
 function getElementType(element) {
     if (element instanceof type.UMLClass) {
         return fields.Entity;
@@ -37,7 +38,7 @@ function isString(s) {
     return typeof (s) === 'string' || s instanceof String;
 }
 
-function addDatatype(propertyObj,attr){
+function addDatatype(propertyObj, attr) {
     let dType = {};
     if (isString(attr.type)) {
         if (attr.type == datatype.url) {

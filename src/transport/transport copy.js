@@ -57,159 +57,159 @@ function getAbstractClassView(umlPackage, uniqueAbstractArr) {
 
 function importModel() {
     ///home/vi109/Faizan-Vahevaria/StarUML/samplemodel.json
-    let filePath='/home/vi109/Faizan-Vahevaria/StarUML/tempImport.json';
+    let filePath = '/home/vi109/Faizan-Vahevaria/StarUML/tempImport.json';
     var contentStr = fs.readFileSync(filePath, 'utf8');
     var content = JSON.parse(contentStr);
     var XMIData = content;
 
 
-    let mainOwnedElements=[]
-    let Package={
-        '_type':'UMLPackage',
+    let mainOwnedElements = []
+    let Package = {
+        '_type': 'UMLPackage',
         'name': 'TempImport',
-        'ownedElements':mainOwnedElements
+        'ownedElements': mainOwnedElements
     };
-    console.log("XMIData",XMIData);
+    console.log("XMIData", XMIData);
 
     // Object.keys(XMIData).forEach(function eachKey(key) {
 
-        // console.log(key); // alerts key 
-        // let mObject=XMIData[key];
-        if(XMIData.type==fields.package){
-            // let mPackage=XMIData[key];
-            Object.keys(XMIData).forEach(function eachKey(key){
-                let mSubObject=XMIData[key];
-                /* UMLClass */
-                if(mSubObject instanceof Object && mSubObject.type==fields.Entity){
-                    let entityObject={};
+    // console.log(key); // alerts key 
+    // let mObject=XMIData[key];
+    if (XMIData.type == fields.package) {
+        // let mPackage=XMIData[key];
+        Object.keys(XMIData).forEach(function eachKey(key) {
+            let mSubObject = XMIData[key];
+            /* UMLClass */
+            if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+                let entityObject = {};
 
-                    /* UMLClass fields */
-                    entityObject._type='UMLClass';
-                    entityObject.name=mSubObject.name;
-                    entityObject.documentation=mSubObject.description;
+                /* UMLClass fields */
+                entityObject._type = 'UMLClass';
+                entityObject.name = mSubObject.name;
+                entityObject.documentation = mSubObject.description;
 
-                    /* UMLAttribute */
-                    let attributes=[];
-                    entityObject.attributes=attributes;
+                /* UMLAttribute */
+                let attributes = [];
+                entityObject.attributes = attributes;
 
-                    forEach(mSubObject.Property,function(attr){
-                        let objAttr={};
-                        objAttr._type='UMLAttribute';
-                        objAttr.name=attr.name;
-                        objAttr.type=attr.DataType.type;
-                        objAttr.isID=attr.isID;
-                        objAttr.multiplicity=attr.cardinality;
-                        attributes.push(objAttr);
-                    });
+                forEach(mSubObject.Property, function (attr) {
+                    let objAttr = {};
+                    objAttr._type = 'UMLAttribute';
+                    objAttr.name = attr.name;
+                    objAttr.type = attr.DataType.type;
+                    objAttr.isID = attr.isID;
+                    objAttr.multiplicity = attr.cardinality;
+                    attributes.push(objAttr);
+                });
 
-                    /* ownElements ( Relationship ) */
-                    let ownedElements=[];
-                    entityObject.ownedElements=ownedElements;
+                /* ownElements ( Relationship ) */
+                let ownedElements = [];
+                entityObject.ownedElements = ownedElements;
 
-                    forEach(mSubObject.Relationship,function(attr){
-                        let objRelationship={};
-                        if(attr.type==fields.aggregation){
-                            /* UMLAssociation (aggregation) */
-                            objRelationship._type='UMLAssociation';
-                            objRelationship.name=attr.name;
-                            objRelationship.documentation=attr.description;
-
-                            
-                            let objEnd1={};
-                            objRelationship.end1=objEnd1;
-                            objEnd1._type='UMLAssociationEnd';
-                            objEnd1.aggregation='shared'; 
-
-                            /* Reference to UMLClass or UMLInterface */
-
-                            let objReferenceEnd1={} 
-                            let source=attr.source; 
-                            if(source.type==fields.Entity){
-                                objReferenceEnd1._type='UMLClass';
-                                objReferenceEnd1.name=source.name;
-                            }else if(source.type==fields.Event){
-                                objReferenceEnd1._type='UMLInterface';
-                                objReferenceEnd1.name=source.name;
-                            }
+                forEach(mSubObject.Relationship, function (attr) {
+                    let objRelationship = {};
+                    if (attr.type == fields.aggregation) {
+                        /* UMLAssociation (aggregation) */
+                        objRelationship._type = 'UMLAssociation';
+                        objRelationship.name = attr.name;
+                        objRelationship.documentation = attr.description;
 
 
-                            objEnd1.reference=objReferenceEnd1;
+                        let objEnd1 = {};
+                        objRelationship.end1 = objEnd1;
+                        objEnd1._type = 'UMLAssociationEnd';
+                        objEnd1.aggregation = 'shared';
 
-                            let objEnd2={};
-                            objEnd2._type='UMLAssociationEnd';
-                            objRelationship.end2=objEnd2;
-                            objEnd2.aggregation='none';
+                        /* Reference to UMLClass or UMLInterface */
 
-                            let objReferenceEnd2={} 
-                            let target=attr.target; 
-                            if(target.type==fields.Entity){
-                                objReferenceEnd2._type='UMLClass';
-                                objReferenceEnd2.name=target.name;
-                            }else if(target.type==fields.Event){
-                                objReferenceEnd2._type='UMLInterface';
-                                objReferenceEnd2.name=target.name;
-                            }
-
-                            objEnd2.reference=objReferenceEnd2;
-
-                        } else if(attr.type==fields.composition){
-                            /* UMLAssociation (composition) */
-                            objRelationship._type='UMLAssociation';
-
-                            let objEnd1={};
-                            objRelationship.end1=objEnd1;
-                            objEnd1._type='UMLAssociationEnd';
-
-                            let objEnd2={};
-                            objEnd2._type='UMLAssociationEnd';
-                            objRelationship.end2=objEnd2;
-
-                        } else if(attr.type==fields.generalization){
-                            /* UMLGeneralization (generalization) */
-                            objRelationship._type='UMLGeneralization';
-
-                        } else  if(attr.type==fields.interface){
-                            /* UMLAssociation (interface) */
-                            objRelationship._type='UMLAssociation';
-
-                        } else if(attr.type==fields.interfaceRealization){
-                            /* UMLInterfaceRealization (interface realization) */
-                            objRelationship._type='UMLInterfaceRealization';
-
-                        } else if(attr.type==fields.associationClassLink){
-                            /* UMLAssociationClassLink (association class link) */
-                            objRelationship._type='UMLAssociationClassLink';
-
+                        let objReferenceEnd1 = {}
+                        let source = attr.source;
+                        if (source.type == fields.Entity) {
+                            objReferenceEnd1._type = 'UMLClass';
+                            objReferenceEnd1.name = source.name;
+                        } else if (source.type == fields.Event) {
+                            objReferenceEnd1._type = 'UMLInterface';
+                            objReferenceEnd1.name = source.name;
                         }
-                        objRelationship.name=attr.name;
-                        // objRelationship.type=attr.DataType.type;
-                        // objRelationship.multiplicity=attr.cardinality;
-                        ownedElements.push(objRelationship);
-                    });
 
-                    mainOwnedElements.push(entityObject);
 
-                } /* UMLInterface */
-                else if(mSubObject instanceof Object && mSubObject.type==fields.Event){
+                        objEnd1.reference = objReferenceEnd1;
 
-                    let interfaceObject={};
+                        let objEnd2 = {};
+                        objEnd2._type = 'UMLAssociationEnd';
+                        objRelationship.end2 = objEnd2;
+                        objEnd2.aggregation = 'none';
 
-                    /* UMLClass fields */
-                    interfaceObject._type='UMLInterface';
-                    interfaceObject.name=mSubObject.name;
-                    interfaceObject.documentation=mSubObject.description;
-                    mainOwnedElements.push(interfaceObject);
-                }
-                /*  */
-            });
-        }
-        
+                        let objReferenceEnd2 = {}
+                        let target = attr.target;
+                        if (target.type == fields.Entity) {
+                            objReferenceEnd2._type = 'UMLClass';
+                            objReferenceEnd2.name = target.name;
+                        } else if (target.type == fields.Event) {
+                            objReferenceEnd2._type = 'UMLInterface';
+                            objReferenceEnd2.name = target.name;
+                        }
+
+                        objEnd2.reference = objReferenceEnd2;
+
+                    } else if (attr.type == fields.composition) {
+                        /* UMLAssociation (composition) */
+                        objRelationship._type = 'UMLAssociation';
+
+                        let objEnd1 = {};
+                        objRelationship.end1 = objEnd1;
+                        objEnd1._type = 'UMLAssociationEnd';
+
+                        let objEnd2 = {};
+                        objEnd2._type = 'UMLAssociationEnd';
+                        objRelationship.end2 = objEnd2;
+
+                    } else if (attr.type == fields.generalization) {
+                        /* UMLGeneralization (generalization) */
+                        objRelationship._type = 'UMLGeneralization';
+
+                    } else if (attr.type == fields.interface) {
+                        /* UMLAssociation (interface) */
+                        objRelationship._type = 'UMLAssociation';
+
+                    } else if (attr.type == fields.interfaceRealization) {
+                        /* UMLInterfaceRealization (interface realization) */
+                        objRelationship._type = 'UMLInterfaceRealization';
+
+                    } else if (attr.type == fields.associationClassLink) {
+                        /* UMLAssociationClassLink (association class link) */
+                        objRelationship._type = 'UMLAssociationClassLink';
+
+                    }
+                    objRelationship.name = attr.name;
+                    // objRelationship.type=attr.DataType.type;
+                    // objRelationship.multiplicity=attr.cardinality;
+                    ownedElements.push(objRelationship);
+                });
+
+                mainOwnedElements.push(entityObject);
+
+            } /* UMLInterface */
+            else if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+
+                let interfaceObject = {};
+
+                /* UMLClass fields */
+                interfaceObject._type = 'UMLInterface';
+                interfaceObject.name = mSubObject.name;
+                interfaceObject.documentation = mSubObject.description;
+                mainOwnedElements.push(interfaceObject);
+            }
+            /*  */
+        });
+    }
+
     // });
 
 
 
 
-    let mProject=app.project.getProject();
+    let mProject = app.project.getProject();
     let result = app.project.importFromJson(mProject, Package);
     console.log("result", result);
 
@@ -220,7 +220,7 @@ function importModel() {
         try {
             console.log("Files : ", files[0]);
             var contentStr = fs.readFileSync(files[0], 'utf8');
-            console.log("Temp log",contentStr);
+            console.log("Temp log", contentStr);
             var content = JSON.parse(contentStr);
             var XMIData = content;
 
