@@ -14,7 +14,7 @@ function getElementType(element) {
     } else if (element instanceof type.UMLAssociationClassLink) {
         return fields.associationClassLink;
     } else if (element instanceof type.UMLEnumeration) {
-        return fields.enum;
+        return fields.Enum;
     } else {
         return 'UN_DEFINED';
     }
@@ -62,7 +62,7 @@ function addDatatype(propertyObj, attr) {
 
         /* binding literals  */
         let arrliterals = [];
-        dType[fields.enum] = arrliterals;
+        dType[fields.Enum] = arrliterals;
         let literals = attr.type.literals;
         forEach(literals, function (itemLiterals) {
             arrliterals.push(itemLiterals.name);
@@ -70,7 +70,48 @@ function addDatatype(propertyObj, attr) {
 
     }
 }
+function getDatatype(attr) {
+    let dType = {};
+    if (attr.type == fields.Entity) {
+        let res=app.repository.search(attr.name);
+        forEach(res,function(item){
+            if(item instanceof type.UMLClass){
+                dType['$ref']=item._id;
+            }
+        });
+        return dType;
+        
+    } else if (attr.type == fields.Event) {
+        let res=app.repository.search(attr.name);
+        forEach(res,function(item){
+            if(item instanceof type.UMLInterface){
+                dType['$ref']=item._id;
+            }
+        });
+        return dType;
+        
+    } else if (attr.type == fields.Enum) {
+        
+        let res=app.repository.search(attr.name);
+        forEach(res,function(item){
+            if(item instanceof type.UMLEnumeration){
+                dType['$ref']=item._id;
+            }
+        });
+        return dType;
+    } else if (isString(attr.type)) {
+        /* if (attr.type == datatype.url) {
+            dType[fields.pattern] = constant.regex_email;
+        }
+        dType.type = attr.type;
+        propertyObj[fields.DataType] = dType;
+        dType[fields.name] = attr.name; */
+        // dType=attr.type;
+        return attr.type
+    } 
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
 module.exports.addDatatype = addDatatype;
+module.exports.getDatatype=getDatatype;
