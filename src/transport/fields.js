@@ -31,7 +31,6 @@ const fields = {
     'interfaceRealization': 'interfaceRealization',
     'generalization': 'generalization',
     'associationClassLink': 'associationClassLink',
-    'enum': 'enum',
     'aggregation': 'aggregation',
     'composition': 'composition',
     'interface': 'interface',
