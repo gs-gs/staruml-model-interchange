@@ -3,6 +3,7 @@ var fields = require('./fields');
 var mEntity = require('./entity');
 var mEnum = require('./enum');
 var mEvent = require('./event');
+var mUtils = require('./utils');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
 var path = require('path');
@@ -148,8 +149,16 @@ function importParty(XMIData) {
 
                                     if (ety instanceof type.UMLEnumeration) {
                                         let mResult = app.repository.readObject(enumObject)
-                                        let prpr = app.engine.setProperties(ety, mResult);
-                                        console.log("prpr", prpr);
+
+                                        let prpr1 = app.engine.setProperty(ety,fields.name,enumObject.name);
+                                        let prpr2 = app.engine.setProperty(ety,fields.isAbstract,enumObject.isAbstract);
+                                        let prpr3 = app.engine.setProperty(ety,fields.documentation,enumObject.description);
+                                        console.log("prpr1", prpr1);
+                                        console.log("prpr2", prpr2);
+                                        console.log("prpr3", prpr3);
+
+                                        /* let prpr = app.engine.setProperties(ety, mResult);
+                                        console.log("prpr", prpr); */
                                     }
                                 });
                             } else {
@@ -173,7 +182,7 @@ function importParty(XMIData) {
                         }
                     });
 
-                    /* Update Entity, Event */
+                    /* Update Entity */
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
                         /* UMLClass */
@@ -191,8 +200,21 @@ function importParty(XMIData) {
 
                                     if (ety instanceof type.UMLClass) {
                                         let mResult = app.repository.readObject(entityObject)
-                                        let prpr = app.engine.setProperties(ety, mResult);
-                                        console.log("prpr", prpr);
+
+                                        // entityObject._type = 'UMLClass';
+                                        /* entityObject.name = mSubObject.name;
+                                        entityObject[fields.isAbstract] = mSubObject.isAbstract;
+                                        entityObject.documentation = mSubObject.description; */
+
+                                        let prpr1 = app.engine.setProperty(ety,fields.name,entityObject.name);
+                                        let prpr2 = app.engine.setProperty(ety,fields.isAbstract,entityObject.isAbstract);
+                                        let prpr3 = app.engine.setProperty(ety,fields.documentation,entityObject.description);
+                                        console.log("prpr1", prpr1);
+                                        console.log("prpr2", prpr2);
+                                        console.log("prpr3", prpr3);
+
+                                        /* let prpr = app.engine.setProperties(ety, mResult);
+                                        console.log("prpr", prpr); */
 
                                     }
                                 });
@@ -212,19 +234,36 @@ function importParty(XMIData) {
                             }
                             //mainOwnedElements.push(entityObject);
 
-                        } else if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+                        }
+                    });
+
+
+                    /* Update Event */
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        /* UMLClass */
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
 
                             let interfaceObject = {};
                             /* Binding Event fields, attribute, operation & parameters*/
                             mEvent.bindEventToImport(interfaceObject, mSubObject);
                             let selectedEvent = app.repository.select(mSname);
                             if (selectedEvent.length > 0) {
-                                forEach(selectedEvent, function (evt) {
+                                forEach(selectedEvent, function (ety) {
 
-                                    if (evt instanceof type.UMLInterface) {
-                                        let mResult = app.repository.readObject(interfaceObject)
-                                        let prpr = app.engine.setProperties(evt, mResult);
-                                        console.log("prpr", prpr);
+                                    if (ety instanceof type.UMLInterface) {
+                                        let mResult = app.repository.readObject(interfaceObject);
+
+                                        let prpr1 = app.engine.setProperty(ety,fields.name,interfaceObject.name);
+                                        // let prpr2 = app.engine.setPropert(ety,fields.isAbstract,mSubObject.isAbstract);
+                                        let prpr3 = app.engine.setProperty(ety,fields.documentation,interfaceObject.description);
+                                        console.log("prpr1", prpr1);
+                                        // console.log("prpr2", prpr2);
+                                        console.log("prpr3", prpr3);
+
+                                        /* let prpr = app.engine.setProperties(evt, mResult);
+                                        console.log("prpr", prpr); */
                                     }
                                 });
                             }
@@ -232,8 +271,20 @@ function importParty(XMIData) {
                         }
                     });
 
-                    /* Updating Relationship */
-                    mRelationship.addRelationship(result.ownedElements, XMIData);
+
+
+                    /* Updating Property to Entity, Event, Enum */
+                    mUtils.updateProperty(result.ownedElements, XMIData);
+                    
+                    /* Updating Literals for Enum */
+                    mUtils.updateLiterals(result.ownedElements, XMIData);
+
+                    /* Updating  Operation to Event */
+                    mUtils.updateOperation(result.ownedElements, XMIData);
+
+                    /* Updating Relationship to Entity, Event*/
+                    mRelationship.updateRelationship(result.ownedElements, XMIData);
+
                 }
             });
 
@@ -262,7 +313,7 @@ function importParty(XMIData) {
                 }
             });
 
-            /* Process Entity, Event */
+            /* Process Entity */
             Object.keys(XMIData).forEach(function eachKey(key) {
                 let mSubObject = XMIData[key];
                 if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
@@ -274,7 +325,13 @@ function importParty(XMIData) {
                     mEntity.bindEntityToImport(entityObject, mSubObject);
                     mainOwnedElements.push(entityObject);
 
-                } else if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+                } 
+            });
+
+            /* Process Event */
+            Object.keys(XMIData).forEach(function eachKey(key) {
+                let mSubObject = XMIData[key];
+                if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
 
                     let interfaceObject = {};
 
@@ -285,21 +342,22 @@ function importParty(XMIData) {
                 }
             });
 
+
             /* Import Enumeration, Entity & Event to our model */
             result = app.project.importFromJson(mProject, Package);
             console.log("result", result);
 
             
-            /* Adding Property */
-            mEntity.addProperty(result.ownedElements, XMIData);
+            /* Adding Property to Entity, Event, Enum */
+            mUtils.addProperty(result.ownedElements, XMIData);
             
-            /* Adding Literals for Enumeration*/
-            mEntity.addLiterals(result.ownedElements, XMIData);
+            /* Adding Literals for Enum */
+            mUtils.addLiterals(result.ownedElements, XMIData);
 
-            /* Adding  Operation*/
-            mEntity.addOperation(result.ownedElements, XMIData);
+            /* Adding  Operation to Event */
+            mUtils.addOperation(result.ownedElements, XMIData);
 
-            /* Adding Relationship */
+            /* Adding Relationship to Entity, Event*/
             mRelationship.addRelationship(result.ownedElements, XMIData);
         }
 

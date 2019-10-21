@@ -252,6 +252,85 @@ function addInterfaceToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+function updateRelationshipToImport(entity, attr) {
+    let objRelationship = {};
+    if (attr.type == fields.aggregation) {
+
+        objRelationship = addAggregationToImport(objRelationship, entity, attr);
+        if (objRelationship != null) {
+            let rel = app.repository.readObject(objRelationship);
+            rel._parent = entity;
+            console.log("rel", rel);
+            //TODO
+            //objRelationship.type=attr.DataType.type;
+            // objRelationship.multiplicity=attr.cardinality;
+            //ownedElements.push(rel);
+            return rel;
+            // let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+            // console.log("mResult", mResult);
+        }
+    } else if (attr.type == fields.composition) {
+
+        objRelationship = addCompositionToImport(objRelationship, entity, attr);
+
+        let rel = app.repository.readObject(objRelationship);
+        rel._parent = entity;
+        console.log("rel", rel);
+        //TODO
+        //objRelationship.type=attr.DataType.type;
+        // objRelationship.multiplicity=attr.cardinality;
+        //ownedElements.push(rel);
+        // let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+        // console.log("mResult", mResult);
+        return rel;
+    } else if (attr.type == fields.generalization) {
+        /* UMLGeneralization (generalization) */
+
+        objRelationship = addGeneralizationToImport(objRelationship, entity, attr)
+
+        let rel = app.repository.readObject(objRelationship);
+        rel._parent = entity;
+        console.log("rel", rel);
+        //TODO
+        //objRelationship.type=attr.DataType.type;
+        // objRelationship.multiplicity=attr.cardinality;
+        //ownedElements.push(rel);
+        // let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+        // console.log("mResult", mResult);
+        return rel;
+    } else if (attr.type == fields.interfaceRealization) {
+        /* UMLInterfaceRealization (interfaceRealization) */
+
+        objRelationship = addInterfaceRealizationToImport(objRelationship, entity, attr);
+
+        let rel = app.repository.readObject(objRelationship);
+        rel._parent = entity;
+        console.log("rel", rel);
+        //TODO
+        //objRelationship.type=attr.DataType.type;
+        // objRelationship.multiplicity=attr.cardinality;
+        //ownedElements.push(rel);
+        // let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+        // console.log("mResult", mResult);
+        return rel;
+    } else if (attr.type == fields.interface) {
+
+        /* UMLAssociation (aggregation) */
+        objRelationship = addInterfaceToImport(objRelationship, entity, attr);
+
+        let rel = app.repository.readObject(objRelationship);
+        rel._parent = entity;
+        console.log("rel", rel);
+        //TODO
+        //objRelationship.type=attr.DataType.type;
+        // objRelationship.multiplicity=attr.cardinality;
+        //ownedElements.push(rel);
+        // let mResult = app.engine.addItem(entity, 'ownedElements', rel);
+        // console.log("mResult", mResult);
+        return rel;
+
+    }
+}
 
 function bindRelationshipToImport(entity, attr) {
     let objRelationship = {};
@@ -347,6 +426,27 @@ function addRelationship(ownedElements, XMIData) {
         }
     });
 }
+function updateRelationship(ownedElements, XMIData) {
+    forEach(ownedElements, function (entity) {
+        if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
+            let mSubObject = XMIData[entity.name];
+
+            let entityString = app.repository.writeObject(entity);
+            let entityJson = JSON.parse(entityString, null, 4);
+
+
+            /* ownElements ( Relationship ) */
+            let ownedElements = [];
+            entityJson.ownedElements = ownedElements;
+
+            forEach(mSubObject.Relationship, function (attr) {
+                let rel=updateRelationshipToImport(entity, attr);
+                ownedElements.push(rel);
+            });
+            app.engine.setProperty(entity,'ownedElements',ownedElements);
+        }
+    });
+}
 module.exports.addAggregationToImport = addAggregationToImport;
 module.exports.addCompositionToImport = addCompositionToImport;
 module.exports.addGeneralizationToImport = addGeneralizationToImport;
@@ -354,3 +454,5 @@ module.exports.addInterfaceRealizationToImport = addInterfaceRealizationToImport
 module.exports.addInterfaceToImport = addInterfaceToImport;
 module.exports.bindRelationshipToImport = bindRelationshipToImport;
 module.exports.addRelationship = addRelationship;
+module.exports.updateRelationship = updateRelationship;
+module.exports.updateRelationshipToImport = updateRelationshipToImport;

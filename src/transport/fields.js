@@ -6,6 +6,7 @@ const fields = {
     'dependent': 'dependent',
     'isAbstract': 'isAbstract',
     'description': 'description',
+    'documentation': 'documentation',
     'version': 'version',
     'status': 'status',
     'Required': 'Required',
