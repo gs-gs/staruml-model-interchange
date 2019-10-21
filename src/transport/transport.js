@@ -50,8 +50,9 @@ function getAbstractClass(umlPackage) {
 
     return uniqueAbstractArr;
 }
-function getClasswiseAssociations(element){
-    let association=element.ownedElements.filter(function(item){
+
+function getClasswiseAssociations(element) {
+    let association = element.ownedElements.filter(function (item) {
         return item instanceof type.UMLAssociation
     });
     return association;
@@ -116,17 +117,63 @@ function importParty(XMIData) {
         let mProject = app.project.getProject();
         let searchedPackage = app.repository.select(Package.name);
         let result = null;
+        /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
-            /* Updating Entity and Event Elements */
-
-
             forEach(searchedPackage, function (selPkg) {
                 if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
 
                     result = selPkg;
 
-                    let arrElements=[];
+
+                    /* Update Enumeration */
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        /* UMLClass */
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+
+                            /* UMLEnumeration */
+                            let enumObject = {};
+
+                            /* Binding Enum fields, attribute, literals */
+                            // enumObject[fields._parent] = result;
+                            mEnum.bindEnumToImport(enumObject, mSubObject);
+
+
+                            let selectedEnum = app.repository.select(mSname);
+                            if (selectedEnum.length > 0) {
+                                forEach(selectedEnum, function (ety) {
+                                    console.log("Updated : Enum : ", ety.name);
+
+                                    if (ety instanceof type.UMLEnumeration) {
+                                        let mResult = app.repository.readObject(enumObject)
+                                        let prpr = app.engine.setProperties(ety, mResult);
+                                        console.log("prpr", prpr);
+                                    }
+                                });
+                            } else {
+
+                                let newAdded = app.repository.readObject(entityObject);
+                                console.log("New Enum : ", newAdded);
+                                newAdded._parent = result;
+                                //TODO
+                                //objRelationship.type=attr.DataType.type;
+                                // objRelationship.multiplicity=attr.cardinality;
+                                //ownedElements.push(rel);
+                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                                console.log("New Enum Added", mResult);
+                                console.log("prpr", mResult);
+
+                            }
+
+                            //mainOwnedElements.push(enumObject);
+
+
+                        }
+                    });
+
+                    /* Update Entity, Event */
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
                         /* UMLClass */
@@ -140,27 +187,27 @@ function importParty(XMIData) {
                             let selectedEntity = app.repository.select(mSname);
                             if (selectedEntity.length > 0) {
                                 forEach(selectedEntity, function (ety) {
-                                    console.log("Updated : Updated : ", ety.name);
+                                    console.log("Updated : Entity : ", ety.name);
 
                                     if (ety instanceof type.UMLClass) {
                                         let mResult = app.repository.readObject(entityObject)
-                                        let prpr=app.engine.setProperties(ety, mResult);
-                                        console.log("prpr",prpr);
-                                        
+                                        let prpr = app.engine.setProperties(ety, mResult);
+                                        console.log("prpr", prpr);
+
                                     }
                                 });
                             } else {
 
                                 let newAdded = app.repository.readObject(entityObject);
-                                console.log("New Element : ", newAdded);
+                                console.log("New Enum : ", newAdded);
                                 newAdded._parent = result;
                                 //TODO
                                 //objRelationship.type=attr.DataType.type;
                                 // objRelationship.multiplicity=attr.cardinality;
                                 //ownedElements.push(rel);
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Added Item", mResult);
-                                console.log("prpr",mResult);
+                                console.log("New Enum Added", mResult);
+                                console.log("prpr", mResult);
 
                             }
                             //mainOwnedElements.push(entityObject);
@@ -176,8 +223,8 @@ function importParty(XMIData) {
 
                                     if (evt instanceof type.UMLInterface) {
                                         let mResult = app.repository.readObject(interfaceObject)
-                                        let prpr=app.engine.setProperties(evt, mResult);
-                                        console.log("prpr",prpr);
+                                        let prpr = app.engine.setProperties(evt, mResult);
+                                        console.log("prpr", prpr);
                                     }
                                 });
                             }
@@ -190,21 +237,40 @@ function importParty(XMIData) {
                 }
             });
 
-        } else {
-            /* Adding Entity & Interface*/
+        }
+        /* Adding Enumeration, Entity & Interface*/
+        else {
 
             /* Bind referenct of parent element (UMLPackage) */
-            let objParent=app.repository.readObject(Package);
-            let _parent={};
-            _parent['$ref']=objParent._id;
+            let objParent = app.repository.readObject(Package);
+            let _parent = {};
+            _parent['$ref'] = objParent._id;
+
+
+            /* Process Enumeration */
             Object.keys(XMIData).forEach(function eachKey(key) {
                 let mSubObject = XMIData[key];
-                /* UMLClass */
+                /* UMLEnumeration */
+                if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+                    /* UMLEnumeration */
+                    let enumObject = {};
+
+                    /* Binding Enum fields, attribute, literals */
+                    enumObject[fields._parent] = _parent;
+                    mEnum.bindEnumToImport(enumObject, mSubObject);
+                    mainOwnedElements.push(enumObject);
+                }
+            });
+
+            /* Process Entity, Event */
+            Object.keys(XMIData).forEach(function eachKey(key) {
+                let mSubObject = XMIData[key];
                 if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+                    /* UMLClass */
                     let entityObject = {};
 
                     /* Binding Entity fields and attribute */
-                    entityObject[fields._parent]=_parent;
+                    entityObject[fields._parent] = _parent;
                     mEntity.bindEntityToImport(entityObject, mSubObject);
                     mainOwnedElements.push(entityObject);
 
@@ -213,15 +279,25 @@ function importParty(XMIData) {
                     let interfaceObject = {};
 
                     /* Binding Event fields, attribute, operation & parameters*/
-                    interfaceObject[fields._parent]=Package;
+                    interfaceObject[fields._parent] = Package;
                     mEvent.bindEventToImport(interfaceObject, mSubObject);
                     mainOwnedElements.push(interfaceObject);
                 }
             });
 
-            /* Import Entity & Interface to out model */
+            /* Import Enumeration, Entity & Event to our model */
             result = app.project.importFromJson(mProject, Package);
             console.log("result", result);
+
+            
+            /* Adding Property */
+            mEntity.addProperty(result.ownedElements, XMIData);
+            
+            /* Adding Literals for Enumeration*/
+            mEntity.addLiterals(result.ownedElements, XMIData);
+
+            /* Adding  Operation*/
+            mEntity.addOperation(result.ownedElements, XMIData);
 
             /* Adding Relationship */
             mRelationship.addRelationship(result.ownedElements, XMIData);
@@ -243,6 +319,7 @@ function importModel() {
         var MainXMIData = content;
         console.log("Main XMIData", MainXMIData);
 
+        // Import Abstract package first
         if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
             let absFiles = MainXMIData.dependent;
             if (absFiles.length > 0) {
@@ -253,7 +330,7 @@ function importModel() {
                 });
             }
         }
-
+        // Import main package second
         importParty(MainXMIData);
 
         // }catch(error){
@@ -336,7 +413,7 @@ function exportModel() {
                                 package: item._parent,
                                 [fields.isAbstract]: true
                             });
-                        } 
+                        }
                     });
 
 
