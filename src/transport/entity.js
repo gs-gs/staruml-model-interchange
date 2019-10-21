@@ -213,19 +213,22 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject.documentation = mSubObject.description;
 
     /* UMLAttribute */
-    let attributes = [];
+    /* let attributes = [];
     entityObject.attributes = attributes;
 
     forEach(mSubObject.Property, function (attr) {
         let objAttr = {};
         objAttr._type = 'UMLAttribute';
         objAttr.name = attr.name;
-        objAttr.type = attr.DataType.type;
+
+        //if(attr.DataType.type == utils.isString)
+
+        objAttr.type = utils.getDatatype(attr.DataType);//attr.DataType.type;
         objAttr.isID = attr.isID;
         objAttr.multiplicity = attr.cardinality;
         objAttr.documentation = attr.description;
         attributes.push(objAttr);
-    });
+    }); */
 
 }
 module.exports.addEntityFields = addEntityFields;
