@@ -35,7 +35,7 @@ function addEnumProperty(enumObj, enume) {
 
 function addEnumLiterals(enumObj, enume) {
     let enumArr = [];
-    enumObj[fields.enum] = enumArr;
+    enumObj[fields.Enum] = enumArr;
     let literals = enume.literals;
     forEach(literals, function (literal) {
 
@@ -63,18 +63,18 @@ function bindEnumToExport(mPackage, jsonProcess) {
     });
 }
 
-function bindEnumToImport(entityObject, mSubObject) {
-    /* UMLClass fields */
-    entityObject._type = 'UMLClass';
-    entityObject.name = mSubObject.name;
-    entityObject[fields.isAbstract] = mSubObject.isAbstract;
-    entityObject.documentation = mSubObject.description;
+function bindEnumToImport(enumeObject, mSubObject) {
+    /* UMLEnumeration fields */
+    enumeObject._type = 'UMLEnumeration';
+    enumeObject.name = mSubObject.name;
+    enumeObject[fields.isAbstract] = mSubObject.isAbstract;
+    enumeObject.documentation = mSubObject.description;
 
     /* UMLAttribute */
-    let attributes = [];
-    entityObject.attributes = attributes;
+    /* let attributes = [];
+    enumeObject.attributes = attributes;
 
-    forEach(mSubObject.Property, function (attr) {
+    forEach(mSubObject[fields.Property], function (attr) {
         let objAttr = {};
         objAttr._type = 'UMLAttribute';
         objAttr.name = attr.name;
@@ -83,6 +83,51 @@ function bindEnumToImport(entityObject, mSubObject) {
         objAttr.multiplicity = attr.cardinality;
         objAttr.documentation = attr.description;
         attributes.push(objAttr);
+    }); */
+
+    /* UMLEnumerationLiteral */
+    /* let literals = [];
+    enumeObject.literals = literals;
+
+    forEach(mSubObject[fields.Enum], function (literal) {
+        let objAttr = {};
+        objAttr._type = 'UMLEnumerationLiteral';
+        objAttr.name = literal;
+        literals.push(objAttr);
+    }); */
+
+}
+function bindEnumAttributesToImport(enumeObject, mSubObject) {
+    /* UMLEnumeration fields */
+    enumeObject._type = 'UMLEnumeration';
+    enumeObject.name = mSubObject.name;
+    enumeObject[fields.isAbstract] = mSubObject.isAbstract;
+    enumeObject.documentation = mSubObject.description;
+
+    /* UMLAttribute */
+    let attributes = [];
+    enumeObject.attributes = attributes;
+
+    forEach(mSubObject[fields.Property], function (attr) {
+        let objAttr = {};
+        objAttr._type = 'UMLAttribute';
+        objAttr.name = attr.name;
+        objAttr.type = attr.DataType.type;
+        objAttr.isID = attr.isID;
+        objAttr.multiplicity = attr.cardinality;
+        objAttr.documentation = attr.description;
+        attributes.push(objAttr);
+    });
+
+    /* UMLEnumerationLiteral */
+    let literals = [];
+    enumeObject.literals = literals;
+
+    forEach(mSubObject[fields.Enum], function (literal) {
+        let objAttr = {};
+        objAttr._type = 'UMLEnumerationLiteral';
+        objAttr.name = literal;
+        literals.push(objAttr);
     });
 
 }
