@@ -283,6 +283,10 @@ function exportModel() {
                         console.log("Filename : ", filename);
                         jsonProcess[fields.type] = fields.package;
                         jsonProcess[fields.name] = umlPackage.name;
+
+                        /* Enum binding--- */
+                        mEnum.bindEnumToExport(umlPackage, jsonProcess);
+
                         /* Entity binding--- */
                         mEntity.bindEntityToExport(umlPackage, jsonProcess);
 
@@ -362,8 +366,6 @@ function exportModel() {
 
                         /* Enum binding--- */
                         mEnum.bindEnumToExport(mPackage, abstractJsonProcess);
-
-
 
                         /* Entity binding--- */
                         mEntity.bindEntityToExport(mPackage, abstractJsonProcess);

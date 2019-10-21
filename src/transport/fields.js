@@ -16,7 +16,7 @@ const fields = {
     'DataType': 'DataType',
     '_parent': '_parent',
     'cardinality': 'cardinality',
-    'enum': 'enum',
+    'Enum': 'Enum',
     'Relationship': 'Relationship',
     'Operation': 'Operation',
     'Parameter': 'Parameter',
