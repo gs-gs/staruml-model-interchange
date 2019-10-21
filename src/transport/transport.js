@@ -1,6 +1,7 @@
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var mEntity = require('./entity');
+var mEnum = require('./enum');
 var mEvent = require('./event');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
@@ -263,10 +264,6 @@ function importModel() {
 
 function exportModel() {
 
-    /* let entityJourney=app.repository.select("Movements::Journey")[0];
-    let generalization=entityJourney.ownedElements[0];
-    app.engine.setProperty(generalization, 'name', 'Mayur');
-    return; */
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */
         .then(function ({
@@ -362,6 +359,12 @@ function exportModel() {
                         abstractJsonProcess[fields.type] = fields.package;
                         abstractJsonProcess[fields.name] = mPackage.name;
                         abstractJsonProcess[fields.isAbstract] = item.isAbstract;
+
+                        /* Enum binding--- */
+                        mEnum.bindEnumToExport(mPackage, abstractJsonProcess);
+
+
+
                         /* Entity binding--- */
                         mEntity.bindEntityToExport(mPackage, abstractJsonProcess);
                         // mEntity.bindAbstractEntityToExport(mPackage, abstractJsonProcess);
