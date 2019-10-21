@@ -237,7 +237,7 @@ function bindEventToImport(interfaceObject, mSubObject) {
     interfaceObject.documentation = mSubObject.description;
 
     /* UMLAttribute */
-    let attributes = [];
+    /* let attributes = [];
     interfaceObject.attributes = attributes;
 
     forEach(mSubObject.Property, function (attr) {
@@ -248,36 +248,36 @@ function bindEventToImport(interfaceObject, mSubObject) {
         objAttr.isID = attr.isID;
         objAttr.multiplicity = attr.cardinality;
         attributes.push(objAttr);
-    });
+    }); */
 
     /* UMLOperation */
-    let operations = [];
-    interfaceObject.operations = operations;
+    // let operations = [];
+    // interfaceObject.operations = operations;
 
-    forEach(mSubObject.Operation, function (attr) {
-        let objOpr = {};
-        objOpr._type = 'UMLOperation';
-        objOpr.name = attr.name;
+    // forEach(mSubObject.Operation, function (attr) {
+    //     let objOpr = {};
+    //     objOpr._type = 'UMLOperation';
+    //     objOpr.name = attr.name;
 
 
-        let params = attr.Parameter;
-        let arrParam = [];
-        objOpr.parameters = arrParam;
-        /* UMLParameter */
-        forEach(params, function (param) {
-            let objParam = {};
-            objParam._type = 'UMLParameter';
-            objParam.name = param.name;
-            //TODO : Remove below comment and resolve issue
-            // objParam.type=param.DataType.type;
-            objParam.isID = param.isID;
-            objParam.multiplicity = param.cardinality;
+    //     let params = attr.Parameter;
+    //     let arrParam = [];
+    //     objOpr.parameters = arrParam;
+    //     /* UMLParameter */
+    //     forEach(params, function (param) {
+    //         let objParam = {};
+    //         objParam._type = 'UMLParameter';
+    //         objParam.name = param.name;
+    //         //TODO : Remove below comment and resolve issue
+    //         // objParam.type=param.DataType.type;
+    //         objParam.isID = param.isID;
+    //         objParam.multiplicity = param.cardinality;
 
-            arrParam.push(objParam);
-        });
+    //         arrParam.push(objParam);
+    //     });
 
-        operations.push(objOpr);
-    });
+    //     operations.push(objOpr);
+    // });
 }
 module.exports.addEventFields = addEventFields;
 module.exports.addEventRequiredFields = addEventRequiredFields;
