@@ -97,6 +97,7 @@ function bindEnumToImport(enumeObject, mSubObject) {
     }); */
 
 }
+
 function bindEnumAttributesToImport(enumeObject, mSubObject) {
     /* UMLEnumeration fields */
     enumeObject._type = 'UMLEnumeration';

@@ -202,26 +202,27 @@ function bindEventToExport(mPackage, jsonProcess) {
 
     });
 }
+
 function bindAbstractEventToExport(mPackage, jsonProcess) {
     //let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
     forEach(mPackage.ownedElements, function (event) {
-        if(event instanceof type.UMLInterface){
+        if (event instanceof type.UMLInterface) {
 
             let eventObj = {};
             jsonProcess[event.name] = eventObj;
-            
+
             /* Event property fields binding */
             addEventFields(eventObj, event)
-            
+
             /* Event Required fields properties binding */
             addEventRequiredFields(eventObj, event);
-            
+
             /* Event Properties array binding */
             addEventPropertyFields(eventObj, event);
-            
+
             /* Event Relationship array binding */
             addEventRelationshipFields(eventObj, event);
-            
+
             /* Event Operation array binding */
             addEventOperationFields(eventObj, event);
         }
