@@ -14,7 +14,8 @@ const constant = {
     enter_valid_username: "Please enter valid username",
     config_list: "Your repository",
     changes_saved: "Your changes has been saved successfully",
-    getConfigMsg: configMessage
+    getConfigMsg: configMessage,
+    "regex_email": "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 
 }
 
