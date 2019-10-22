@@ -336,7 +336,7 @@ function importParty(XMIData) {
                     let interfaceObject = {};
 
                     /* Binding Event fields, attribute, operation & parameters*/
-                    interfaceObject[fields._parent] = Package;
+                    interfaceObject[fields._parent] = _parent;
                     mEvent.bindEventToImport(interfaceObject, mSubObject);
                     mainOwnedElements.push(interfaceObject);
                 }
