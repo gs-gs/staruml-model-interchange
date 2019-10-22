@@ -1,3 +1,4 @@
+var constant = require('../constant');
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var datatype = require('./datatype');
@@ -100,17 +101,10 @@ function getDatatype(attr) {
         });
         return dType;
     } else if (isString(attr.type)) {
-        /* if (attr.type == datatype.url) {
-            dType[fields.pattern] = constant.regex_email;
-        }
-        dType.type = attr.type;
-        propertyObj[fields.DataType] = dType;
-        dType[fields.name] = attr.name; */
-        // dType=attr.type;
         return attr.type
     } 
 }
-function addProperty(ownedElements, XMIData) {
+function setProperty(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
@@ -123,54 +117,21 @@ function addProperty(ownedElements, XMIData) {
             entityJson.attributes = attributes;
 
             forEach(mSubObject.Property, function (attr) {
-                let objProp=bindEntityProperty(attr);
+                let objProp=bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
                     console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
-                    let mResult = app.engine.addItem(entity, 'attributes', rel);
-                    console.log("mResult", mResult);
-                }
-            });
-        }
-    });
-}
-function updateProperty(ownedElements, XMIData) {
-    forEach(ownedElements, function (entity) {
-        if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
-            let mSubObject = XMIData[entity.name];
-            let entityString = app.repository.writeObject(entity);
-            let entityJson = JSON.parse(entityString, null, 4);
-
-
-            /* attribute ( Property ) */
-            let attributes = [];
-            entityJson.attributes = attributes;
-
-            forEach(mSubObject.Property, function (attr) {
-                let objProp=bindEntityProperty(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
-                    console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
                     attributes.push(rel);
-                    //let mResult = app.engine.addItem(entity, 'attributes', rel);
-                    //console.log("mResult", mResult);
                 }
             });
-            app.engine.setProperty(entity,'attributes',attributes);
+            let resRel=app.engine.setProperty(entity,'attributes',attributes);
+            console.log("setProperty",resRel);
         }
     });
 }
-function addLiterals(ownedElements, XMIData) {
+
+function setLiterals(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLEnumeration) {
             let mSubObject = XMIData[entity.name];
@@ -188,50 +149,17 @@ function addLiterals(ownedElements, XMIData) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
                     console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
-                    let mResult = app.engine.addItem(entity, 'literals', rel);
-                    console.log("mResult", mResult);
-                }
-            });
-        }
-    });
-}
-function updateLiterals(ownedElements, XMIData) {
-    forEach(ownedElements, function (entity) {
-        if (entity instanceof type.UMLEnumeration) {
-            let mSubObject = XMIData[entity.name];
-            let entityString = app.repository.writeObject(entity);
-            let entityJson = JSON.parse(entityString, null, 4);
-
-
-            /* attribute ( Property ) */
-            let literals = [];
-            entityJson.literals = literals;
-
-            forEach(mSubObject[fields.Enum], function (attr) {
-                let objProp=bindLiterals(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
-                    console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
-                    // let mResult = app.engine.addItem(entity, 'literals', rel);
-                    //console.log("mResult", mResult);
                     literals.push(rel);
                 }
             });
-            app.engine.setProperty(entity,'literals',literals);
-
+            let resRel=app.engine.setProperty(entity,'literals',literals);
+            //let resRel=app.engine.setProperty(entity,'literals',literals);
+            // app.modelExplorer.update(entity)
+            console.log("setLiterals",resRel);
         }
     });
 }
-function addOperation(ownedElements, XMIData) {
+function setOperation(ownedElements, XMIData) {
    
     /* UMLOperation */
     forEach(ownedElements, function (entity) {
@@ -251,47 +179,13 @@ function addOperation(ownedElements, XMIData) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
                     console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
-                    let mResult = app.engine.addItem(entity, 'operations', rel);
-                    console.log("mResult", mResult);
-                }
-            });
-        }
-    });
-}
-function updateOperation(ownedElements, XMIData) {
-   
-    /* UMLOperation */
-    forEach(ownedElements, function (entity) {
-        if (entity instanceof type.UMLInterface) {
-            let mSubObject = XMIData[entity.name];
-            let entityString = app.repository.writeObject(entity);
-            let entityJson = JSON.parse(entityString, null, 4);
-
-
-            /* operations ( Operation ) */
-            let operations = [];
-            entityJson.operations = operations;
-
-            forEach(mSubObject.Operation, function (attr) {
-                let objProp=bindOperation(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
-                    console.log("rel", rel);
-                    //TODO
-                    //objRelationship.type=attr.DataType.type;
-                    // objRelationship.multiplicity=attr.cardinality;
-                    //ownedElements.push(rel);
                     // let mResult = app.engine.addItem(entity, 'operations', rel);
                     // console.log("mResult", mResult);
                     operations.push(rel);
                 }
             });
-            app.engine.setProperty(entity,'operations',operations);
+            let resRel=app.engine.setProperty(entity,'operations',operations);
+            console.log("setOperation",resRel);
         }
     });
 }
@@ -302,7 +196,7 @@ function bindLiterals(attr) {
     objAttr.name = attr;
     return objAttr;
 }
-function bindEntityProperty(attr) {
+function bindProperty(attr) {
     /* UMLAttribute */
     let objAttr = {};
     objAttr._type = 'UMLAttribute';
@@ -348,12 +242,9 @@ module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
 module.exports.addDatatype = addDatatype;
 module.exports.getDatatype=getDatatype;
-module.exports.addProperty = addProperty;
-module.exports.bindEntityProperty = bindEntityProperty;
-module.exports.addOperation = addOperation;
+module.exports.setProperty = setProperty;
+module.exports.bindProperty = bindProperty;
+module.exports.setOperation = setOperation;
 module.exports.bindOperation = bindOperation;
-module.exports.addLiterals = addLiterals;
+module.exports.setLiterals = setLiterals;
 module.exports.bindLiterals = bindLiterals;
-module.exports.updateProperty = updateProperty;
-module.exports.updateLiterals = updateLiterals;
-module.exports.updateOperation = updateOperation;
