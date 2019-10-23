@@ -153,12 +153,7 @@ function importDataToModel(XMIData) {
                                         let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         let prpr2 = app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.log("prpr1", prpr1);
-                                        console.log("prpr2", prpr2);
-                                        console.log("prpr3", prpr3);
-
-                                        /* let prpr = app.engine.setProperties(ety, mResult);
-                                        console.log("prpr", prpr); */
+                                        
                                     }
                                 });
                             } else {
@@ -166,10 +161,6 @@ function importDataToModel(XMIData) {
                                 let newAdded = app.repository.readObject(entityObject);
                                 console.log("New Enum : ", newAdded);
                                 newAdded._parent = result;
-                                //TODO
-                                //objRelationship.type=attr.DataType.type;
-                                // objRelationship.multiplicity=attr.cardinality;
-                                //ownedElements.push(rel);
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
                                 console.log("New Enum Added", mResult);
                                 console.log("prpr", mResult);
@@ -349,6 +340,7 @@ function importDataToModel(XMIData) {
 
 
         }
+        
         console.log("steps----------4");
         /* Setting Property to Entity, Event, Enum */
         mUtils.setProperty(result.ownedElements, XMIData);

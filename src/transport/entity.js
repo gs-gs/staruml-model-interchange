@@ -110,6 +110,8 @@ function addEntityRelationshipFields(entityObj, entity) {
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.associationSide.end1;
             let end2 = element.associationSide.end2;
+            objAssociation[fields.name] = element.associationSide.name;
+            objAssociation[fields.description] = element.associationSide.documentation;
             objAssociation[fields.type] = utils.getRelationshipType(end1, end2);
 
             /* adding 'source' object */

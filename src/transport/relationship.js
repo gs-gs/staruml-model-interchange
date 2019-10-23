@@ -200,7 +200,45 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+/* {
+    "_type": "UMLAssociationClassLink",
+    "_id": "AAAAAAFq4gfdu/f05+0=",
+    "_parent": {
+      "$ref": "AAAAAAFq4gfduvfwBwA="
+    },
+    "classSide": {
+      "$ref": "AAAAAAFq4gfduvfwBwA="
+    },
+    "associationSide": {
+      "$ref": "AAAAAAFq4gfduvfx+cQ="
+    }
+} */
+function addAssociationClassLink(objRelationship, entity, attr) {
+    console.log("-----interface", entity.name);
 
+    objRelationship._type = 'UMLAssociationClassLink';
+    objRelationship.name = attr.name;
+    objRelationship.documentation = attr.description;
+    /* associationSide */
+    let associationSide={};
+    let bindAssos=bindRelationshipToImport(entity,attr.association);
+    //let associationSide=app.repository.writeObject(bindAssos);
+    associationSide['$ref']=bindAssos._id;
+    objRelationship.associationSide = associationSide;//JSON.parse(associationSide);
+    /* classSide */
+    let classSide = {};
+    objRelationship.classSide = classSide;
+    let mClass = attr.class;
+    let refClass = app.repository.search(mClass.name);
+    let fRefClass = refClass.filter(function (item) {
+        return item.name == mClass.name;
+    });
+
+    if (fRefClass.length > 0 ) {
+        classSide['$ref'] = refClass[0]._id;
+    }
+    return objRelationship;
+}
 function addInterfaceToImport(objRelationship, entity, attr) {
     console.log("-----interface", entity.name);
 
@@ -303,6 +341,16 @@ function bindRelationshipToImport(entity, attr) {
             console.log("rel", rel);
             return rel;
         }
+    } else if (attr.type == fields.associationClassLink) {
+
+        /* UMLAssociation (aggregation) */
+        objRelationship = addAssociationClassLink(objRelationship, entity, attr);
+        if (objRelationship != null) {
+            let rel = app.repository.readObject(objRelationship);
+            rel._parent = entity;
+            console.log("rel", rel);
+            return rel;
+        }
     }
 }
 
@@ -334,5 +382,6 @@ module.exports.addCompositionToImport = addCompositionToImport;
 module.exports.addGeneralizationToImport = addGeneralizationToImport;
 module.exports.addInterfaceRealizationToImport = addInterfaceRealizationToImport;
 module.exports.addInterfaceToImport = addInterfaceToImport;
+module.exports.addAssociationClassLink = addAssociationClassLink;
 module.exports.bindRelationshipToImport = bindRelationshipToImport;
 module.exports.setRelationship = setRelationship;
