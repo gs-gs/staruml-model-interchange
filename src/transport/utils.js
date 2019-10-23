@@ -71,39 +71,41 @@ function addDatatype(propertyObj, attr) {
 
     }
 }
+
 function getDatatype(attr) {
     let dType = {};
     if (attr.type == fields.Entity) {
-        let res=app.repository.search(attr.name);
-        forEach(res,function(item){
-            if(item instanceof type.UMLClass){
-                dType['$ref']=item._id;
+        let res = app.repository.search(attr.name);
+        forEach(res, function (item) {
+            if (item instanceof type.UMLClass) {
+                dType['$ref'] = item._id;
             }
         });
         return dType;
-        
+
     } else if (attr.type == fields.Event) {
-        let res=app.repository.search(attr.name);
-        forEach(res,function(item){
-            if(item instanceof type.UMLInterface){
-                dType['$ref']=item._id;
+        let res = app.repository.search(attr.name);
+        forEach(res, function (item) {
+            if (item instanceof type.UMLInterface) {
+                dType['$ref'] = item._id;
             }
         });
         return dType;
-        
+
     } else if (attr.type == fields.Enum) {
-        
-        let res=app.repository.search(attr.name);
-        forEach(res,function(item){
-            if(item instanceof type.UMLEnumeration){
-                dType['$ref']=item._id;
+
+        let res = app.repository.search(attr.name);
+        forEach(res, function (item) {
+            if (item instanceof type.UMLEnumeration) {
+                dType['$ref'] = item._id;
             }
         });
         return dType;
     } else if (isString(attr.type)) {
         return attr.type
-    } 
+    }
 }
+
 function setProperty(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
@@ -115,9 +117,8 @@ function setProperty(ownedElements, XMIData) {
             /* attribute ( Property ) */
             let attributes = [];
             entityJson.attributes = attributes;
-
             forEach(mSubObject.Property, function (attr) {
-                let objProp=bindProperty(attr);
+                let objProp = bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
@@ -125,8 +126,8 @@ function setProperty(ownedElements, XMIData) {
                     attributes.push(rel);
                 }
             });
-            let resRel=app.engine.setProperty(entity,'attributes',attributes);
-            console.log("setProperty",resRel);
+            let resRel = app.engine.setProperty(entity, 'attributes', attributes);
+            console.log("setProperty", resRel);
         }
     });
 }
@@ -144,7 +145,7 @@ function setLiterals(ownedElements, XMIData) {
             entityJson.literals = literals;
 
             forEach(mSubObject[fields.Enum], function (attr) {
-                let objProp=bindLiterals(attr);
+                let objProp = bindLiterals(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
@@ -152,15 +153,16 @@ function setLiterals(ownedElements, XMIData) {
                     literals.push(rel);
                 }
             });
-            let resRel=app.engine.setProperty(entity,'literals',literals);
+            let resRel = app.engine.setProperty(entity, 'literals', literals);
             //let resRel=app.engine.setProperty(entity,'literals',literals);
             // app.modelExplorer.update(entity)
-            console.log("setLiterals",resRel);
+            console.log("setLiterals", resRel);
         }
     });
 }
+
 function setOperation(ownedElements, XMIData) {
-   
+
     /* UMLOperation */
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLInterface) {
@@ -174,7 +176,7 @@ function setOperation(ownedElements, XMIData) {
             entityJson.operations = operations;
 
             forEach(mSubObject.Operation, function (attr) {
-                let objProp=bindOperation(attr);
+                let objProp = bindOperation(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
@@ -184,11 +186,12 @@ function setOperation(ownedElements, XMIData) {
                     operations.push(rel);
                 }
             });
-            let resRel=app.engine.setProperty(entity,'operations',operations);
-            console.log("setOperation",resRel);
+            let resRel = app.engine.setProperty(entity, 'operations', operations);
+            console.log("setOperation", resRel);
         }
     });
 }
+
 function bindLiterals(attr) {
     /* UMLAttribute */
     let objAttr = {};
@@ -196,6 +199,7 @@ function bindLiterals(attr) {
     objAttr.name = attr;
     return objAttr;
 }
+
 function bindProperty(attr) {
     /* UMLAttribute */
     let objAttr = {};
@@ -203,7 +207,7 @@ function bindProperty(attr) {
     objAttr.name = attr.name;
 
     //if(attr.DataType.type == utils.isString)
-    let dType=getDatatype(attr.DataType);//attr.DataType.type;
+    let dType = getDatatype(attr.DataType); //attr.DataType.type;
     objAttr.type = dType;
     objAttr.isID = attr.isID;
     objAttr.multiplicity = attr.cardinality;
@@ -211,6 +215,7 @@ function bindProperty(attr) {
     //attribute.push(objAttr);
     return objAttr;
 }
+
 function bindOperation(attr) {
     /* UMLAttribute */
     let objOpr = {};
@@ -227,9 +232,9 @@ function bindOperation(attr) {
         objParam._type = 'UMLParameter';
         objParam.name = param.name;
         //TODO : Remove below comment and resolve issue
-        let dType=getDatatype(param.DataType);//attr.DataType.type;
+        let dType = getDatatype(param.DataType); //attr.DataType.type;
         // objAttr.type = dType;
-        objParam.type=dType//param.DataType.type;
+        objParam.type = dType //param.DataType.type;
         objParam.isID = param.isID;
         objParam.multiplicity = param.cardinality;
 
@@ -241,7 +246,7 @@ module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
 module.exports.addDatatype = addDatatype;
-module.exports.getDatatype=getDatatype;
+module.exports.getDatatype = getDatatype;
 module.exports.setProperty = setProperty;
 module.exports.bindProperty = bindProperty;
 module.exports.setOperation = setOperation;

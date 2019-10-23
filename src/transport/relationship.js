@@ -220,11 +220,11 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
     /* associationSide */
-    let associationSide={};
-    let bindAssos=bindRelationshipToImport(entity,attr.association);
+    let associationSide = {};
+    let bindAssos = bindRelationshipToImport(entity, attr.association);
     //let associationSide=app.repository.writeObject(bindAssos);
-    associationSide['$ref']=bindAssos._id;
-    objRelationship.associationSide = associationSide;//JSON.parse(associationSide);
+    associationSide['$ref'] = bindAssos._id;
+    objRelationship.associationSide = associationSide; //JSON.parse(associationSide);
     /* classSide */
     let classSide = {};
     objRelationship.classSide = classSide;
@@ -234,11 +234,12 @@ function addAssociationClassLink(objRelationship, entity, attr) {
         return item.name == mClass.name;
     });
 
-    if (fRefClass.length > 0 ) {
+    if (fRefClass.length > 0) {
         classSide['$ref'] = refClass[0]._id;
     }
     return objRelationship;
 }
+
 function addInterfaceToImport(objRelationship, entity, attr) {
     console.log("-----interface", entity.name);
 

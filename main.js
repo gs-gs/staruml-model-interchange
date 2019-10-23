@@ -15,7 +15,7 @@ function _projectClosed() {
      console.log("project closed");
 }
 
-function test(){
+function test() {
 
 
      /* ,{
@@ -44,7 +44,7 @@ function init() {
      app.commands.register('tool.git:savechanges', git.getSaveChanges);
      app.commands.register('tool.git:configlist', git.getConfigList);
      app.commands.register('tool.git:push', git.getPush);
-     
+
      app.project.on('projectLoaded', git.projectLoaded);
      app.project.on('projectClosed', _projectClosed);
      app.project.on('projectCreated', _projectCreated);

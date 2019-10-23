@@ -153,7 +153,7 @@ function importDataToModel(XMIData) {
                                         let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         let prpr2 = app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        
+
                                     }
                                 });
                             } else {
@@ -195,9 +195,6 @@ function importDataToModel(XMIData) {
                                         let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         let prpr2 = app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.log("prpr1", prpr1);
-                                        console.log("prpr2", prpr2);
-                                        console.log("prpr3", prpr3);
 
                                         /* let prpr = app.engine.setProperties(ety, mResult);
                                         console.log("prpr", prpr); */
@@ -240,9 +237,7 @@ function importDataToModel(XMIData) {
                                         let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         // let prpr2 = app.engine.setPropert(ety,fields.isAbstract,mSubObject.isAbstract);
                                         let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.log("prpr1", prpr1);
                                         // console.log("prpr2", prpr2);
-                                        console.log("prpr3", prpr3);
 
                                         /* let prpr = app.engine.setProperties(evt, mResult);
                                         console.log("prpr", prpr); */
@@ -340,7 +335,7 @@ function importDataToModel(XMIData) {
 
 
         }
-        
+
         console.log("steps----------4");
         /* Setting Property to Entity, Event, Enum */
         mUtils.setProperty(result.ownedElements, XMIData);
@@ -379,18 +374,18 @@ function importModel() {
         let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
         setTimeout(async function () {
 
-            try {
+            // try {
 
-                let res = await processImport(MainXMIData);
-                if (res != null && res.success) {
-                    vDialog.close();
-                    setTimeout(function () {
-                        app.dialogs.showInfoDialog(constant.mi_msg_success);
-                    }, 5);
-                }
-            } catch (error) {
-                console.log("importModel", error.message);
-            };
+            let res = await processImport(MainXMIData);
+            if (res != null && res.success) {
+                vDialog.close();
+                setTimeout(function () {
+                    app.dialogs.showInfoDialog(constant.mi_msg_success);
+                }, 5);
+            }
+            // } catch (error) {
+            //     console.log("importModel", error.message);
+            // };
         }, 5);
         // }catch(error){
         //     console.error(error.message);
@@ -400,33 +395,33 @@ function importModel() {
 
 function processImport(MainXMIData) {
     return new Promise((resolve, reject) => {
-        try {
+        // try {
 
-            var i = 1;
-            // Import Abstract package first
-            if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
-                let absFiles = MainXMIData.dependent;
-                if (absFiles.length > 0) {
-                    forEach(absFiles, function (AbstractXMIData) {
-                        console.log("steps----" + (i++) + "---Abstract---" + AbstractXMIData.name);
+        var i = 1;
+        // Import Abstract package first
+        if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
+            let absFiles = MainXMIData.dependent;
+            if (absFiles.length > 0) {
+                forEach(absFiles, function (AbstractXMIData) {
+                    console.log("steps----" + (i++) + "---Abstract---" + AbstractXMIData.name);
 
-                        /* Abstract file XMIData */
-                        importDataToModel(AbstractXMIData);
-                    });
-                }
+                    /* Abstract file XMIData */
+                    importDataToModel(AbstractXMIData);
+                });
             }
-            console.log("steps----" + (i++) + "---Main---" + MainXMIData.name);
-            // Import main package second
-            importDataToModel(MainXMIData);
+        }
+        console.log("steps----" + (i++) + "---Main---" + MainXMIData.name);
+        // Import main package second
+        importDataToModel(MainXMIData);
 
-            resolve({
-                success: true,
-                result: []
-            });
-        } catch (error) {
-            console.error("processImport", error.message);
-            reject(error.message);
-        };
+        resolve({
+            success: true,
+            result: []
+        });
+        // } catch (error) {
+        //     console.error("processImport", error.message);
+        //     reject(error.message);
+        // };
     });
 }
 
@@ -551,20 +546,3 @@ function exportModel() {
 
 module.exports.exportModel = exportModel;
 module.exports.importModel = importModel;
-
-
-
-/* 
-'_type','type'
-'UMLClass','Entity'
-'UMLAssociation','Relationship'
-'UMLPackage','Package'
-'UMLGeneralization','Generalization'
-'UMLInterface','Event'
-'UMLInterfaceRealization'
-'UMLAssociationClassLink'
-
-
-
-replace propert term with 'ownedElements'
-remove '_id', '_parent', 'EntityDiagram', '$ref', 'end1', 'end2', 'attributes', 'documentation' */
