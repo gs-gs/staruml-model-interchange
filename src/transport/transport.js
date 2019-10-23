@@ -105,8 +105,8 @@ function getAbstractClassView(umlPackage, uniqueAbstractArr) {
     return abstractClassViewList;
 }
 
-function importParty(XMIData) {
-    
+function importDataToModel(XMIData) {
+
     let mainOwnedElements = []
     let Package = {
         '_type': 'UMLPackage',
@@ -362,9 +362,9 @@ function importParty(XMIData) {
         /* Setting Relationship to Entity, Event*/
         mRelationship.setRelationship(result.ownedElements, XMIData);
 
-        
 
-        
+
+
 
 
     }
@@ -384,31 +384,58 @@ function importModel() {
         console.log("Main XMIData", MainXMIData);
 
         let dm = app.dialogs;
-        let vDialog = dm.showModalDialog("", constant.title_import_mi,constant.title_import_mi_1+MainXMIData.name+constant.title_import_mi_2,[], true);
-        setTimeout(function(){
+        let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
+        setTimeout(async function () {
 
-            // Import Abstract package first
+            try {
+
+                let res = await processImport(MainXMIData);
+                if (res != null && res.success) {
+                    vDialog.close();
+                    setTimeout(function () {
+                        app.dialogs.showInfoDialog(constant.mi_msg_success);
+                    }, 5);
+                }
+            } catch (error) {
+                console.log("importModel", error.message);
+            };
+        }, 5);
+        // }catch(error){
+        //     console.error(error.message);
+        // }
+    }
+}
+
+function processImport(MainXMIData) {
+    return new Promise((resolve, reject) => {
+        try {
+
             var i = 1;
+            // Import Abstract package first
             if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
                 let absFiles = MainXMIData.dependent;
                 if (absFiles.length > 0) {
                     forEach(absFiles, function (AbstractXMIData) {
                         console.log("steps----" + (i++) + "---Abstract---" + AbstractXMIData.name);
-                        
+
                         /* Abstract file XMIData */
-                        importParty(AbstractXMIData);
+                        importDataToModel(AbstractXMIData);
                     });
                 }
             }
             console.log("steps----" + (i++) + "---Main---" + MainXMIData.name);
             // Import main package second
-            importParty(MainXMIData);
-            vDialog.close();
-        },10);
-        // }catch(error){
-        //     console.error(error.message);
-        // }
-    }
+            importDataToModel(MainXMIData);
+
+            resolve({
+                success: true,
+                result: []
+            });
+        } catch (error) {
+            console.error("processImport", error.message);
+            reject(error.message);
+        };
+    });
 }
 
 function exportModel() {
