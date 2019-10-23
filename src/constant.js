@@ -15,7 +15,10 @@ const constant = {
     config_list: "Your repository",
     changes_saved: "Your changes has been saved successfully",
     getConfigMsg: configMessage,
-    "regex_email": "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+    regex_email: "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+    title_import_mi_1: "Please wait untill model interchange is being processed for the \'",
+    title_import_mi_2: "\' package",
+    title_import_mi: "Model Interchange",
 
 }
 
