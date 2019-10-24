@@ -223,7 +223,9 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     let associationSide = {};
     let bindAssos = bindRelationshipToImport(entity, attr.association);
     //let associationSide=app.repository.writeObject(bindAssos);
-    associationSide['$ref'] = bindAssos._id;
+    if(bindAssos && bindAssos.hasOwnProperty('_id')){
+        associationSide['$ref'] = bindAssos._id;
+    }
     objRelationship.associationSide = associationSide; //JSON.parse(associationSide);
     /* classSide */
     let classSide = {};
@@ -347,10 +349,14 @@ function bindRelationshipToImport(entity, attr) {
         /* UMLAssociation (aggregation) */
         objRelationship = addAssociationClassLink(objRelationship, entity, attr);
         if (objRelationship != null) {
-            let rel = app.repository.readObject(objRelationship);
-            rel._parent = entity;
-            console.log("rel", rel);
-            return rel;
+            try{
+                let rel = app.repository.readObject(objRelationship);
+                rel._parent = entity;
+                console.log("rel", rel);
+                return rel;
+            }catch(error){
+                app.dialogs.showErrorDialog(error.message);
+            }
         }
     }
 }
@@ -369,8 +375,12 @@ function setRelationship(ownedElements, XMIData) {
             entityJson.ownedElements = ownedElements;
 
             forEach(mSubObject.Relationship, function (attr) {
-                let rel = bindRelationshipToImport(entity, attr);
-                ownedElements.push(rel);
+                try{
+                    let rel = bindRelationshipToImport(entity, attr);
+                    ownedElements.push(rel);
+                }catch(error){
+                    app.dialogs.showErrorDialog(error.message);
+                }
             });
             let resRel = app.engine.setProperty(entity, 'ownedElements', ownedElements);
             console.log("resRel", resRel);
@@ -385,4 +395,4 @@ module.exports.addInterfaceRealizationToImport = addInterfaceRealizationToImport
 module.exports.addInterfaceToImport = addInterfaceToImport;
 module.exports.addAssociationClassLink = addAssociationClassLink;
 module.exports.bindRelationshipToImport = bindRelationshipToImport;
-module.exports.setRelationship = setRelationship;
+module.exports.setRelationship = setRelationship;    

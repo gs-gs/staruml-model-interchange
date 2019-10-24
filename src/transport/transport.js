@@ -358,7 +358,7 @@ function importDataToModel(XMIData) {
 }
 
 
-function importModel() {
+async function importModel() {
 
     var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
     if (mFiles && mFiles.length > 0) {
@@ -379,14 +379,22 @@ function importModel() {
             let res = await processImport(MainXMIData);
             if (res != null && res.success) {
                 vDialog.close();
+                app.modelExplorer.rebuild();
+                /* var selected = app.selections.getSelected();
+                if(!selected){
+                    selected=app.project.getProject()[0];
+                }
+                console.log("Get selected",selected); */
                 setTimeout(function () {
+                    // app.modelExplorer.expand(selected);
                     app.dialogs.showInfoDialog(constant.mi_msg_success);
-                }, 5);
+                    
+                });
             }
             // } catch (error) {
             //     console.log("importModel", error.message);
             // };
-        }, 5);
+        });
         // }catch(error){
         //     console.error(error.message);
         // }
