@@ -12,7 +12,7 @@ Install the extension in the usual way for [StarUML extensions](https://docs.sta
 
 ## About this extension
 
-* Title : OpenAPI3.0 Generator
+* Title : staruml model interchange
 * description : Implementation of UML to model interchange in accordance with https://edi3.org/specs/edi3-model-interchange/master/.  
 * License : GPL3
 * Author : 
