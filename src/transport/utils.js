@@ -107,17 +107,53 @@ function getDatatype(attr) {
 }
 
 function setProperty(ownedElements, XMIData) {
+
+
+
     forEach(ownedElements, function (entity) {
+        let diagram=null;
+        if (entity instanceof type.UMLClassDiagram) {
+            diagram=entity;
+        }
         if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let entityString = app.repository.writeObject(entity);
             let entityJson = JSON.parse(entityString, null, 4);
+
+            /* Check for new properties to be added */
+            let newProps = [];
+            let existProps = [];
+            forEach(mSubObject.Property, function (item) {
+                let chkForDuplicate = newProps.filter(function (mFltr) {
+                    return mFltr.name == item.name
+                });
+                if (chkForDuplicate.length == 0) {
+
+
+                    let atbts = entity.attributes.filter(function (fItem) {
+                        return item.name == fItem.name
+                    });
+                    if (atbts.length == 0) {
+                        // forEach(atbts, function (mItem) {
+                        newProps.push(item);
+                        // });
+                    } else if (atbts.length == 1) {
+                        existProps.push(atbts[0]);
+                    }
+                }
+            });
+            /*  */
 
 
             /* attribute ( Property ) */
             let attributes = [];
             entityJson.attributes = attributes;
             forEach(mSubObject.Property, function (attr) {
+                let chkNew=newProps.filter(function(nItem){
+                    return attr.name==nItem.name
+                });
+                
+
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
@@ -242,6 +278,93 @@ function bindOperation(attr) {
     });
     return objOpr;
 }
+function isAssociationExist(entity,attr){
+    let isExist=false;
+    let assoc=null;
+    forEach(entity.ownedElements, function (aggr) {
+        if (aggr instanceof type.UMLAssociation) {
+            if (aggr.name == attr.name &&
+                aggr.end1.reference.name == attr.source.name && getElementType(aggr.end1.reference) == attr.source.type &&
+                aggr.end2.reference.name == attr.target.name && getElementType(aggr.end2.reference) == attr.target.type
+            ) {
+                isExist=true;
+                assoc=aggr;
+                return;
+            }
+        }
+    });
+    let val={
+        isExist:isExist,
+        assoc:assoc
+    };
+    return val;
+}
+function isGeneralizationExist(entity,attr){
+    let isExist=false;
+    let assoc=null;
+    forEach(entity.ownedElements, function (aggr) {
+        if (aggr instanceof type.UMLGeneralization) {
+            if (aggr.name == attr.name &&
+                aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
+                aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
+            ) {
+                isExist=true;
+                assoc=aggr;
+                return;
+            }
+        }
+    });
+    let val={
+        isExist:isExist,
+        assoc:assoc
+    };
+    return val;
+}
+function isInterfaceRealizationExist(entity,attr){
+    let isExist=false;
+    let assoc=null;
+    forEach(entity.ownedElements, function (aggr) {
+        if (aggr instanceof type.UMLInterfaceRealization) {
+            if (aggr.name == attr.name &&
+                aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
+                aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
+            ) {
+                isExist=true;
+                assoc=aggr;
+                return;
+            }
+        }
+    });
+    let val={
+        isExist:isExist,
+        assoc:assoc
+    };
+    return val;
+}
+function isAssociationClassLinkExist(entity,attr){
+    let isExist=false;
+    let assoc=null;
+    forEach(entity.ownedElements, function (aggr) {
+        if (aggr instanceof type.UMLAssociationClassLink) {
+
+                let associationSide=isAssociationExist(entity,attr.association);
+
+            if (aggr.name == attr.name &&
+                aggr.classSide.name == attr.class.name && getElementType(aggr.classSide) == attr.class.type &&
+                associationSide.isExist
+            ) {
+                isExist=true;
+                assoc=aggr;
+                return;
+            }
+        }
+    });
+    let val={
+        isExist:isExist,
+        assoc:assoc
+    };
+    return val;
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -253,3 +376,7 @@ module.exports.setOperation = setOperation;
 module.exports.bindOperation = bindOperation;
 module.exports.setLiterals = setLiterals;
 module.exports.bindLiterals = bindLiterals;
+module.exports.isAssociationExist = isAssociationExist;
+module.exports.isGeneralizationExist = isGeneralizationExist;
+module.exports.isInterfaceRealizationExist = isInterfaceRealizationExist;
+module.exports.isAssociationClassLinkExist = isAssociationClassLinkExist;

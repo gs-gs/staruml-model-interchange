@@ -125,7 +125,58 @@ function importDataToModel(XMIData) {
                 if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
                     result = selPkg;
+                    // let arrViewDiagram=result.ownedElements.filter(function(fItem){
+                    //     return fItem instanceof type.UMLClassDiagram;
+                    // });
+                    // let viewDiagram=null;
+                    // if(arrViewDiagram.length == 1){
+                    //     viewDiagram=arrViewDiagram[0];
+                    //     let mClassView=viewDiagram.ownedViews.filter(function(oView){
+                    //         return (oView instanceof type.UMLClassView && oView.model.name=='TransportMovement');
+                    //     });
+                    //     console.log("MYClass View",mClassView);
+                    //    /*  if(mClassView.length==1){
+                    //         var options = {
+                    //             model: mClassView.model,
+                    //             diagram: mClassView._parent,
+                    //             x: 500,
+                    //             y: 500,
+                    //           }
+                    //           app.factory.createViewOf(options)
+                              
+                    //     } */
+                    //     var classView = {
+                    //         id: "UMLClass",
+                    //         parent: viewDiagram._parent,
+                    //         diagram: viewDiagram,
+                    //         x1: 100,
+                    //         y1: 100,
+                    //         x2: 200,
+                    //         y2: 200
+                    //       }
+                    //       let resClassView=app.factory.createModelAndView(classView);
 
+                    //       let mPkg=app.repository.search('Movement')[5];
+                    //       let attribute=mPkg.ownedElements[5].attributes[0];
+
+                    //       var attributeView = {
+                    //         id: "UMLAttribute",
+                    //         parent: resClassView.nameCompartment,
+                    //         diagram: viewDiagram,
+                    //         viewInitializer: function (tag) {
+                    //             tag.name = "Tag1";
+                    //             //tag.kind = type.Tag.TK_STRING; // or TK_BOOLEAN, TK_NUMBER, TK_REFERENCE, TK_HIDDEN
+                    //             //tag.value = "String Value...";
+                    //             // tag.checked = true; // for TK_BOOLEAN
+                    //             // tag.number = 100; // for TK_NUMBER
+                    //             // tag.reference = ...; // for TK_REFERENCE
+                    //           },
+                    //         model:attribute
+                    //       }
+                    //       let resAttrView=app.factory.createModelAndView(attributeView);
+                    // } 
+                    // return;
+                   
                     /* Update Enumeration */
                     console.log("steps----------1");
                     Object.keys(XMIData).forEach(function eachKey(key) {
@@ -142,28 +193,36 @@ function importDataToModel(XMIData) {
                             mEnum.bindEnumToImport(enumObject, mSubObject);
 
 
-                            let selectedEnum = app.repository.select(mSname);
-                            if (selectedEnum.length > 0) {
-                                forEach(selectedEnum, function (ety) {
+                            // let selectedEnum = app.repository.select(mSname);
+                            // let selectedEnum = app.repository.select(mSname);
+                            let searchedEnum = app.repository.search(mSname);
+                            let searchedEnumRes=searchedEnum.filter(function(item){
+                                return (item instanceof type.UMLEnumeration && item.name == mSname);
+                            });
+                            if (searchedEnumRes.length > 0) {
+                                forEach(searchedEnumRes, function (ety) {
                                     console.log("Updated : Enum : ", ety.name);
 
                                     if (ety instanceof type.UMLEnumeration) {
+                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        /* enumObject['_id']=ety._id;
                                         let mResult = app.repository.readObject(enumObject)
 
-                                        let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        let prpr2 = app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
-                                        let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        app.engine.setProperty(mResult, fields.name, mSubObject.name);
+                                        app.engine.setProperty(mResult, fields.isAbstract, mSubObject.isAbstract);
+                                        app.engine.setProperty(mResult, fields.documentation, mSubObject.description); */
 
                                     }
                                 });
                             } else {
 
-                                let newAdded = app.repository.readObject(entityObject);
-                                console.log("New Enum : ", newAdded);
+                                let newAdded = app.repository.readObject(enumObject);
+                                console.log("New Enum Added-1: ", newAdded);
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Enum Added", mResult);
-                                console.log("prpr", mResult);
+                                console.log("New Enum Added-2", mResult);
 
                             }
 
@@ -184,18 +243,29 @@ function importDataToModel(XMIData) {
                             /* Binding Entity fields and attribute */
                             mEntity.bindEntityToImport(entityObject, mSubObject);
 
-                            let selectedEntity = app.repository.select(mSname);
-                            if (selectedEntity.length > 0) {
-                                forEach(selectedEntity, function (ety) {
+                            // let selectedEntity = app.repository.select(mSname);
+
+                            let searchedEntity = app.repository.search(mSname);
+                            let searchedEntityRes=searchedEntity.filter(function(item){
+                                return (item instanceof type.UMLClass && item.name == mSname);
+                            });
+                            if (searchedEntityRes.length > 0) {
+                                forEach(searchedEntityRes, function (ety) {
                                     console.log("Updated : Entity : ", ety.name);
 
                                     if (ety instanceof type.UMLClass) {
-                                        let mResult = app.repository.readObject(entityObject)
-
-                                        let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        let prpr2 = app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
-                                        let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-
+                                        /* entityObject['_id']=ety._id;
+                                        entityObject[fields.name]= mSubObject.name
+                                        entityObject[fields.isAbstract]= mSubObject.isAbstract
+                                        entityObject[fields.documentation]= mSubObject.description
+                                        mResult = app.repository.readObject(entityObject) */
+                                        //app.engine.setProperties(ety, mResult);
+                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        //app.engine.setProperty(ety, 'attributes', []);
+                                        //app.engine.setProperty(ety, 'ownedElements', []);
+                                        // app.engine.setProperties(ety, mResult);
                                         /* let prpr = app.engine.setProperties(ety, mResult);
                                         console.log("prpr", prpr); */
 
@@ -204,11 +274,10 @@ function importDataToModel(XMIData) {
                             } else {
 
                                 let newAdded = app.repository.readObject(entityObject);
-                                console.log("New Enum : ", newAdded);
+                                console.log("New Entity Added-1: ", newAdded);
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Enum Added", mResult);
-                                console.log("prpr", mResult);
+                                console.log("New Entity Added-2", mResult);
 
                             }
                             //mainOwnedElements.push(entityObject);
@@ -227,16 +296,22 @@ function importDataToModel(XMIData) {
                             let interfaceObject = {};
                             /* Binding Event fields, attribute, operation & parameters*/
                             mEvent.bindEventToImport(interfaceObject, mSubObject);
-                            let selectedEvent = app.repository.select(mSname);
-                            if (selectedEvent.length > 0) {
-                                forEach(selectedEvent, function (ety) {
+                            let searchedEvent = app.repository.search(mSname);
+                            let searchedEventRes=searchedEvent.filter(function(item){
+                                return (item instanceof type.UMLInterface && item.name == mSname);
+                            });
+                            if (searchedEventRes.length > 0) {
+                                forEach(searchedEventRes, function (ety) {
 
                                     if (ety instanceof type.UMLInterface) {
+                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                                        //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        /* interfaceObject['_id']=ety._id;
                                         let mResult = app.repository.readObject(interfaceObject);
-
-                                        let prpr1 = app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        // let prpr2 = app.engine.setPropert(ety,fields.isAbstract,mSubObject.isAbstract);
-                                        let prpr3 = app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        app.engine.setProperty(mResult, fields.name, mSubObject.name);
+                                        app.engine.setProperty(mResult, fields.documentation, mSubObject.description); */
+                                        // let prpr2 = app.engine.setPropert(mResult,fields.isAbstract,mSubObject.isAbstract);
                                         // console.log("prpr2", prpr2);
 
                                         /* let prpr = app.engine.setProperties(evt, mResult);
@@ -246,30 +321,15 @@ function importDataToModel(XMIData) {
                             } else {
 
                                 let newAdded = app.repository.readObject(interfaceObject);
-                                console.log("New Enum : ", newAdded);
+                                console.log("New Event Added-1 : ", newAdded);
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Enum Added", mResult);
-                                console.log("prpr", mResult);
+                                console.log("New Event Added-2", mResult);
 
                             }
 
                         }
                     });
-
-
-
-                    // /* Updating Property to Entity, Event, Enum */
-                    // mUtils.setProperty(result.ownedElements, XMIData);
-
-                    // /* Updating Literals for Enum */
-                    // mUtils.setLiterals(result.ownedElements, XMIData);
-
-                    // /* Updating  Operation to Event */
-                    // mUtils.setOperation(result.ownedElements, XMIData);
-
-                    // /* Updating Relationship to Entity, Event*/
-                    // mRelationship.setRelationship(result.ownedElements, XMIData);
 
                 }
             });
