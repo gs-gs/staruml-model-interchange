@@ -67,6 +67,7 @@ function addEventRelationshipFields(eventObj, event) {
             objRelationship[fields.source] = objSource;
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
+            objSource[fields.cardinality] = end1.multiplicity;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -74,6 +75,7 @@ function addEventRelationshipFields(eventObj, event) {
             objRelationship[fields.target] = objTarget;
             objTarget[fields.name] = target.name;
             objTarget[fields.type] = utils.getElementType(target);
+            objTarget[fields.cardinality] = end2.multiplicity;
 
         } else if (element instanceof type.UMLGeneralization) {
 
