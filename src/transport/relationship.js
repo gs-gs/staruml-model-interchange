@@ -21,10 +21,11 @@ function addAggregationToImport(objRelationship, entity, attr) {
     objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'shared';
-
+    
     /* Reference to UMLClass or UMLInterface */
-
+    
     let source = attr.source;
+    objEnd1.multiplicity = source.cardinality;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -43,6 +44,7 @@ function addAggregationToImport(objRelationship, entity, attr) {
     objEnd2.aggregation = 'none';
 
     let target = attr.target;
+    objEnd2.multiplicity = target.cardinality;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
@@ -70,7 +72,6 @@ function addCompositionToImport(objRelationship, entity, attr) {
     objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
-
     /* Source */
     let objEnd1 = {};
     objRelationship.end1 = objEnd1;
@@ -80,6 +81,7 @@ function addCompositionToImport(objRelationship, entity, attr) {
     /* Reference to UMLClass or UMLInterface */
 
     let source = attr.source;
+    objEnd1.multiplicity = source.cardinality;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -98,6 +100,7 @@ function addCompositionToImport(objRelationship, entity, attr) {
     objEnd2.aggregation = 'none';
 
     let target = attr.target;
+    objEnd2.multiplicity = target.cardinality;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
@@ -115,58 +118,47 @@ function addCompositionToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+
 function addGeneralizationToImport(objRelationship, entity, attr) {
     console.log("-----generalization", entity.name);
 
-    
-
-    forEach(entity.ownedElements, function (aggr) {
-        if (aggr instanceof type.UMLGeneralization) {
-            if (aggr.name == attr.name &&
-                aggr.source.name == attr.source.name && utils.getElementType(aggr.source) == attr.source.type &&
-                aggr.target.name == attr.target.name && utils.getElementType(aggr.target) == attr.target.type
-            ) {
-                console.log("Update Generalization");
-                objRelationship._id=aggr._id;
-                objRelationship._type = 'UMLGeneralization';
-                objRelationship.name = attr.name;
-                objRelationship.documentation = attr.description;
-
-                /* Source */
-                let objEnd1 = {};
-                objRelationship.source = objEnd1;
-                /* Reference to UMLClass or UMLInterface */
-
-                let source = attr.source;
-                let refEnd1 = app.repository.search(source.name);
-
-                let fRefEnd1 = refEnd1.filter(function (item) {
-                    return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
-                });
 
 
-                if (fRefEnd1.length > 0) {
-                    objEnd1['$ref'] = fRefEnd1[0]._id;
-                }
-                /* target */
-                let objEnd2 = {};
-                objEnd2._type = 'UMLClass';
-                objRelationship.target = objEnd2;
+    objRelationship._type = 'UMLGeneralization';
+    objRelationship.name = attr.name;
+    objRelationship.documentation = attr.description;
+    /* Source */
+    let objEnd1 = {};
+    objRelationship.source = objEnd1;
+    /* Reference to UMLClass or UMLInterface */
 
-                let target = attr.target;
-                let objReferenceEnd2 = {}
-                let refEnd2 = app.repository.search(target.name);
+    let source = attr.source;
+    let refEnd1 = app.repository.search(source.name);
 
-                let fRefEnd2 = refEnd2.filter(function (item) {
-                    return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
-                });
-
-                if (fRefEnd2.length > 0) {
-                    objEnd2['$ref'] = fRefEnd2[0]._id;
-                }
-            }
-        }
+    let fRefEnd1 = refEnd1.filter(function (item) {
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
     });
+
+
+    if (fRefEnd1.length > 0) {
+        objEnd1['$ref'] = fRefEnd1[0]._id;
+    }
+    /* target */
+    let objEnd2 = {};
+    objEnd2._type = 'UMLClass';
+    objRelationship.target = objEnd2;
+
+    let target = attr.target;
+    let objReferenceEnd2 = {}
+    let refEnd2 = app.repository.search(target.name);
+
+    let fRefEnd2 = refEnd2.filter(function (item) {
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+    });
+
+    if (fRefEnd2.length > 0) {
+        objEnd2['$ref'] = fRefEnd2[0]._id;
+    }
 
 
     return objRelationship;
@@ -178,7 +170,6 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
     objRelationship._type = 'UMLInterfaceRealization';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
-
     /* Source */
     let objEnd1 = {};
     objRelationship.source = objEnd1;
@@ -213,19 +204,7 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
-/* {
-    "_type": "UMLAssociationClassLink",
-    "_id": "AAAAAAFq4gfdu/f05+0=",
-    "_parent": {
-      "$ref": "AAAAAAFq4gfduvfwBwA="
-    },
-    "classSide": {
-      "$ref": "AAAAAAFq4gfduvfwBwA="
-    },
-    "associationSide": {
-      "$ref": "AAAAAAFq4gfduvfx+cQ="
-    }
-} */
+
 function addAssociationClassLink(objRelationship, entity, attr) {
     console.log("-----interface", entity.name);
 
@@ -261,7 +240,6 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
-
     /* Source */
     let objEnd1 = {};
     objRelationship.end1 = objEnd1;
@@ -271,6 +249,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     /* Reference to UMLClass or UMLInterface */
 
     let source = attr.source;
+    objEnd1.multiplicity = source.cardinality;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -289,6 +268,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     objEnd2.aggregation = 'none';
 
     let target = attr.target;
+    objEnd2.multiplicity = target.cardinality;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
@@ -312,30 +292,28 @@ function bindRelationshipToImport(entity, attr) {
     if (attr.type == fields.aggregation) {
 
         /* UMLAssociation (aggregation) */
-        let mAssoc=utils.isAssociationExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isAssociationExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addAggregationToImport(objRelationship, entity, attr);
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
             return rel;
-        }else{
+        } else {
             return null;
         }
     } else if (attr.type == fields.composition) {
 
         /* UMLAssociation (composition) */
-        let mAssoc=utils.isAssociationExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isAssociationExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addCompositionToImport(objRelationship, entity, attr);
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
@@ -344,13 +322,12 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.generalization) {
         /* UMLGeneralization (generalization) */
 
-        let mAssoc=utils.isGeneralizationExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isGeneralizationExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addGeneralizationToImport(objRelationship, entity, attr)
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
@@ -359,13 +336,12 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.interfaceRealization) {
         /* UMLInterfaceRealization (interfaceRealization) */
 
-        let mAssoc=utils.isInterfaceRealizationExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isInterfaceRealizationExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addInterfaceRealizationToImport(objRelationship, entity, attr);
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
@@ -374,13 +350,12 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.interface) {
 
         /* UMLAssociation (interface) */
-        let mAssoc=utils.isAssociationExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isAssociationExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addInterfaceToImport(objRelationship, entity, attr);
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
@@ -389,13 +364,12 @@ function bindRelationshipToImport(entity, attr) {
     } else if (attr.type == fields.associationClassLink) {
 
         /* UMLAssociation (associationClassLink) */
-        let mAssoc=utils.isAssociationClassLinkExist(entity,attr);
-        if(mAssoc.isExist)
-        {
-            objRelationship._id=mAssoc.assoc._id;
+        let mAssoc = utils.isAssociationClassLinkExist(entity, attr);
+        if (mAssoc.isExist) {
+            objRelationship._id = mAssoc.assoc._id;
         }
         objRelationship = addAssociationClassLink(objRelationship, entity, attr);
-        if (objRelationship  != null || Object.keys(objRelationship).length==0) {
+        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             try {
                 let rel = app.repository.readObject(objRelationship);
                 rel._parent = entity;
@@ -430,12 +404,12 @@ function setRelationship(ownedElements, XMIData) {
                         attr.type == fields.interface ||
                         attr.type == fields.interfaceRealization //||
                         // attr.type == fields.associationClassLink
-                        ) {
+                    ) {
 
-                    let rel = bindRelationshipToImport(entity, attr);
-                    if(rel !=null){
-                        ownedElements.push(rel);
-                    }
+                        let rel = bindRelationshipToImport(entity, attr);
+                        if (rel != null) {
+                            ownedElements.push(rel);
+                        }
                     }
                 } catch (error) {
                     app.dialogs.showErrorDialog(error.message);
