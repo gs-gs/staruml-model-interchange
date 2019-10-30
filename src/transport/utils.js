@@ -26,7 +26,7 @@ function getRelationshipType(end1, end2) {
     if (end1.aggregation == 'shared' && end2.aggregation == 'none') {
         /* aggregation */
         return fields.aggregation;
-    } else if (end1.aggregation == 'composite' && end2.aggregation == 'none') {
+    } else if ((end1.aggregation == 'composite' && end2.aggregation == 'none') || (end1.aggregation == 'none' && end2.aggregation == 'composite')) {
         /* composition */
         return fields.composition;
     } else if (end1.aggregation == 'none' && end2.aggregation == 'none') {

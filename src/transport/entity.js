@@ -49,7 +49,7 @@ function addEntityPropertyFields(entityObj, entity) {
     });
 }
 
-function addEntityRelationshipFields(entityObj, entity) {
+function addEntityRelationship(entityObj, entity) {
     let Relationship = [];
     entityObj[fields.Relationship] = Relationship;
     forEach(entity.ownedElements, function (element) {
@@ -63,7 +63,17 @@ function addEntityRelationshipFields(entityObj, entity) {
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.end1;
             let end2 = element.end2;
-            objRelationship[fields.type] = utils.getRelationshipType(end1, end2);
+            
+            let relationType=utils.getRelationshipType(end1, end2);
+            objRelationship[fields.type] = relationType;
+            /* if(relationType == fields.composition){
+                if (end1.aggregation == 'none' && end2.aggregation == 'composite') {
+                    end1=element.end2;
+                    end2=element.end1;
+                }
+            } */
+
+
 
             /* adding 'source' object */
             let objSource = {};
@@ -180,7 +190,7 @@ function bindEntityToExport(mPackage, jsonProcess) {
         addEntityPropertyFields(entityObj, entity);
 
         /* Entity Relationship array binding */
-        addEntityRelationshipFields(entityObj, entity);
+        addEntityRelationship(entityObj, entity);
 
     });
 }
@@ -205,7 +215,7 @@ function bindAbstractEntityToExport(mPackage, jsonProcess) {
             addEntityPropertyFields(entityObj, entity);
 
             /* Entity Relationship array binding */
-            addEntityRelationshipFields(entityObj, entity);
+            addEntityRelationship(entityObj, entity);
 
         }
     });
@@ -240,7 +250,7 @@ function bindEntityToImport(entityObject, mSubObject) {
 module.exports.addEntityFields = addEntityFields;
 module.exports.addEntityRequiredFields = addEntityRequiredFields;
 module.exports.addEntityPropertyFields = addEntityPropertyFields;
-module.exports.addEntityRelationshipFields = addEntityRelationshipFields;
+module.exports.addEntityRelationship = addEntityRelationship;
 module.exports.bindEntityToExport = bindEntityToExport;
 module.exports.bindEntityToImport = bindEntityToImport;
 module.exports.bindAbstractEntityToExport = bindAbstractEntityToExport;

@@ -45,7 +45,7 @@ function addEventPropertyFields(eventObj, event) {
     });
 }
 
-function addEventRelationshipFields(eventObj, event) {
+function addEventRelationship(eventObj, event) {
     let Relationship = [];
     eventObj[fields.Relationship] = Relationship;
     forEach(event.ownedElements, function (element) {
@@ -59,7 +59,15 @@ function addEventRelationshipFields(eventObj, event) {
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.end1;
             let end2 = element.end2;
-            objRelationship[fields.type] = utils.getRelationshipType(end1, end2);
+            
+            let relationType=utils.getRelationshipType(end1, end2);
+            objRelationship[fields.type] = relationType;
+            /* if(relationType == fields.composition){
+                if (end1.aggregation == 'none' && end2.aggregation == 'composite') {
+                    end1=element.end2;
+                    end2=element.end1;
+                }
+            } */
 
             /* adding 'source' object */
             let objSource = {};
@@ -199,7 +207,7 @@ function bindEventToExport(mPackage, jsonProcess) {
         addEventPropertyFields(eventObj, event);
 
         /* Event Relationship array binding */
-        addEventRelationshipFields(eventObj, event);
+        addEventRelationship(eventObj, event);
 
         /* Event Operation array binding */
         addEventOperationFields(eventObj, event);
@@ -225,7 +233,7 @@ function bindAbstractEventToExport(mPackage, jsonProcess) {
             addEventPropertyFields(eventObj, event);
 
             /* Event Relationship array binding */
-            addEventRelationshipFields(eventObj, event);
+            addEventRelationship(eventObj, event);
 
             /* Event Operation array binding */
             addEventOperationFields(eventObj, event);
@@ -287,7 +295,7 @@ function bindEventToImport(interfaceObject, mSubObject) {
 module.exports.addEventFields = addEventFields;
 module.exports.addEventRequiredFields = addEventRequiredFields;
 module.exports.addEventPropertyFields = addEventPropertyFields;
-module.exports.addEventRelationshipFields = addEventRelationshipFields;
+module.exports.addEventRelationship = addEventRelationship;
 module.exports.addEventOperationFields = addEventOperationFields;
 module.exports.bindEventToExport = bindEventToExport;
 module.exports.bindEventToImport = bindEventToImport;
