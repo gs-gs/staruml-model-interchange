@@ -596,6 +596,7 @@ function exportModel() {
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
                             if (err) {
+                                console.error("Error : ",err.message);
                                 app.dialogs.showErrorDialog(err.message);
                                 return;
                             } else {

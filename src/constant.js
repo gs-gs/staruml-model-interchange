@@ -20,6 +20,9 @@ const constant = {
     title_import_mi_2: "\' package",
     title_import_mi: "Model Interchange",
     mi_msg_success: "Package Imported",
+    source: "Source",
+    target: "Target",
+    ref_not_found:'\' \'$ref\' not found',
 
 }
 
