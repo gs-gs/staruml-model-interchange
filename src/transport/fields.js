@@ -17,6 +17,7 @@ const fields = {
     'DataType': 'DataType',
     '_parent': '_parent',
     'cardinality': 'cardinality',
+    'navigable': 'navigable',
     'Enum': 'Enum',
     'Relationship': 'Relationship',
     'Operation': 'Operation',
