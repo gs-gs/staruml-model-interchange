@@ -70,32 +70,6 @@ function bindEnumToImport(enumeObject, mSubObject) {
     enumeObject[fields.isAbstract] = mSubObject.isAbstract;
     enumeObject.documentation = mSubObject.description;
 
-    /* UMLAttribute */
-    /* let attributes = [];
-    enumeObject.attributes = attributes;
-
-    forEach(mSubObject[fields.Property], function (attr) {
-        let objAttr = {};
-        objAttr._type = 'UMLAttribute';
-        objAttr.name = attr.name;
-        objAttr.type = attr.DataType.type;
-        objAttr.isID = attr.isID;
-        objAttr.multiplicity = attr.cardinality;
-        objAttr.documentation = attr.description;
-        attributes.push(objAttr);
-    }); */
-
-    /* UMLEnumerationLiteral */
-    /* let literals = [];
-    enumeObject.literals = literals;
-
-    forEach(mSubObject[fields.Enum], function (literal) {
-        let objAttr = {};
-        objAttr._type = 'UMLEnumerationLiteral';
-        objAttr.name = literal;
-        literals.push(objAttr);
-    }); */
-
 }
 
 function bindEnumAttributesToImport(enumeObject, mSubObject) {

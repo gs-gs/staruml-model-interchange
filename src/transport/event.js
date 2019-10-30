@@ -13,7 +13,7 @@ function addEventFields(eventObj, event) {
     eventObj[fields.to] = objTo;
 }
 
-function addEventRequiredFields(eventObj, event) {
+function addEventRequired(eventObj, event) {
     let requiredArr = [];
     eventObj[fields.Required] = requiredArr;
     let attributeForRequired = event.attributes;
@@ -24,7 +24,7 @@ function addEventRequiredFields(eventObj, event) {
     });
 }
 
-function addEventPropertyFields(eventObj, event) {
+function addEventProperty(eventObj, event) {
     let propertyArr = [];
     eventObj[fields.Property] = propertyArr;
     let attribute = event.attributes;
@@ -59,9 +59,10 @@ function addEventRelationship(eventObj, event) {
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.end1;
             let end2 = element.end2;
-            
-            let relationType=utils.getRelationshipType(end1, end2);
+
+            let relationType = utils.getRelationshipType(end1, end2);
             objRelationship[fields.type] = relationType;
+            /* Do not remove below code */
             /* if(relationType == fields.composition){
                 if (end1.aggregation == 'none' && end2.aggregation == 'composite') {
                     end1=element.end2;
@@ -165,7 +166,7 @@ function addEventRelationship(eventObj, event) {
     })
 }
 
-function addEventOperationFields(eventObj, event) {
+function addEventOperation(eventObj, event) {
     let Operations = [];
     eventObj[fields.Operation] = Operations;
     forEach(event.operations, function (element) {
@@ -201,16 +202,16 @@ function bindEventToExport(mPackage, jsonProcess) {
         addEventFields(eventObj, event)
 
         /* Event Required fields properties binding */
-        addEventRequiredFields(eventObj, event);
+        addEventRequired(eventObj, event);
 
         /* Event Properties array binding */
-        addEventPropertyFields(eventObj, event);
+        addEventProperty(eventObj, event);
 
         /* Event Relationship array binding */
         addEventRelationship(eventObj, event);
 
         /* Event Operation array binding */
-        addEventOperationFields(eventObj, event);
+        addEventOperation(eventObj, event);
 
     });
 }
@@ -227,16 +228,16 @@ function bindAbstractEventToExport(mPackage, jsonProcess) {
             addEventFields(eventObj, event)
 
             /* Event Required fields properties binding */
-            addEventRequiredFields(eventObj, event);
+            addEventRequired(eventObj, event);
 
             /* Event Properties array binding */
-            addEventPropertyFields(eventObj, event);
+            addEventProperty(eventObj, event);
 
             /* Event Relationship array binding */
             addEventRelationship(eventObj, event);
 
             /* Event Operation array binding */
-            addEventOperationFields(eventObj, event);
+            addEventOperation(eventObj, event);
         }
 
     });
@@ -249,54 +250,12 @@ function bindEventToImport(interfaceObject, mSubObject) {
     console.log("Event", mSubObject.name);
     interfaceObject.documentation = mSubObject.description;
 
-    /* UMLAttribute */
-    /* let attributes = [];
-    interfaceObject.attributes = attributes;
-
-    forEach(mSubObject.Property, function (attr) {
-        let objAttr = {};
-        objAttr._type = 'UMLAttribute';
-        objAttr.name = attr.name;
-        objAttr.type=attr.DataType.type;
-        objAttr.isID = attr.isID;
-        objAttr.multiplicity = attr.cardinality;
-        attributes.push(objAttr);
-    }); */
-
-    /* UMLOperation */
-    // let operations = [];
-    // interfaceObject.operations = operations;
-
-    // forEach(mSubObject.Operation, function (attr) {
-    //     let objOpr = {};
-    //     objOpr._type = 'UMLOperation';
-    //     objOpr.name = attr.name;
-
-
-    //     let params = attr.Parameter;
-    //     let arrParam = [];
-    //     objOpr.parameters = arrParam;
-    //     /* UMLParameter */
-    //     forEach(params, function (param) {
-    //         let objParam = {};
-    //         objParam._type = 'UMLParameter';
-    //         objParam.name = param.name;
-    //         //TODO : Remove below comment and resolve issue
-    //         // objParam.type=param.DataType.type;
-    //         objParam.isID = param.isID;
-    //         objParam.multiplicity = param.cardinality;
-
-    //         arrParam.push(objParam);
-    //     });
-
-    //     operations.push(objOpr);
-    // });
 }
 module.exports.addEventFields = addEventFields;
-module.exports.addEventRequiredFields = addEventRequiredFields;
-module.exports.addEventPropertyFields = addEventPropertyFields;
+module.exports.addEventRequired = addEventRequired;
+module.exports.addEventProperty = addEventProperty;
 module.exports.addEventRelationship = addEventRelationship;
-module.exports.addEventOperationFields = addEventOperationFields;
+module.exports.addEventOperation = addEventOperation;
 module.exports.bindEventToExport = bindEventToExport;
 module.exports.bindEventToImport = bindEventToImport;
 module.exports.bindAbstractEventToExport = bindAbstractEventToExport;

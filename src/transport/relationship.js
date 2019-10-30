@@ -22,9 +22,9 @@ function addAggregationToImport(objRelationship, entity, attr) {
     objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'shared';
-    
+
     /* Reference to UMLClass or UMLInterface */
-    
+
     let source = attr.source;
     objEnd1.multiplicity = source.cardinality;
     objEnd1.navigable = source.navigable;
@@ -55,7 +55,7 @@ function addAggregationToImport(objRelationship, entity, attr) {
         return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
     });
 
-    let eleType=utils.getElementType(entity);
+    let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
         objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
         objEnd2.reference = objReferenceEnd2;
@@ -63,10 +63,10 @@ function addAggregationToImport(objRelationship, entity, attr) {
         objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
         objEnd1.reference = objReferenceEnd1;
 
-    }else if (fRefEnd1.length == 0) {
-        throw new Error(constant.source+' '+eleType+' \''+source.name+constant.ref_not_found);
-    }else if (fRefEnd2.length == 0) {
-        throw new Error(constant.target+' '+eleType+' \''+target.name+constant.ref_not_found);
+    } else if (fRefEnd1.length == 0) {
+        throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
+    } else if (fRefEnd2.length == 0) {
+        throw new Error(constant.target + ' ' + eleType + ' \'' + target.name + constant.ref_not_found);
     }
     return objRelationship;
 }
@@ -116,17 +116,17 @@ function addCompositionToImport(objRelationship, entity, attr) {
     let fRefEnd2 = refEnd2.filter(function (item) {
         return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
     });
-    let eleType=utils.getElementType(entity);
+    let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
         objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
         objEnd2.reference = objReferenceEnd2;
 
         objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
         objEnd1.reference = objReferenceEnd1;
-    }else if (fRefEnd1.length == 0) {
-        throw new Error(constant.source+' '+eleType+' \''+source.name+constant.ref_not_found);
-    }else if (fRefEnd2.length == 0) {
-        throw new Error(constant.target+' '+eleType+' \''+target.name+constant.ref_not_found);
+    } else if (fRefEnd1.length == 0) {
+        throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
+    } else if (fRefEnd2.length == 0) {
+        throw new Error(constant.target + ' ' + eleType + ' \'' + target.name + constant.ref_not_found);
     }
 
     return objRelationship;
@@ -290,17 +290,17 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     let fRefEnd2 = refEnd2.filter(function (item) {
         return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
     });
-    let eleType=utils.getElementType(entity);
+    let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
         objReferenceEnd2['$ref'] = fRefEnd2[0]._id;
         objEnd2.reference = objReferenceEnd2;
 
         objReferenceEnd1['$ref'] = fRefEnd1[0]._id;
         objEnd1.reference = objReferenceEnd1;
-    }else if (fRefEnd1.length == 0) {
-        throw new Error(constant.source+' '+eleType+' \''+source.name+constant.ref_not_found);
-    }else if (fRefEnd2.length == 0) {
-        throw new Error(constant.target+' '+eleType+' \''+target.name+constant.ref_not_found);
+    } else if (fRefEnd1.length == 0) {
+        throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
+    } else if (fRefEnd2.length == 0) {
+        throw new Error(constant.target + ' ' + eleType + ' \'' + target.name + constant.ref_not_found);
     }
 
     return objRelationship;
@@ -395,7 +395,7 @@ function bindRelationshipToImport(entity, attr) {
                 console.log("rel", rel);
                 return rel;
             } catch (error) {
-                console.error("Error : ",error.message);
+                console.error("Error : ", error.message);
                 app.dialogs.showErrorDialog(error.message);
             }
         }
@@ -432,7 +432,7 @@ function setRelationship(ownedElements, XMIData) {
                         }
                     }
                 } catch (error) {
-                    console.error("Error : "+mSubObject.name,error.message);
+                    console.error("Error : " + mSubObject.name, error.message);
                     app.dialogs.showErrorDialog(error.message);
                 }
             });

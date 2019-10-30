@@ -143,7 +143,7 @@ function importDataToModel(XMIData) {
                     //             y: 500,
                     //           }
                     //           app.factory.createViewOf(options)
-                              
+
                     //     } */
                     //     var classView = {
                     //         id: "UMLClass",
@@ -176,7 +176,7 @@ function importDataToModel(XMIData) {
                     //       let resAttrView=app.factory.createModelAndView(attributeView);
                     // } 
                     // return;
-                   
+
                     /* Update Enumeration */
                     console.log("steps----------1");
                     Object.keys(XMIData).forEach(function eachKey(key) {
@@ -196,7 +196,7 @@ function importDataToModel(XMIData) {
                             // let selectedEnum = app.repository.select(mSname);
                             // let selectedEnum = app.repository.select(mSname);
                             let searchedEnum = app.repository.search(mSname);
-                            let searchedEnumRes=searchedEnum.filter(function(item){
+                            let searchedEnumRes = searchedEnum.filter(function (item) {
                                 return (item instanceof type.UMLEnumeration && item.name == mSname);
                             });
                             if (searchedEnumRes.length > 0) {
@@ -246,7 +246,7 @@ function importDataToModel(XMIData) {
                             // let selectedEntity = app.repository.select(mSname);
 
                             let searchedEntity = app.repository.search(mSname);
-                            let searchedEntityRes=searchedEntity.filter(function(item){
+                            let searchedEntityRes = searchedEntity.filter(function (item) {
                                 return (item instanceof type.UMLClass && item.name == mSname);
                             });
                             if (searchedEntityRes.length > 0) {
@@ -297,7 +297,7 @@ function importDataToModel(XMIData) {
                             /* Binding Event fields, attribute, operation & parameters*/
                             mEvent.bindEventToImport(interfaceObject, mSubObject);
                             let searchedEvent = app.repository.search(mSname);
-                            let searchedEventRes=searchedEvent.filter(function(item){
+                            let searchedEventRes = searchedEvent.filter(function (item) {
                                 return (item instanceof type.UMLInterface && item.name == mSname);
                             });
                             if (searchedEventRes.length > 0) {
@@ -448,7 +448,7 @@ async function importModel() {
                 setTimeout(function () {
                     // app.modelExplorer.expand(selected);
                     app.dialogs.showInfoDialog(constant.mi_msg_success);
-                    
+
                 });
             }
             // } catch (error) {
@@ -596,7 +596,7 @@ function exportModel() {
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
                             if (err) {
-                                console.error("Error : ",err.message);
+                                console.error("Error : ", err.message);
                                 app.dialogs.showErrorDialog(err.message);
                                 return;
                             } else {

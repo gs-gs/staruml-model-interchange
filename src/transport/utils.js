@@ -111,9 +111,9 @@ function setProperty(ownedElements, XMIData) {
 
 
     forEach(ownedElements, function (entity) {
-        let diagram=null;
+        let diagram = null;
         if (entity instanceof type.UMLClassDiagram) {
-            diagram=entity;
+            diagram = entity;
         }
         if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
@@ -149,10 +149,10 @@ function setProperty(ownedElements, XMIData) {
             let attributes = [];
             entityJson.attributes = attributes;
             forEach(mSubObject.Property, function (attr) {
-                let chkNew=newProps.filter(function(nItem){
-                    return attr.name==nItem.name
+                let chkNew = newProps.filter(function (nItem) {
+                    return attr.name == nItem.name
                 });
-                
+
 
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
@@ -278,90 +278,94 @@ function bindOperation(attr) {
     });
     return objOpr;
 }
-function isAssociationExist(entity,attr){
-    let isExist=false;
-    let assoc=null;
+
+function isAssociationExist(entity, attr) {
+    let isExist = false;
+    let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLAssociation) {
             if (aggr.name == attr.name &&
                 aggr.end1.reference.name == attr.source.name && getElementType(aggr.end1.reference) == attr.source.type &&
                 aggr.end2.reference.name == attr.target.name && getElementType(aggr.end2.reference) == attr.target.type
             ) {
-                isExist=true;
-                assoc=aggr;
+                isExist = true;
+                assoc = aggr;
                 return;
             }
         }
     });
-    let val={
-        isExist:isExist,
-        assoc:assoc
+    let val = {
+        isExist: isExist,
+        assoc: assoc
     };
     return val;
 }
-function isGeneralizationExist(entity,attr){
-    let isExist=false;
-    let assoc=null;
+
+function isGeneralizationExist(entity, attr) {
+    let isExist = false;
+    let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLGeneralization) {
             if (aggr.name == attr.name &&
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {
-                isExist=true;
-                assoc=aggr;
+                isExist = true;
+                assoc = aggr;
                 return;
             }
         }
     });
-    let val={
-        isExist:isExist,
-        assoc:assoc
+    let val = {
+        isExist: isExist,
+        assoc: assoc
     };
     return val;
 }
-function isInterfaceRealizationExist(entity,attr){
-    let isExist=false;
-    let assoc=null;
+
+function isInterfaceRealizationExist(entity, attr) {
+    let isExist = false;
+    let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLInterfaceRealization) {
             if (aggr.name == attr.name &&
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {
-                isExist=true;
-                assoc=aggr;
+                isExist = true;
+                assoc = aggr;
                 return;
             }
         }
     });
-    let val={
-        isExist:isExist,
-        assoc:assoc
+    let val = {
+        isExist: isExist,
+        assoc: assoc
     };
     return val;
 }
-function isAssociationClassLinkExist(entity,attr){
-    let isExist=false;
-    let assoc=null;
+
+function isAssociationClassLinkExist(entity, attr) {
+    let isExist = false;
+    let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLAssociationClassLink) {
 
-                let associationSide=isAssociationExist(entity,attr.association);
+            let associationSide = isAssociationExist(entity, attr.association);
 
             if (aggr.name == attr.name &&
                 aggr.classSide.name == attr.class.name && getElementType(aggr.classSide) == attr.class.type &&
                 associationSide.isExist
             ) {
-                isExist=true;
-                assoc=aggr;
+                isExist = true;
+                assoc = aggr;
                 return;
             }
         }
     });
-    let val={
-        isExist:isExist,
-        assoc:assoc
+    let val = {
+        isExist: isExist,
+        assoc: assoc
     };
     return val;
 }

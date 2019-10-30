@@ -12,7 +12,7 @@ function addEntityFields(entityObj, entity) {
     entityObj[fields.status] = '';
 }
 
-function addEntityRequiredFields(entityObj, entity) {
+function addEntityRequired(entityObj, entity) {
     let requiredArr = [];
     entityObj[fields.Required] = requiredArr;
     let attributeForRequired = entity.attributes;
@@ -23,7 +23,7 @@ function addEntityRequiredFields(entityObj, entity) {
     });
 }
 
-function addEntityPropertyFields(entityObj, entity) {
+function addEntityProperty(entityObj, entity) {
     let propertyArr = [];
     entityObj[fields.Property] = propertyArr;
     let attribute = entity.attributes;
@@ -63,8 +63,8 @@ function addEntityRelationship(entityObj, entity) {
             /* adding relationship type 'aggregation', 'composition', 'interface' */
             let end1 = element.end1;
             let end2 = element.end2;
-            
-            let relationType=utils.getRelationshipType(end1, end2);
+
+            let relationType = utils.getRelationshipType(end1, end2);
             objRelationship[fields.type] = relationType;
             /* if(relationType == fields.composition){
                 if (end1.aggregation == 'none' && end2.aggregation == 'composite') {
@@ -184,10 +184,10 @@ function bindEntityToExport(mPackage, jsonProcess) {
         addEntityFields(entityObj, entity)
 
         /* Entity Required fields properties binding */
-        addEntityRequiredFields(entityObj, entity);
+        addEntityRequired(entityObj, entity);
 
         /* Entity Properties array binding */
-        addEntityPropertyFields(entityObj, entity);
+        addEntityProperty(entityObj, entity);
 
         /* Entity Relationship array binding */
         addEntityRelationship(entityObj, entity);
@@ -209,10 +209,10 @@ function bindAbstractEntityToExport(mPackage, jsonProcess) {
             addEntityFields(entityObj, entity)
 
             /* Entity Required fields properties binding */
-            addEntityRequiredFields(entityObj, entity);
+            addEntityRequired(entityObj, entity);
 
             /* Entity Properties array binding */
-            addEntityPropertyFields(entityObj, entity);
+            addEntityProperty(entityObj, entity);
 
             /* Entity Relationship array binding */
             addEntityRelationship(entityObj, entity);
@@ -228,28 +228,10 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject[fields.isAbstract] = mSubObject.isAbstract;
     entityObject.documentation = mSubObject.description;
 
-    /* UMLAttribute */
-    /* let attributes = [];
-    entityObject.attributes = attributes;
-
-    forEach(mSubObject.Property, function (attr) {
-        let objAttr = {};
-        objAttr._type = 'UMLAttribute';
-        objAttr.name = attr.name;
-
-        //if(attr.DataType.type == utils.isString)
-
-        objAttr.type = utils.getDatatype(attr.DataType);//attr.DataType.type;
-        objAttr.isID = attr.isID;
-        objAttr.multiplicity = attr.cardinality;
-        objAttr.documentation = attr.description;
-        attributes.push(objAttr);
-    }); */
-
 }
 module.exports.addEntityFields = addEntityFields;
-module.exports.addEntityRequiredFields = addEntityRequiredFields;
-module.exports.addEntityPropertyFields = addEntityPropertyFields;
+module.exports.addEntityRequired = addEntityRequired;
+module.exports.addEntityProperty = addEntityProperty;
 module.exports.addEntityRelationship = addEntityRelationship;
 module.exports.bindEntityToExport = bindEntityToExport;
 module.exports.bindEntityToImport = bindEntityToImport;
