@@ -26,6 +26,7 @@ function addAggregationToImport(objRelationship, entity, attr) {
     
     let source = attr.source;
     objEnd1.multiplicity = source.cardinality;
+    objEnd1.navigable = source.navigable;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -45,6 +46,7 @@ function addAggregationToImport(objRelationship, entity, attr) {
 
     let target = attr.target;
     objEnd2.multiplicity = target.cardinality;
+    objEnd2.navigable = target.navigable;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
@@ -82,6 +84,7 @@ function addCompositionToImport(objRelationship, entity, attr) {
 
     let source = attr.source;
     objEnd1.multiplicity = source.cardinality;
+    objEnd1.navigable = source.navigable;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -101,6 +104,7 @@ function addCompositionToImport(objRelationship, entity, attr) {
 
     let target = attr.target;
     objEnd2.multiplicity = target.cardinality;
+    objEnd2.navigable = target.navigable;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
@@ -250,6 +254,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
 
     let source = attr.source;
     objEnd1.multiplicity = source.cardinality;
+    objEnd1.navigable = source.navigable;
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
@@ -269,6 +274,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
 
     let target = attr.target;
     objEnd2.multiplicity = target.cardinality;
+    objEnd2.navigable = target.navigable;
     let objReferenceEnd2 = {}
     let refEnd2 = app.repository.search(target.name);
 
