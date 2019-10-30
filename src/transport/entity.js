@@ -72,6 +72,7 @@ function addEntityRelationshipFields(entityObj, entity) {
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
             objSource[fields.cardinality] = end1.multiplicity;
+            objSource[fields.navigable] = end1.navigable;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -80,6 +81,7 @@ function addEntityRelationshipFields(entityObj, entity) {
             objTarget[fields.name] = target.name;
             objTarget[fields.type] = utils.getElementType(target);
             objTarget[fields.cardinality] = end2.multiplicity;
+            objTarget[fields.navigable] = end2.navigable;
 
         } else if (element instanceof type.UMLGeneralization) {
 
