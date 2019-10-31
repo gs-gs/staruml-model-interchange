@@ -134,6 +134,8 @@ function addEntityRelationship(entityObj, entity) {
             objAssociation[fields.source] = objSource;
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
+            objSource[fields.cardinality] = end1.multiplicity;
+            objSource[fields.navigable] = end1.navigable;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -141,6 +143,8 @@ function addEntityRelationship(entityObj, entity) {
             objAssociation[fields.target] = objTarget;
             objTarget[fields.name] = target.name;
             objTarget[fields.type] = utils.getElementType(target);
+            objTarget[fields.cardinality] = end1.multiplicity;
+            objTarget[fields.navigable] = end1.navigable;
 
             /* class side association binding */
             let objClass = {};
