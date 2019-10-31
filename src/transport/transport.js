@@ -60,50 +60,50 @@ function getClasswiseAssociations(element) {
     return association;
 }
 
-function getPackageWiseUMLAssociation(package) {
-    let associations = app.repository.select("@UMLAssociation");
-    filteredAssociation = [];
-    forEach(associations, (item) => {
-        findParentPackage(package, item, item);
-    });
-    return filteredAssociation;
-}
-let filteredAssociation = [];
+// function getPackageWiseUMLAssociation(package) {
+//     let associations = app.repository.select("@UMLAssociation");
+//     filteredAssociation = [];
+//     forEach(associations, (item) => {
+//         //findParentPackage(package, item, item);
+//     });
+//     return filteredAssociation;
+// }
+// let filteredAssociation = [];
 
-function findParentPackage(package, ele, item) {
-    // return new Promise((resolve, reject) => {
-    if (ele instanceof type.UMLPackage) {
-        if (ele != null && ele.name == 'Movements' /* openAPI.getUMLPackage().name */ ) {
-            // console.log("ele",ele);
-            // console.log("item",item);
-            filteredAssociation.push(item);
-            // return item;
-        }
+// function findParentPackage(package, ele, item) {
+//     // return new Promise((resolve, reject) => {
+//     if (ele instanceof type.UMLPackage) {
+//         if (ele != null && ele.name == 'Movements' /* openAPI.getUMLPackage().name */ ) {
+//             // console.log("ele",ele);
+//             // console.log("item",item);
+//             filteredAssociation.push(item);
+//             // return item;
+//         }
 
-        // resolve(assocItem);
-    } else if (ele.hasOwnProperty('_parent') && ele._parent != null) {
-        findParentPackage(package, ele._parent, item);
-    }
-    // return null;
-}
+//         // resolve(assocItem);
+//     } else if (ele.hasOwnProperty('_parent') && ele._parent != null) {
+//         findParentPackage(package, ele._parent, item);
+//     }
+//     // return null;
+// }
 
-function getAbstractClassView(umlPackage, uniqueAbstractArr) {
-    let abstractClassViewList = [];
+// function getAbstractClassView(umlPackage, uniqueAbstractArr) {
+//     let abstractClassViewList = [];
 
-    let umlClassDiagram = app.repository.select(umlPackage.name + "::@UMLClassDiagram")[0];
+//     let umlClassDiagram = app.repository.select(umlPackage.name + "::@UMLClassDiagram")[0];
 
-    forEach(umlClassDiagram.ownedViews, (ownedViews) => {
-        if (ownedViews instanceof type.UMLClassView) {
-            forEach(uniqueAbstractArr, (absClass) => {
-                if (absClass._id == ownedViews.model._id) {
-                    abstractClassViewList.push(ownedViews);
-                }
-            });
-        }
-    });
+//     forEach(umlClassDiagram.ownedViews, (ownedViews) => {
+//         if (ownedViews instanceof type.UMLClassView) {
+//             forEach(uniqueAbstractArr, (absClass) => {
+//                 if (absClass._id == ownedViews.model._id) {
+//                     abstractClassViewList.push(ownedViews);
+//                 }
+//             });
+//         }
+//     });
 
-    return abstractClassViewList;
-}
+//     return abstractClassViewList;
+// }
 
 function importDataToModel(XMIData) {
 
@@ -125,58 +125,7 @@ function importDataToModel(XMIData) {
                 if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
                     result = selPkg;
-                    // let arrViewDiagram=result.ownedElements.filter(function(fItem){
-                    //     return fItem instanceof type.UMLClassDiagram;
-                    // });
-                    // let viewDiagram=null;
-                    // if(arrViewDiagram.length == 1){
-                    //     viewDiagram=arrViewDiagram[0];
-                    //     let mClassView=viewDiagram.ownedViews.filter(function(oView){
-                    //         return (oView instanceof type.UMLClassView && oView.model.name=='TransportMovement');
-                    //     });
-                    //     console.log("MYClass View",mClassView);
-                    //    /*  if(mClassView.length==1){
-                    //         var options = {
-                    //             model: mClassView.model,
-                    //             diagram: mClassView._parent,
-                    //             x: 500,
-                    //             y: 500,
-                    //           }
-                    //           app.factory.createViewOf(options)
-
-                    //     } */
-                    //     var classView = {
-                    //         id: "UMLClass",
-                    //         parent: viewDiagram._parent,
-                    //         diagram: viewDiagram,
-                    //         x1: 100,
-                    //         y1: 100,
-                    //         x2: 200,
-                    //         y2: 200
-                    //       }
-                    //       let resClassView=app.factory.createModelAndView(classView);
-
-                    //       let mPkg=app.repository.search('Movement')[5];
-                    //       let attribute=mPkg.ownedElements[5].attributes[0];
-
-                    //       var attributeView = {
-                    //         id: "UMLAttribute",
-                    //         parent: resClassView.nameCompartment,
-                    //         diagram: viewDiagram,
-                    //         viewInitializer: function (tag) {
-                    //             tag.name = "Tag1";
-                    //             //tag.kind = type.Tag.TK_STRING; // or TK_BOOLEAN, TK_NUMBER, TK_REFERENCE, TK_HIDDEN
-                    //             //tag.value = "String Value...";
-                    //             // tag.checked = true; // for TK_BOOLEAN
-                    //             // tag.number = 100; // for TK_NUMBER
-                    //             // tag.reference = ...; // for TK_REFERENCE
-                    //           },
-                    //         model:attribute
-                    //       }
-                    //       let resAttrView=app.factory.createModelAndView(attributeView);
-                    // } 
-                    // return;
-
+                    
                     /* Update Enumeration */
                     console.log("steps----------1");
                     Object.keys(XMIData).forEach(function eachKey(key) {
