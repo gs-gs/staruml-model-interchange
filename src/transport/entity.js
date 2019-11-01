@@ -122,33 +122,36 @@ function addEntityRelationship(entityObj, entity) {
             objRelationship[fields.association] = objAssociation;
 
             /* adding relationship type 'aggregation', 'composition', 'interface' */
-            let end1 = element.associationSide.end1;
-            let end2 = element.associationSide.end2;
-            objAssociation[fields.name] = element.associationSide.name;
-            objAssociation[fields.description] = element.associationSide.documentation;
-            objAssociation[fields.type] = utils.getRelationshipType(end1, end2);
+            if(element.associationSide !=null){ /* check if diagram not exist and abstract class will not available */
 
-            /* adding 'source' object */
-            let objSource = {};
-            let source = end1.reference;
-            objAssociation[fields.source] = objSource;
-            objSource[fields.name] = source.name;
-            objSource[fields.type] = utils.getElementType(source);
-            objSource[fields.cardinality] = end1.multiplicity;
-            objSource[fields.navigable] = end1.navigable;
-
-            /* adding 'target' object */
-            let objTarget = {};
-            let target = end2.reference;
-            objAssociation[fields.target] = objTarget;
-            objTarget[fields.name] = target.name;
-            objTarget[fields.type] = utils.getElementType(target);
-            objTarget[fields.cardinality] = end2.multiplicity;
-            objTarget[fields.navigable] = end2.navigable;
-
-            /* class side association binding */
-            let objClass = {};
-            let classSide = element.classSide;
+                let end1 = element.associationSide.end1;
+                let end2 = element.associationSide.end2;
+                objAssociation[fields.name] = element.associationSide.name;
+                objAssociation[fields.description] = element.associationSide.documentation;
+                objAssociation[fields.type] = utils.getRelationshipType(end1, end2);
+                
+                /* adding 'source' object */
+                let objSource = {};
+                let source = end1.reference;
+                objAssociation[fields.source] = objSource;
+                objSource[fields.name] = source.name;
+                objSource[fields.type] = utils.getElementType(source);
+                objSource[fields.cardinality] = end1.multiplicity;
+                objSource[fields.navigable] = end1.navigable;
+                
+                /* adding 'target' object */
+                let objTarget = {};
+                let target = end2.reference;
+                objAssociation[fields.target] = objTarget;
+                objTarget[fields.name] = target.name;
+                objTarget[fields.type] = utils.getElementType(target);
+                objTarget[fields.cardinality] = end2.multiplicity;
+                objTarget[fields.navigable] = end2.navigable;
+                
+            }
+                /* class side association binding */
+                let objClass = {};
+                let classSide = element.classSide;
             objRelationship[fields.class] = objClass;
 
             objClass[fields.name] = classSide.name
