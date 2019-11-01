@@ -50,6 +50,12 @@ function init() {
      app.project.on('projectCreated', _projectCreated);
      app.project.on('projectSaved', _projectSaved);
 
+
+     app.project.on('projectSaved', _projectSaved);
+    /*  app.modelExplorer._events('dropOnDiagram',function(){
+
+     }); */
+
 }
 
 exports.init = init
