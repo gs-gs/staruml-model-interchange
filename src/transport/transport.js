@@ -9,7 +9,7 @@ const fs = require('fs');
 const CircularJSON = require('circular-json');
 var path = require('path');
 var mRelationship = require('./relationship');
-
+// app.diagrams.getEditor().canvasElement.height
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
@@ -114,6 +114,9 @@ function importDataToModel(XMIData) {
         'ownedElements': mainOwnedElements
     };
 
+    let pX=100;
+    let pY=100;
+    let incrementValue=200;
     if (XMIData.type == fields.package) {
         // let mPackage=XMIData[key];
         let mProject = app.project.getProject();
@@ -128,6 +131,13 @@ function importDataToModel(XMIData) {
                     
                     /* Update Enumeration */
                     console.log("steps----------1");
+                    let lastEnumView=null;
+                    let enumView=app.diagrams.getEditor().diagram.ownedViews;
+                    let filterEnumView=enumView.filter(function(item){
+                        return item instanceof type.UMLEnumerationView
+                    });
+                    lastEnumView=filterEnumView[filterEnumView.length-1];
+
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
                         /* UMLClass */
@@ -148,14 +158,24 @@ function importDataToModel(XMIData) {
                             let searchedEnumRes = searchedEnum.filter(function (item) {
                                 return (item instanceof type.UMLEnumeration && item.name == mSname);
                             });
+                            
                             if (searchedEnumRes.length > 0) {
                                 forEach(searchedEnumRes, function (ety) {
-                                    console.log("Updated : Enum : ", ety.name);
-
+                                    
                                     if (ety instanceof type.UMLEnumeration) {
+                                        console.time("Updated : Enum : ");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        console.timeEnd();
+                                        console.log("Updated : Enum : ", ety.name);
+
+                                        
+                                        /* forEach(filterEnumView,function(enumItem){
+                                            if(enumItem.model._id==ety._id){
+                                                lastEnumView=ety;
+                                            }
+                                        }); */
                                         /* enumObject['_id']=ety._id;
                                         let mResult = app.repository.readObject(enumObject)
 
@@ -167,10 +187,40 @@ function importDataToModel(XMIData) {
                                 });
                             } else {
 
+
                                 let newAdded = app.repository.readObject(enumObject);
                                 console.log("New Enum Added-1: ", newAdded);
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+
+                                try {
+                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
+                                    var editor = app.diagrams.getEditor();
+                                    var diagram = editor.diagram;
+                                    var model = newAdded; //dropEvent.source
+                                    //var p = editor.convertPosition(dropEvent)
+                                    pX=lastEnumView.left+incrementValue;
+                                    pY=lastEnumView.top;
+
+                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true)
+
+                                    var options = {
+                                        diagram: diagram,
+                                        editor: editor,
+                                        x: pX,
+                                        y: pY,
+                                        model: model,
+                                        containerView: containerView
+                                    }
+                                    app.factory.createViewOf(options);
+                                    app.diagrams.repaint();
+                                    pX += incrementValue;
+                                    // }
+                                } catch (err) {
+                                    console.error(err)
+                                }
+
+
                                 console.log("New Enum Added-2", mResult);
 
                             }
@@ -200,8 +250,7 @@ function importDataToModel(XMIData) {
                             });
                             if (searchedEntityRes.length > 0) {
                                 forEach(searchedEntityRes, function (ety) {
-                                    console.log("Updated : Entity : ", ety.name);
-
+                                    
                                     if (ety instanceof type.UMLClass) {
                                         /* entityObject['_id']=ety._id;
                                         entityObject[fields.name]= mSubObject.name
@@ -209,9 +258,12 @@ function importDataToModel(XMIData) {
                                         entityObject[fields.documentation]= mSubObject.description
                                         mResult = app.repository.readObject(entityObject) */
                                         //app.engine.setProperties(ety, mResult);
+                                        console.time("Updated : Entity");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        console.log("Updated : Entity : ", ety.name);
+                                        console.timeEnd();
                                         //app.engine.setProperty(ety, 'attributes', []);
                                         //app.engine.setProperty(ety, 'ownedElements', []);
                                         // app.engine.setProperties(ety, mResult);
@@ -228,6 +280,29 @@ function importDataToModel(XMIData) {
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
                                 console.log("New Entity Added-2", mResult);
 
+                                try {
+                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
+                                    var editor = app.diagrams.getEditor();
+                                    var diagram = editor.diagram;
+                                    var model = newAdded; //dropEvent.source
+                                    //var p = editor.convertPosition(dropEvent)
+                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
+
+                                    var options = {
+                                        diagram: diagram,
+                                        editor: editor,
+                                        x: pX,
+                                        y: pY,
+                                        model: model,
+                                        containerView: containerView
+                                    }
+                                    app.factory.createViewOf(options);
+                                    app.diagrams.repaint();
+                                    pX += incrementValue;
+                                    // }
+                                } catch (err) {
+                                    console.error(err)
+                                }
                             }
                             //mainOwnedElements.push(entityObject);
 
@@ -253,9 +328,16 @@ function importDataToModel(XMIData) {
                                 forEach(searchedEventRes, function (ety) {
 
                                     if (ety instanceof type.UMLInterface) {
+                                        console.time("Enum");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                                        console.log("Updated : Event : ", ety.name);
+                                        console.timeEnd("Enum");
+                                        /* let ms=console.timeEnd("Updated : Event : "+mSubObject.name);
+                                        min = Math.floor((ms/1000/60) << 0),
+                                        sec = Math.floor((ms/1000) % 60);
+                                        console.log(min + ':' + sec); */
                                         /* interfaceObject['_id']=ety._id;
                                         let mResult = app.repository.readObject(interfaceObject);
                                         app.engine.setProperty(mResult, fields.name, mSubObject.name);
@@ -274,6 +356,30 @@ function importDataToModel(XMIData) {
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
                                 console.log("New Event Added-2", mResult);
+
+                                try {
+                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
+                                    var editor = app.diagrams.getEditor();
+                                    var diagram = editor.diagram;
+                                    var model = newAdded; //dropEvent.source
+                                    //var p = editor.convertPosition(dropEvent)
+                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
+
+                                    var options = {
+                                        diagram: diagram,
+                                        editor: editor,
+                                        x: pX,
+                                        y: pY,
+                                        model: model,
+                                        containerView: containerView
+                                    }
+                                    app.factory.createViewOf(options);
+                                    app.diagrams.repaint();
+                                    pX += incrementValue;
+                                    // }
+                                } catch (err) {
+                                    console.error(err)
+                                }
 
                             }
 
