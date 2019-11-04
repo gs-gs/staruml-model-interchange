@@ -369,6 +369,66 @@ function isAssociationClassLinkExist(entity, attr) {
     };
     return val;
 }
+let pX=0;
+let pY=0;
+let incrementValue=100;
+function calculateXY(){
+    let lastMaxView=null;
+    let maxLeft;
+    let enumView=app.diagrams.getEditor().diagram.ownedViews;
+    let filterAllViews=enumView.filter(function(item){
+        return item instanceof type.View
+    });
+    if(filterAllViews.length>0){
+        maxLeft=filterAllViews[0];
+    }
+    forEach(filterAllViews,function(item){
+        if(item.left>=maxLeft.left){
+            maxLeft=item;
+        }
+    });
+    lastMaxView=maxLeft;
+    pX=lastMaxView.left+lastMaxView.width+(incrementValue/2);
+    pY=lastMaxView.top;
+
+    let lastView = {
+        pX:pX,
+        pY:pY
+    }
+    return lastView;
+}
+function getXY(){
+    return {
+        pX:pX,
+        pY:pY
+    }
+}
+function createViewOfElement(newAdded){
+    try {
+        var editor = app.diagrams.getEditor();
+        var diagram = editor.diagram;
+        var model = newAdded; 
+        
+
+        var containerView = diagram.getViewAt(editor.canvas, getXY().pX, getXY().pY, true)
+
+        var options = {
+            diagram: diagram,
+            editor: editor,
+            x: getXY().pX,
+            y: getXY().pY,
+            model: model,
+            containerView: containerView
+        }
+        let returnedView=app.factory.createViewOf(options);
+        console.log("ReturnedView",returnedView);
+        
+        pX+=returnedView.width+incrementValue/2;
+        pY=returnedView.top;
+    } catch (err) {
+        console.error(err)
+    }
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -384,3 +444,5 @@ module.exports.isAssociationExist = isAssociationExist;
 module.exports.isGeneralizationExist = isGeneralizationExist;
 module.exports.isInterfaceRealizationExist = isInterfaceRealizationExist;
 module.exports.isAssociationClassLinkExist = isAssociationClassLinkExist;
+module.exports.createViewOfElement = createViewOfElement;
+module.exports.calculateXY = calculateXY;

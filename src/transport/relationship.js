@@ -575,7 +575,7 @@ function bindRelationshipToImport(entity, attr) {
                 rel: rel,
                 isNew: !mAssoc.isExist
             };
-            return mObj;
+            return rel;
         }
     } else if (attr.type == fields.interfaceRealization) {
         /* UMLInterfaceRealization (interfaceRealization) */
@@ -655,8 +655,8 @@ function setRelationship(ownedElements, XMIData) {
                         relationship.type == fields.associationClassLink
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
-
-                        if (relationship.type == fields.generalization) {
+                        ownedElements.push(rel);
+                        /* if (relationship.type == fields.generalization) {
                             if (rel.isNew) {
                                 newElements.push(rel.rel);
                             }
@@ -664,12 +664,11 @@ function setRelationship(ownedElements, XMIData) {
                                 ownedElements.push(rel.rel);
                             }
                         } else {
-                            //let mElement = app.repository.get(rel._id);
 
                             if (rel != null) {
                                 ownedElements.push(rel);
                             }
-                        }
+                        } */
                         //app.engine.setProperty(entity,'ownedElements',ownedElements);
                         /*
                          let resExist=existElement.filter(function(item){

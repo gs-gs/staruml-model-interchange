@@ -113,10 +113,8 @@ function importDataToModel(XMIData) {
         'name': XMIData.name,
         'ownedElements': mainOwnedElements
     };
-
-    let pX=0;
-    let pY=0;
-    let incrementValue=100;
+    let newElements=[];
+    
     if (XMIData.type == fields.package) {
         // let mPackage=XMIData[key];
         let mProject = app.project.getProject();
@@ -128,26 +126,10 @@ function importDataToModel(XMIData) {
                 if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
                     result = selPkg;
+                    mUtils.calculateXY();
                     
                     /* Update Enumeration */
                     console.log("steps----------1");
-                    let lastMaxView=null;
-                    let maxLeft;
-                    let enumView=app.diagrams.getEditor().diagram.ownedViews;
-                    let filterAllViews=enumView.filter(function(item){
-                        return item instanceof type.View
-                    });
-                    if(filterAllViews.length>0){
-                        maxLeft=filterAllViews[0];
-                    }
-                    forEach(filterAllViews,function(item){
-                        if(item.left>=maxLeft.left){
-                            maxLeft=item;
-                        }
-                    });
-                    lastMaxView=maxLeft;
-                    pX=lastMaxView.left+lastMaxView.width+(incrementValue/2);
-                    pY=lastMaxView.top;
 
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
@@ -203,38 +185,10 @@ function importDataToModel(XMIData) {
                                 console.log("New Enum Added-1: ", newAdded);
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-
-                                try {
-                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
-                                    var editor = app.diagrams.getEditor();
-                                    var diagram = editor.diagram;
-                                    var model = newAdded; //dropEvent.source
-                                    //var p = editor.convertPosition(dropEvent)
-                                    
-
-                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true)
-
-                                    var options = {
-                                        diagram: diagram,
-                                        editor: editor,
-                                        x: pX,
-                                        y: pY,
-                                        model: model,
-                                        containerView: containerView
-                                    }
-                                    let returnedView=app.factory.createViewOf(options);
-                                    console.log("ReturnedView",returnedView);
-                                    app.diagrams.repaint();
-                                    pX+=/* returnedView.left+ */returnedView.width+incrementValue;
-                                    // pY=returnedView.top;
-                                    // }
-                                } catch (err) {
-                                    console.error(err)
-                                }
-
-
                                 console.log("New Enum Added-2", mResult);
 
+                                //mUtils.createViewOfElement(newAdded);
+                                newElements.push(newAdded);
                             }
                         }
                     });
@@ -287,30 +241,8 @@ function importDataToModel(XMIData) {
                                 newAdded._parent = result;
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
                                 console.log("New Entity Added-2", mResult);
-
-                                try {
-                                    var editor = app.diagrams.getEditor();
-                                    var diagram = editor.diagram;
-                                    var model = newAdded; //dropEvent.source
-                                    
-                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
-
-                                    var options = {
-                                        diagram: diagram,
-                                        editor: editor,
-                                        x: pX,
-                                        y: pY,
-                                        model: model,
-                                        containerView: containerView
-                                    }
-                                    let returnedView=app.factory.createViewOf(options);
-                                    console.log("ReturnedView",returnedView);
-                                    app.diagrams.repaint();
-                                    pX+=returnedView.width+incrementValue;
-                                    pY=returnedView.top;
-                                } catch (err) {
-                                    console.error(err)
-                                }
+                                //mUtils.createViewOfElement(newAdded);
+                                newElements.push(newAdded);
                             }
                         }
                     });
@@ -363,32 +295,8 @@ function importDataToModel(XMIData) {
                                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
                                 console.log("New Event Added-2", mResult);
 
-                                try {
-                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
-                                    var editor = app.diagrams.getEditor();
-                                    var diagram = editor.diagram;
-                                    var model = newAdded; //dropEvent.source
-
-                                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
-
-                                    var options = {
-                                        diagram: diagram,
-                                        editor: editor,
-                                        x: pX,
-                                        y: pY,
-                                        model: model,
-                                        containerView: containerView
-                                    }
-                                    let returnedView=app.factory.createViewOf(options);
-                                    console.log("ReturnedView",returnedView);
-                                    app.diagrams.repaint();
-                                    pX+=returnedView.width+incrementValue;
-                                    pY=returnedView.top;
-                                    // }
-                                } catch (err) {
-                                    console.error(err)
-                                }
-
+                                //mUtils.createViewOfElement(newAdded);
+                                newElements.push(newAdded);
                             }
 
                         }
@@ -474,6 +382,10 @@ function importDataToModel(XMIData) {
 
 
 
+        forEach(newElements,function(newEle){
+            mUtils.createViewOfElement(newEle);
+        });
+        app.diagrams.repaint();
 
 
 
