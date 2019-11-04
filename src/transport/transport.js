@@ -114,9 +114,9 @@ function importDataToModel(XMIData) {
         'ownedElements': mainOwnedElements
     };
 
-    let pX=100;
-    let pY=100;
-    let incrementValue=200;
+    let pX=0;
+    let pY=0;
+    let incrementValue=100;
     if (XMIData.type == fields.package) {
         // let mPackage=XMIData[key];
         let mProject = app.project.getProject();
@@ -131,12 +131,23 @@ function importDataToModel(XMIData) {
                     
                     /* Update Enumeration */
                     console.log("steps----------1");
-                    let lastEnumView=null;
+                    let lastMaxView=null;
+                    let maxLeft;
                     let enumView=app.diagrams.getEditor().diagram.ownedViews;
-                    let filterEnumView=enumView.filter(function(item){
-                        return item instanceof type.UMLEnumerationView
+                    let filterAllViews=enumView.filter(function(item){
+                        return item instanceof type.View
                     });
-                    lastEnumView=filterEnumView[filterEnumView.length-1];
+                    if(filterAllViews.length>0){
+                        maxLeft=filterAllViews[0];
+                    }
+                    forEach(filterAllViews,function(item){
+                        if(item.left>=maxLeft.left){
+                            maxLeft=item;
+                        }
+                    });
+                    lastMaxView=maxLeft;
+                    pX=lastMaxView.left+lastMaxView.width+(incrementValue/2);
+                    pY=lastMaxView.top;
 
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
@@ -199,8 +210,7 @@ function importDataToModel(XMIData) {
                                     var diagram = editor.diagram;
                                     var model = newAdded; //dropEvent.source
                                     //var p = editor.convertPosition(dropEvent)
-                                    pX=lastEnumView.left+incrementValue;
-                                    pY=lastEnumView.top;
+                                    
 
                                     var containerView = diagram.getViewAt(editor.canvas, pX, pY, true)
 
@@ -212,9 +222,11 @@ function importDataToModel(XMIData) {
                                         model: model,
                                         containerView: containerView
                                     }
-                                    app.factory.createViewOf(options);
+                                    let returnedView=app.factory.createViewOf(options);
+                                    console.log("ReturnedView",returnedView);
                                     app.diagrams.repaint();
-                                    pX += incrementValue;
+                                    pX+=/* returnedView.left+ */returnedView.width+incrementValue;
+                                    // pY=returnedView.top;
                                     // }
                                 } catch (err) {
                                     console.error(err)
@@ -224,10 +236,6 @@ function importDataToModel(XMIData) {
                                 console.log("New Enum Added-2", mResult);
 
                             }
-
-                            //mainOwnedElements.push(enumObject);
-
-
                         }
                     });
                     console.log("steps----------2");
@@ -281,11 +289,10 @@ function importDataToModel(XMIData) {
                                 console.log("New Entity Added-2", mResult);
 
                                 try {
-                                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
                                     var editor = app.diagrams.getEditor();
                                     var diagram = editor.diagram;
                                     var model = newAdded; //dropEvent.source
-                                    //var p = editor.convertPosition(dropEvent)
+                                    
                                     var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
 
                                     var options = {
@@ -296,16 +303,15 @@ function importDataToModel(XMIData) {
                                         model: model,
                                         containerView: containerView
                                     }
-                                    app.factory.createViewOf(options);
+                                    let returnedView=app.factory.createViewOf(options);
+                                    console.log("ReturnedView",returnedView);
                                     app.diagrams.repaint();
-                                    pX += incrementValue;
-                                    // }
+                                    pX+=returnedView.width+incrementValue;
+                                    pY=returnedView.top;
                                 } catch (err) {
                                     console.error(err)
                                 }
                             }
-                            //mainOwnedElements.push(entityObject);
-
                         }
                     });
 
@@ -362,7 +368,7 @@ function importDataToModel(XMIData) {
                                     var editor = app.diagrams.getEditor();
                                     var diagram = editor.diagram;
                                     var model = newAdded; //dropEvent.source
-                                    //var p = editor.convertPosition(dropEvent)
+
                                     var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
 
                                     var options = {
@@ -373,9 +379,11 @@ function importDataToModel(XMIData) {
                                         model: model,
                                         containerView: containerView
                                     }
-                                    app.factory.createViewOf(options);
+                                    let returnedView=app.factory.createViewOf(options);
+                                    console.log("ReturnedView",returnedView);
                                     app.diagrams.repaint();
-                                    pX += incrementValue;
+                                    pX+=returnedView.width+incrementValue;
+                                    pY=returnedView.top;
                                     // }
                                 } catch (err) {
                                     console.error(err)
