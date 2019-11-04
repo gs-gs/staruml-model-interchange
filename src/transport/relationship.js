@@ -7,6 +7,12 @@ const fs = require('fs');
 const CircularJSON = require('circular-json');
 var path = require('path');
 var constant = require('../constant');
+//const Mustache = require('mustache')
+//const Core = require('../core/core')
+// const _ = require('lodash')
+// const {
+//     EventEmitter
+// } = require('events')
 
 function addAggregationToImport(objRelationship, entity, attr) {
     /* UMLAssociation (aggregation) */
@@ -214,7 +220,7 @@ function updateCompositionToImport(entity, attr, _id) {
     // objRelationship.name = attr.name;
     // objRelationship.documentation = attr.description;
     app.engine.setProperty(UMLAssociation, 'name', attr.name);
-    app.engine.setProperty(UMLAssociation, 'documentation', attr.description);  
+    app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
 
     /* Source */
     let objEnd1 = {};
@@ -565,10 +571,10 @@ function bindRelationshipToImport(entity, attr) {
             let rel = app.repository.readObject(objRelationship);
             rel._parent = entity;
             console.log("rel", rel);
-            let mObj={
-                rel:rel,
-                isNew:!mAssoc.isExist
-            };           
+            let mObj = {
+                rel: rel,
+                isNew: !mAssoc.isExist
+            };
             return mObj;
         }
     } else if (attr.type == fields.interfaceRealization) {
@@ -637,7 +643,7 @@ function setRelationship(ownedElements, XMIData) {
             let ownedElements = [];
             // entityJson.ownedElements = ownedElements;
 
-            let newElements=[];
+            let newElements = [];
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
                     if (
@@ -650,15 +656,14 @@ function setRelationship(ownedElements, XMIData) {
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
 
-                        if(relationship.type == fields.generalization){
-                            if(rel.isNew){
+                        if (relationship.type == fields.generalization) {
+                            if (rel.isNew) {
                                 newElements.push(rel.rel);
                             }
                             if (rel.rel != null) {
                                 ownedElements.push(rel.rel);
                             }
-                        }
-                        else{
+                        } else {
                             //let mElement = app.repository.get(rel._id);
 
                             if (rel != null) {
@@ -692,34 +697,7 @@ function setRelationship(ownedElements, XMIData) {
             let resRel = app.engine.setProperty(entity, 'ownedElements', ownedElements);
             //app.modelExplorer.update(entity);
             console.log("resRel", resRel);
-            console.log("new Generalization", newElements);
-            let pX=100,pY=100,incrementValue=200;
-
-            forEach(newElements,function(newItem){
-                try {
-                    // if (dropEvent.diagram.canAcceptModel(dropEvent.source)) {
-                    var editor = app.diagrams.getEditor();
-                    var diagram = editor.diagram;
-                    var model = newItem; //dropEvent.source
-                    //var p = editor.convertPosition(dropEvent)
-                    var containerView = diagram.getViewAt(editor.canvas, pX, pY, true);
-
-                    var options = {
-                        diagram: diagram,
-                        editor: editor,
-                        x: pX,
-                        y: pY,
-                        model: model,
-                        containerView: containerView
-                    }
-                    app.factory.createViewOf(options);
-                    app.diagrams.repaint();
-                    pX += incrementValue;
-                    // }
-                } catch (err) {
-                    console.error(err)
-                }
-            });
+            
         }
     });
 }
