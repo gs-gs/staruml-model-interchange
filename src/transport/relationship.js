@@ -93,6 +93,12 @@ function updateAggregationToImport(entity, attr, _id) {
     /* Source */
     let objEnd1 = {};
     // objRelationship.end1 = objEnd1;
+    if(UMLAssociation.end1.hasOwnProperty('_id')){
+        objEnd1._id=UMLAssociation.end1._id;
+    }
+    objEnd1._parent={
+        '$ref':UMLAssociation._id
+    };
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'shared';
 
@@ -114,6 +120,12 @@ function updateAggregationToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
+    if(UMLAssociation.end2.hasOwnProperty('_id')){
+        objEnd2._id=UMLAssociation.end2._id;
+    }
+    objEnd2._parent={
+        '$ref':UMLAssociation._id
+    };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
     objEnd2.aggregation = 'none';
@@ -224,6 +236,12 @@ function updateCompositionToImport(entity, attr, _id) {
 
     /* Source */
     let objEnd1 = {};
+    if(UMLAssociation.end1.hasOwnProperty('_id')){
+        objEnd1._id=UMLAssociation.end1._id;
+    }
+    objEnd1._parent={
+        '$ref':UMLAssociation._id
+    };
     // objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'composite';
@@ -246,6 +264,12 @@ function updateCompositionToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
+    if(UMLAssociation.end2.hasOwnProperty('_id')){
+        objEnd2._id=UMLAssociation.end2._id;
+    }
+    objEnd2._parent={
+        '$ref':UMLAssociation._id
+    };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
     objEnd2.aggregation = 'none';
@@ -396,6 +420,40 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     return objRelationship;
 }
 
+function updateAssociationClassLink(entity, attr, _id) {
+    console.log("-----interface", entity.name);
+
+    let UMLAssociationClassLink = app.repository.get(_id);
+
+    // objRelationship._type = 'UMLAssociationClassLink';
+    // objRelationship.name = attr.name;
+    // objRelationship.documentation = attr.description;
+    app.engine.setProperty(UMLAssociationClassLink, 'name', attr.name);
+    app.engine.setProperty(UMLAssociationClassLink, 'documentation', attr.description);
+
+    /* associationSide */
+    // let associationSide = {};
+    let associationSide = bindRelationshipToImport(entity, attr.association);
+    //let associationSide=app.repository.writeObject(bindAssos);
+    /* if (bindAssos && bindAssos.hasOwnProperty('_id')) {
+        associationSide['$ref'] = bindAssos._id;
+    } */
+    app.engine.setProperty(UMLAssociationClassLink, 'associationSide', associationSide);
+    /* classSide */
+    let mClass = attr.class;
+    let refClass = app.repository.search(mClass.name);
+    let fRefClass = refClass.filter(function (item) {
+        return item.name == mClass.name;
+    });
+    
+    let classSide;
+    if (fRefClass.length > 0) {
+        classSide = refClass[0];
+    }
+    app.engine.setProperty(UMLAssociationClassLink, 'classSide', classSide);
+    return UMLAssociationClassLink;
+}
+
 function addInterfaceToImport(objRelationship, entity, attr) {
     console.log("-----interface", entity.name);
 
@@ -464,6 +522,12 @@ function updateInterfaceToImport(entity, attr, _id) {
     app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
     /* Source */
     let objEnd1 = {};
+    if(UMLAssociation.end1.hasOwnProperty('_id')){
+        objEnd1._id=UMLAssociation.end1._id;
+    }
+    objEnd1._parent={
+        '$ref':UMLAssociation._id
+    };
     // objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'none';
@@ -486,6 +550,12 @@ function updateInterfaceToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
+    if(UMLAssociation.end2.hasOwnProperty('_id')){
+        objEnd2._id=UMLAssociation.end2._id;
+    }
+    objEnd2._parent={
+        '$ref':UMLAssociation._id
+    };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
     objEnd2.aggregation = 'none';
@@ -614,17 +684,21 @@ function bindRelationshipToImport(entity, attr) {
         let mAssoc = utils.isAssociationClassLinkExist(entity, attr);
         if (mAssoc.isExist) {
             objRelationship._id = mAssoc.assoc._id;
+            return updateAssociationClassLink(entity, attr, mAssoc.assoc._id);
         }
-        objRelationship = addAssociationClassLink(objRelationship, entity, attr);
-        if (objRelationship != null || Object.keys(objRelationship).length == 0) {
-            try {
-                let rel = app.repository.readObject(objRelationship);
-                rel._parent = entity;
-                console.log("rel", rel);
-                return rel;
-            } catch (error) {
-                console.error("Error : ", error.message);
-                app.dialogs.showErrorDialog(error.message);
+        else {
+
+            objRelationship = addAssociationClassLink(objRelationship, entity, attr);
+            if (objRelationship != null || Object.keys(objRelationship).length == 0) {
+                try {
+                    let rel = app.repository.readObject(objRelationship);
+                    rel._parent = entity;
+                    console.log("rel", rel);
+                    return rel;
+                } catch (error) {
+                    console.error("Error : ", error.message);
+                    app.dialogs.showErrorDialog(error.message);
+                }
             }
         }
     }
