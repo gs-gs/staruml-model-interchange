@@ -422,8 +422,14 @@ function createViewOfElement(newAdded){
         }
         let returnedView=app.factory.createViewOf(options);
         console.log("ReturnedView",returnedView);
+
+
         
-        pX+=returnedView.width+incrementValue/2;
+        let width=0,top=0;
+        if(returnedView.width==0){
+            width=returnedView.minWidth;
+        }
+        pX+=width+(incrementValue/2);
         pY=returnedView.top;
     } catch (err) {
         console.error(err)

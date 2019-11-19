@@ -1,18 +1,7 @@
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var utils = require('./utils');
-var mEntity = require('./entity');
-var mEvent = require('./event');
-const fs = require('fs');
-const CircularJSON = require('circular-json');
-var path = require('path');
 var constant = require('../constant');
-//const Mustache = require('mustache')
-//const Core = require('../core/core')
-// const _ = require('lodash')
-// const {
-//     EventEmitter
-// } = require('events')
 
 function addAggregationToImport(objRelationship, entity, attr) {
     /* UMLAssociation (aggregation) */
@@ -93,11 +82,11 @@ function updateAggregationToImport(entity, attr, _id) {
     /* Source */
     let objEnd1 = {};
     // objRelationship.end1 = objEnd1;
-    if(UMLAssociation.end1.hasOwnProperty('_id')){
-        objEnd1._id=UMLAssociation.end1._id;
+    if (UMLAssociation.end1.hasOwnProperty('_id')) {
+        objEnd1._id = UMLAssociation.end1._id;
     }
-    objEnd1._parent={
-        '$ref':UMLAssociation._id
+    objEnd1._parent = {
+        '$ref': UMLAssociation._id
     };
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'shared';
@@ -120,11 +109,11 @@ function updateAggregationToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
-    if(UMLAssociation.end2.hasOwnProperty('_id')){
-        objEnd2._id=UMLAssociation.end2._id;
+    if (UMLAssociation.end2.hasOwnProperty('_id')) {
+        objEnd2._id = UMLAssociation.end2._id;
     }
-    objEnd2._parent={
-        '$ref':UMLAssociation._id
+    objEnd2._parent = {
+        '$ref': UMLAssociation._id
     };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
@@ -236,11 +225,11 @@ function updateCompositionToImport(entity, attr, _id) {
 
     /* Source */
     let objEnd1 = {};
-    if(UMLAssociation.end1.hasOwnProperty('_id')){
-        objEnd1._id=UMLAssociation.end1._id;
+    if (UMLAssociation.end1.hasOwnProperty('_id')) {
+        objEnd1._id = UMLAssociation.end1._id;
     }
-    objEnd1._parent={
-        '$ref':UMLAssociation._id
+    objEnd1._parent = {
+        '$ref': UMLAssociation._id
     };
     // objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
@@ -264,11 +253,11 @@ function updateCompositionToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
-    if(UMLAssociation.end2.hasOwnProperty('_id')){
-        objEnd2._id=UMLAssociation.end2._id;
+    if (UMLAssociation.end2.hasOwnProperty('_id')) {
+        objEnd2._id = UMLAssociation.end2._id;
     }
-    objEnd2._parent={
-        '$ref':UMLAssociation._id
+    objEnd2._parent = {
+        '$ref': UMLAssociation._id
     };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
@@ -445,7 +434,7 @@ function updateAssociationClassLink(entity, attr, _id) {
     let fRefClass = refClass.filter(function (item) {
         return item.name == mClass.name;
     });
-    
+
     let classSide;
     if (fRefClass.length > 0) {
         classSide = refClass[0];
@@ -522,11 +511,11 @@ function updateInterfaceToImport(entity, attr, _id) {
     app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
     /* Source */
     let objEnd1 = {};
-    if(UMLAssociation.end1.hasOwnProperty('_id')){
-        objEnd1._id=UMLAssociation.end1._id;
+    if (UMLAssociation.end1.hasOwnProperty('_id')) {
+        objEnd1._id = UMLAssociation.end1._id;
     }
-    objEnd1._parent={
-        '$ref':UMLAssociation._id
+    objEnd1._parent = {
+        '$ref': UMLAssociation._id
     };
     // objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
@@ -550,11 +539,11 @@ function updateInterfaceToImport(entity, attr, _id) {
     } */
     /* target */
     let objEnd2 = {};
-    if(UMLAssociation.end2.hasOwnProperty('_id')){
-        objEnd2._id=UMLAssociation.end2._id;
+    if (UMLAssociation.end2.hasOwnProperty('_id')) {
+        objEnd2._id = UMLAssociation.end2._id;
     }
-    objEnd2._parent={
-        '$ref':UMLAssociation._id
+    objEnd2._parent = {
+        '$ref': UMLAssociation._id
     };
     objEnd2._type = 'UMLAssociationEnd';
     // objRelationship.end2 = objEnd2;
@@ -674,7 +663,6 @@ function bindRelationshipToImport(entity, attr) {
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
                 let rel = app.repository.readObject(objRelationship);
                 rel._parent = entity;
-                console.log("rel", rel);
                 return rel;
             }
         }
@@ -683,10 +671,8 @@ function bindRelationshipToImport(entity, attr) {
         /* UMLAssociation (associationClassLink) */
         let mAssoc = utils.isAssociationClassLinkExist(entity, attr);
         if (mAssoc.isExist) {
-            objRelationship._id = mAssoc.assoc._id;
             return updateAssociationClassLink(entity, attr, mAssoc.assoc._id);
-        }
-        else {
+        } else {
 
             objRelationship = addAssociationClassLink(objRelationship, entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
@@ -770,7 +756,7 @@ function setRelationship(ownedElements, XMIData) {
             let resRel = app.engine.setProperty(entity, 'ownedElements', ownedElements);
             //app.modelExplorer.update(entity);
             console.log("resRel", resRel);
-            
+
         }
     });
 }
