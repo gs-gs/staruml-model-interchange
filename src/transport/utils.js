@@ -1,6 +1,7 @@
 var constant = require('../constant');
 var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
+var viewfields = require('./viewfields');
 var datatype = require('./datatype');
 
 function getElementType(element) {
@@ -369,46 +370,49 @@ function isAssociationClassLinkExist(entity, attr) {
     };
     return val;
 }
-let pX=0;
-let pY=0;
-let incrementValue=100;
-function calculateXY(){
-    let lastMaxView=null;
+let pX = 0;
+let pY = 0;
+let incrementValue = 100;
+
+function calculateXY() {
+    let lastMaxView = null;
     let maxLeft;
-    let enumView=app.diagrams.getEditor().diagram.ownedViews;
-    let filterAllViews=enumView.filter(function(item){
+    let enumView = app.diagrams.getEditor().diagram.ownedViews;
+    let filterAllViews = enumView.filter(function (item) {
         return item instanceof type.View
     });
-    if(filterAllViews.length>0){
-        maxLeft=filterAllViews[0];
+    if (filterAllViews.length > 0) {
+        maxLeft = filterAllViews[0];
     }
-    forEach(filterAllViews,function(item){
-        if(item.left>=maxLeft.left){
-            maxLeft=item;
+    forEach(filterAllViews, function (item) {
+        if (item.left >= maxLeft.left) {
+            maxLeft = item;
         }
     });
-    lastMaxView=maxLeft;
-    pX=lastMaxView.left+lastMaxView.width+(incrementValue/2);
-    pY=lastMaxView.top;
+    lastMaxView = maxLeft;
+    pX = lastMaxView.left + lastMaxView.width + (incrementValue / 2);
+    pY = lastMaxView.top;
 
     let lastView = {
-        pX:pX,
-        pY:pY
+        pX: pX,
+        pY: pY
     }
     return lastView;
 }
-function getXY(){
+
+function getXY() {
     return {
-        pX:pX,
-        pY:pY
+        pX: pX,
+        pY: pY
     }
 }
-function createViewOfElement(newAdded){
+
+function createViewOfElement(newAdded) {
     try {
         var editor = app.diagrams.getEditor();
         var diagram = editor.diagram;
-        var model = newAdded; 
-        
+        var model = newAdded;
+
 
         var containerView = diagram.getViewAt(editor.canvas, getXY().pX, getXY().pY, true)
 
@@ -420,20 +424,140 @@ function createViewOfElement(newAdded){
             model: model,
             containerView: containerView
         }
-        let returnedView=app.factory.createViewOf(options);
-        console.log("ReturnedView",returnedView);
-
-
-        
-        let width=0,top=0;
-        if(returnedView.width==0){
-            width=returnedView.minWidth;
+        let returnedView = app.factory.createViewOf(options);
+        if (returnedView instanceof type.UMLInterfaceView) {
+            setInterfaceViewAttributes(returnedView);
+        } else if (returnedView instanceof type.UMLEnumerationView) {
+            setEnumerationViewAttributes(returnedView);
+        } else if (returnedView instanceof type.UMLClassView) {
+            setClassViewAttributes(returnedView);
         }
-        pX+=width+(incrementValue/2);
-        pY=returnedView.top;
+
+        console.log("ReturnedView", returnedView);
+
+
+
+        let width = 0,minWidth=0;
+        width=returnedView.width;
+        minWidth=returnedView.minWidth;
+        if (minWidth>width) {
+            width = minWidth;
+        }
+        pX += width + (incrementValue / 2);
+        pY = returnedView.top;
     } catch (err) {
         console.error(err)
     }
+}
+
+function setInterfaceViewAttributes(UMLInterfaceView) {
+    app.engine.setProperty(UMLInterfaceView, viewfields.autoResize, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.containerChangeable, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.containerExtending, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.enabled, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.fillColor, '#fff5d8');
+    app.engine.setProperty(UMLInterfaceView, viewfields.fontColor, "#000000");
+    app.engine.setProperty(UMLInterfaceView, viewfields.lineColor, "#000000");
+    app.engine.setProperty(UMLInterfaceView, viewfields.minHeight, 100);
+    app.engine.setProperty(UMLInterfaceView, viewfields.minWidth, 180);
+    app.engine.setProperty(UMLInterfaceView, viewfields.movable, 3);
+    app.engine.setProperty(UMLInterfaceView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.selectZIndex, 0);
+    app.engine.setProperty(UMLInterfaceView, viewfields.selectable, 1);
+    app.engine.setProperty(UMLInterfaceView, viewfields.selected, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showMultiplicity, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showNamespace, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showOperationSignature, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showProperty, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showShadow, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showType, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.showVisibility, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.sizable, 4);
+    app.engine.setProperty(UMLInterfaceView, viewfields.stereotypeDisplay, 'label');
+    app.engine.setProperty(UMLInterfaceView, viewfields.suppressAttributes, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.suppressOperations, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.suppressReceptions, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.visible, true);
+    app.engine.setProperty(UMLInterfaceView, viewfields.wordWrap, false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.zIndex, 0);
+}
+
+function setEnumerationViewAttributes(UMLEnumerationView) {
+    app.engine.setProperty(UMLEnumerationView, viewfields.autoResize, false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.containerChangeable, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.containerExtending, false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.enabled, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.fillColor, '#d8f2ff');
+    app.engine.setProperty(UMLEnumerationView, viewfields.fontColor, "#000000");
+    app.engine.setProperty(UMLEnumerationView, viewfields.lineColor, "#000000");
+    app.engine.setProperty(UMLEnumerationView, viewfields.minHeight, 100);
+    app.engine.setProperty(UMLEnumerationView, viewfields.minWidth, 180);
+    app.engine.setProperty(UMLEnumerationView, viewfields.movable, 3);
+    app.engine.setProperty(UMLEnumerationView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.selectZIndex, 0);
+    app.engine.setProperty(UMLEnumerationView, viewfields.selectable, 1);
+    app.engine.setProperty(UMLEnumerationView, viewfields.selected, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showMultiplicity, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showNamespace, false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showOperationSignature, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showProperty, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showShadow, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showType, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.showVisibility, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.sizable, 4);
+    app.engine.setProperty(UMLEnumerationView, viewfields.stereotypeDisplay, 'label');
+    app.engine.setProperty(UMLEnumerationView, viewfields.suppressAttributes, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.suppressLiterals, false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.suppressOperations, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.suppressReceptions, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.visible, true);
+    app.engine.setProperty(UMLEnumerationView, viewfields.wordWrap, false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.zIndex, 0);
+}
+
+function setClassViewAttributes(UMLClassView) {
+    app.engine.setProperty(UMLClassView, viewfields.autoResize, false);
+    app.engine.setProperty(UMLClassView, viewfields.containerChangeable, true);
+    app.engine.setProperty(UMLClassView, viewfields.containerExtending, false);
+    app.engine.setProperty(UMLClassView, viewfields.enabled, true);
+    app.engine.setProperty(UMLClassView, viewfields.fillColor, '#ffffff');
+    app.engine.setProperty(UMLClassView, viewfields.fontColor, "#000000");
+    app.engine.setProperty(UMLClassView, viewfields.lineColor, "#000000");
+    app.engine.setProperty(UMLClassView, viewfields.minHeight, 100);
+    app.engine.setProperty(UMLClassView, viewfields.minWidth, 180);
+    app.engine.setProperty(UMLClassView, viewfields.movable, 3);
+    app.engine.setProperty(UMLClassView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLClassView, viewfields.selectZIndex, 0);
+    app.engine.setProperty(UMLClassView, viewfields.selectable, 1);
+    app.engine.setProperty(UMLClassView, viewfields.selected, true);
+    app.engine.setProperty(UMLClassView, viewfields.showMultiplicity, true);
+    app.engine.setProperty(UMLClassView, viewfields.showNamespace, true);
+    app.engine.setProperty(UMLClassView, viewfields.showOperationSignature, true);
+    app.engine.setProperty(UMLClassView, viewfields.showProperty, true);
+    app.engine.setProperty(UMLClassView, viewfields.showShadow, true);
+    app.engine.setProperty(UMLClassView, viewfields.showType, true);
+    app.engine.setProperty(UMLClassView, viewfields.showVisibility, true);
+    app.engine.setProperty(UMLClassView, viewfields.sizable, 4);
+    app.engine.setProperty(UMLClassView, viewfields.stereotypeDisplay, 'label');
+    app.engine.setProperty(UMLClassView, viewfields.suppressAttributes, false);
+    app.engine.setProperty(UMLClassView, viewfields.suppressOperations, true);
+    app.engine.setProperty(UMLClassView, viewfields.suppressReceptions, true);
+    app.engine.setProperty(UMLClassView, viewfields.visible, true);
+    app.engine.setProperty(UMLClassView, viewfields.wordWrap, false);
+    app.engine.setProperty(UMLClassView, viewfields.zIndex, 0);
+}
+let newElements = [];
+
+function addNewAddedElement(element) {
+    newElements.push(element);
+}
+
+function getNewAddedElement() {
+    return newElements;
+}
+
+function resetNewAddedElement() {
+    newElements = [];
 }
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
@@ -452,3 +576,6 @@ module.exports.isInterfaceRealizationExist = isInterfaceRealizationExist;
 module.exports.isAssociationClassLinkExist = isAssociationClassLinkExist;
 module.exports.createViewOfElement = createViewOfElement;
 module.exports.calculateXY = calculateXY;
+module.exports.addNewAddedElement = addNewAddedElement;
+module.exports.getNewAddedElement = getNewAddedElement;
+module.exports.resetNewAddedElement = resetNewAddedElement;
