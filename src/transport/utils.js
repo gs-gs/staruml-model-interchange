@@ -109,16 +109,10 @@ function getDatatype(attr) {
 
 function setProperty(ownedElements, XMIData) {
 
-
-
-    forEach(ownedElements, function (entity) {
-        let diagram = null;
-        if (entity instanceof type.UMLClassDiagram) {
-            diagram = entity;
-        }
-        if (entity instanceof type.UMLClass || entity instanceof type.UMLEnumeration || entity instanceof type.UMLInterface) {
-            let mSubObject = XMIData[entity.name];
-            let entityString = app.repository.writeObject(entity);
+    forEach(ownedElements, function (element) {
+        if (element instanceof type.UMLClass || element instanceof type.UMLEnumeration || element instanceof type.UMLInterface) {
+            let mSubObject = XMIData[element.name];
+            let entityString = app.repository.writeObject(element);
             let entityJson = JSON.parse(entityString, null, 4);
 
             /* Check for new properties to be added */
@@ -131,7 +125,7 @@ function setProperty(ownedElements, XMIData) {
                 if (chkForDuplicate.length == 0) {
 
 
-                    let atbts = entity.attributes.filter(function (fItem) {
+                    let atbts = element.attributes.filter(function (fItem) {
                         return item.name == fItem.name
                     });
                     if (atbts.length == 0) {
@@ -145,7 +139,6 @@ function setProperty(ownedElements, XMIData) {
             });
             /*  */
 
-
             /* attribute ( Property ) */
             let attributes = [];
             entityJson.attributes = attributes;
@@ -154,16 +147,17 @@ function setProperty(ownedElements, XMIData) {
                     return attr.name == nItem.name
                 });
 
-
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
+                    rel._parent={
+                        '$ref':element._id
+                    }
                     console.log("rel", rel);
                     attributes.push(rel);
                 }
             });
-            let resRel = app.engine.setProperty(entity, 'attributes', attributes);
+            let resRel = app.engine.setProperty(element, 'attributes', attributes);
             console.log("setProperty", resRel);
         }
     });
@@ -425,6 +419,57 @@ function createViewOfElement(newAdded) {
             containerView: containerView
         }
         let returnedView = app.factory.createViewOf(options);
+        // let returnedView = app.factory.createViewAndRelationships(editor,getXY().pX,getXY().pY,model,containerView);
+
+        if (returnedView != null) {
+
+            if (returnedView instanceof type.UMLInterfaceView) {
+                setInterfaceViewAttributes(returnedView);
+            } else if (returnedView instanceof type.UMLEnumerationView) {
+                setEnumerationViewAttributes(returnedView);
+            } else if (returnedView instanceof type.UMLClassView) {
+                setClassViewAttributes(returnedView);
+            }
+
+            console.log("ReturnedView", returnedView);
+
+
+            let width = 0,
+                minWidth = 0;
+            width = returnedView.width;
+            minWidth = returnedView.minWidth;
+            if (minWidth > width) {
+                width = minWidth;
+            }
+            pX += width + (incrementValue / 2);
+            pY = returnedView.top;
+        }
+
+    } catch (err) {
+        console.error(err)
+    }
+}
+
+function recreateView(newAdded, view) {
+    try {
+        var editor = app.diagrams.getEditor();
+        var diagram = editor.diagram;
+        var model = newAdded;
+
+
+        var containerView = diagram.getViewAt(editor.canvas, view.left, view.top, true)
+
+        var options = {
+            diagram: diagram,
+            editor: editor,
+            x: view.left,
+            y: view.top,
+            model: model,
+            containerView: containerView
+        }
+        let returnedView = app.factory.createViewOf(options);
+
+
         if (returnedView instanceof type.UMLInterfaceView) {
             setInterfaceViewAttributes(returnedView);
         } else if (returnedView instanceof type.UMLEnumerationView) {
@@ -432,22 +477,29 @@ function createViewOfElement(newAdded) {
         } else if (returnedView instanceof type.UMLClassView) {
             setClassViewAttributes(returnedView);
         }
-
-        console.log("ReturnedView", returnedView);
-
-
-
-        let width = 0,minWidth=0;
-        width=returnedView.width;
-        minWidth=returnedView.minWidth;
-        if (minWidth>width) {
-            width = minWidth;
-        }
-        pX += width + (incrementValue / 2);
-        pY = returnedView.top;
     } catch (err) {
         console.error(err)
     }
+}
+
+function recreateViewForRelationship(rel) {
+    let rel_created_view = app.repository.getViewsOf(rel._parent)
+    let newViews = []
+    forEach(rel_created_view, function (view) {
+        if (view instanceof type.UMLClassView) {
+            let res = newViews.filter(function (viewItem) {
+                return viewItem.model._id == view.model._id;
+            });
+            if (res == 0) {
+                newViews.push(view);
+            }
+
+        }
+    });
+    forEach(newViews, function (nView) {
+        app.engine.deleteElements([], [nView]);
+        recreateView(nView.model, nView);
+    });
 }
 
 function setInterfaceViewAttributes(UMLInterfaceView) {
@@ -461,7 +513,7 @@ function setInterfaceViewAttributes(UMLInterfaceView) {
     app.engine.setProperty(UMLInterfaceView, viewfields.minHeight, 100);
     app.engine.setProperty(UMLInterfaceView, viewfields.minWidth, 180);
     app.engine.setProperty(UMLInterfaceView, viewfields.movable, 3);
-    app.engine.setProperty(UMLInterfaceView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLInterfaceView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectable, 1);
     app.engine.setProperty(UMLInterfaceView, viewfields.selected, true);
@@ -493,7 +545,7 @@ function setEnumerationViewAttributes(UMLEnumerationView) {
     app.engine.setProperty(UMLEnumerationView, viewfields.minHeight, 100);
     app.engine.setProperty(UMLEnumerationView, viewfields.minWidth, 180);
     app.engine.setProperty(UMLEnumerationView, viewfields.movable, 3);
-    app.engine.setProperty(UMLEnumerationView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLEnumerationView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectable, 1);
     app.engine.setProperty(UMLEnumerationView, viewfields.selected, true);
@@ -526,7 +578,7 @@ function setClassViewAttributes(UMLClassView) {
     app.engine.setProperty(UMLClassView, viewfields.minHeight, 100);
     app.engine.setProperty(UMLClassView, viewfields.minWidth, 180);
     app.engine.setProperty(UMLClassView, viewfields.movable, 3);
-    app.engine.setProperty(UMLClassView, viewfields.parentStyle,false);
+    app.engine.setProperty(UMLClassView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLClassView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLClassView, viewfields.selectable, 1);
     app.engine.setProperty(UMLClassView, viewfields.selected, true);
@@ -579,3 +631,6 @@ module.exports.calculateXY = calculateXY;
 module.exports.addNewAddedElement = addNewAddedElement;
 module.exports.getNewAddedElement = getNewAddedElement;
 module.exports.resetNewAddedElement = resetNewAddedElement;
+module.exports.getXY = getXY;
+module.exports.recreateView = recreateView;
+module.exports.recreateViewForRelationship = recreateViewForRelationship;

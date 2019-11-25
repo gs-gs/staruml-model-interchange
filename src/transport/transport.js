@@ -113,8 +113,8 @@ function importDataToModel(XMIData) {
         'name': XMIData.name,
         'ownedElements': mainOwnedElements
     };
-    let newElements=[];
-    
+    mUtils.resetNewAddedElement();
+
     if (XMIData.type == fields.package) {
         // let mPackage=XMIData[key];
         let mProject = app.project.getProject();
@@ -127,10 +127,94 @@ function importDataToModel(XMIData) {
 
                     result = selPkg;
                     mUtils.calculateXY();
-                    
-                    /* Update Enumeration */
-                    console.log("steps----------1");
 
+                    /* Step - 1 : Add all elements first */
+                    /* Add New Enumeration */
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+                            /* UMLEnumeration */
+                            let enumObject = {};
+
+                            /* Binding Enum fields, attribute, literals */
+                            mEnum.bindEnumToImport(enumObject, mSubObject);
+
+                            let searchedEnum = app.repository.search(mSname);
+                            let searchedEnumRes = searchedEnum.filter(function (item) {
+                                return (item instanceof type.UMLEnumeration && item.name == mSname);
+                            });
+
+                            if (searchedEnumRes.length == 0) {
+                                let newAdded = app.repository.readObject(enumObject);
+                                console.log("New Enum Added-1: ", newAdded);
+                                newAdded._parent = result;
+                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                                console.log("New Enum Added-2", mResult);
+                                // newElements.push(newAdded);
+                                mUtils.addNewAddedElement(newAdded);
+                            }
+                        }
+                    });
+
+                    /* Add New Entity */
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        /* UMLClass */
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+
+                            let entityObject = {};
+                            /* Binding Entity fields and attribute */
+                            mEntity.bindEntityToImport(entityObject, mSubObject);
+
+                            // let selectedEntity = app.repository.select(mSname);
+
+                            let searchedEntity = app.repository.search(mSname);
+                            let searchedEntityRes = searchedEntity.filter(function (item) {
+                                return (item instanceof type.UMLClass && item.name == mSname);
+                            });
+                            if (searchedEntityRes.length == 0) {
+                                let newAdded = app.repository.readObject(entityObject);
+                                console.log("New Entity Added-1: ", newAdded);
+                                newAdded._parent = result;
+                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                                console.log("New Entity Added-2", mResult);
+                                // newElements.push(newAdded);
+                                mUtils.addNewAddedElement(newAdded);
+                            }
+                        }
+                    });
+
+                    /* Add New Event */
+                    Object.keys(XMIData).forEach(function eachKey(key) {
+                        let mSubObject = XMIData[key];
+                        /* UMLClass */
+                        let mSname = key;
+                        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+
+                            let interfaceObject = {};
+                            /* Binding Event fields, attribute, operation & parameters*/
+                            mEvent.bindEventToImport(interfaceObject, mSubObject);
+                            let searchedEvent = app.repository.search(mSname);
+                            let searchedEventRes = searchedEvent.filter(function (item) {
+                                return (item instanceof type.UMLInterface && item.name == mSname);
+                            });
+                            if (searchedEventRes.length == 0) {
+                                let newAdded = app.repository.readObject(interfaceObject);
+                                console.log("New Event Added-1 : ", newAdded);
+                                newAdded._parent = result;
+                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                                console.log("New Event Added-2", mResult);
+                                // newElements.push(newAdded);
+                                mUtils.addNewAddedElement(newAdded);
+
+                            }
+                        }
+                    });
+
+                    /* Step - 2 : Update all existing elements */
+                    /* Update Enumeration*/
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
                         /* UMLClass */
@@ -143,18 +227,14 @@ function importDataToModel(XMIData) {
                             /* Binding Enum fields, attribute, literals */
                             // enumObject[fields._parent] = result;
                             mEnum.bindEnumToImport(enumObject, mSubObject);
-
-
-                            // let selectedEnum = app.repository.select(mSname);
-                            // let selectedEnum = app.repository.select(mSname);
                             let searchedEnum = app.repository.search(mSname);
                             let searchedEnumRes = searchedEnum.filter(function (item) {
                                 return (item instanceof type.UMLEnumeration && item.name == mSname);
                             });
-                            
+
                             if (searchedEnumRes.length > 0) {
                                 forEach(searchedEnumRes, function (ety) {
-                                    
+
                                     if (ety instanceof type.UMLEnumeration) {
                                         console.time("Updated : Enum : ");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
@@ -162,37 +242,12 @@ function importDataToModel(XMIData) {
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
                                         console.timeEnd();
                                         console.log("Updated : Enum : ", ety.name);
-
-                                        
-                                        /* forEach(filterEnumView,function(enumItem){
-                                            if(enumItem.model._id==ety._id){
-                                                lastEnumView=ety;
-                                            }
-                                        }); */
-                                        /* enumObject['_id']=ety._id;
-                                        let mResult = app.repository.readObject(enumObject)
-
-                                        app.engine.setProperty(mResult, fields.name, mSubObject.name);
-                                        app.engine.setProperty(mResult, fields.isAbstract, mSubObject.isAbstract);
-                                        app.engine.setProperty(mResult, fields.documentation, mSubObject.description); */
-
                                     }
                                 });
-                            } else {
-
-
-                                let newAdded = app.repository.readObject(enumObject);
-                                console.log("New Enum Added-1: ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Enum Added-2", mResult);
-
-                                //mUtils.createViewOfElement(newAdded);
-                                newElements.push(newAdded);
                             }
                         }
                     });
-                    console.log("steps----------2");
+
                     /* Update Entity */
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
@@ -212,42 +267,20 @@ function importDataToModel(XMIData) {
                             });
                             if (searchedEntityRes.length > 0) {
                                 forEach(searchedEntityRes, function (ety) {
-                                    
+
                                     if (ety instanceof type.UMLClass) {
-                                        /* entityObject['_id']=ety._id;
-                                        entityObject[fields.name]= mSubObject.name
-                                        entityObject[fields.isAbstract]= mSubObject.isAbstract
-                                        entityObject[fields.documentation]= mSubObject.description
-                                        mResult = app.repository.readObject(entityObject) */
-                                        //app.engine.setProperties(ety, mResult);
                                         console.time("Updated : Entity");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
                                         console.log("Updated : Entity : ", ety.name);
                                         console.timeEnd();
-                                        //app.engine.setProperty(ety, 'attributes', []);
-                                        //app.engine.setProperty(ety, 'ownedElements', []);
-                                        // app.engine.setProperties(ety, mResult);
-                                        /* let prpr = app.engine.setProperties(ety, mResult);
-                                        console.log("prpr", prpr); */
-
                                     }
                                 });
-                            } else {
-
-                                let newAdded = app.repository.readObject(entityObject);
-                                console.log("New Entity Added-1: ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Entity Added-2", mResult);
-                                //mUtils.createViewOfElement(newAdded);
-                                newElements.push(newAdded);
                             }
                         }
                     });
 
-                    console.log("steps----------3");
                     /* Update Event */
                     Object.keys(XMIData).forEach(function eachKey(key) {
                         let mSubObject = XMIData[key];
@@ -272,33 +305,9 @@ function importDataToModel(XMIData) {
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
                                         console.log("Updated : Event : ", ety.name);
                                         console.timeEnd("Enum");
-                                        /* let ms=console.timeEnd("Updated : Event : "+mSubObject.name);
-                                        min = Math.floor((ms/1000/60) << 0),
-                                        sec = Math.floor((ms/1000) % 60);
-                                        console.log(min + ':' + sec); */
-                                        /* interfaceObject['_id']=ety._id;
-                                        let mResult = app.repository.readObject(interfaceObject);
-                                        app.engine.setProperty(mResult, fields.name, mSubObject.name);
-                                        app.engine.setProperty(mResult, fields.documentation, mSubObject.description); */
-                                        // let prpr2 = app.engine.setPropert(mResult,fields.isAbstract,mSubObject.isAbstract);
-                                        // console.log("prpr2", prpr2);
-
-                                        /* let prpr = app.engine.setProperties(evt, mResult);
-                                        console.log("prpr", prpr); */
                                     }
                                 });
-                            } else {
-
-                                let newAdded = app.repository.readObject(interfaceObject);
-                                console.log("New Event Added-1 : ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Event Added-2", mResult);
-
-                                //mUtils.createViewOfElement(newAdded);
-                                newElements.push(newAdded);
                             }
-
                         }
                     });
 
@@ -381,11 +390,61 @@ function importDataToModel(XMIData) {
         mRelationship.setRelationship(result.ownedElements, XMIData);
 
 
+        // let mClasses=app.repository.select('Movements::@UMLClass');
+        // forEach(newElements,function(element){
+        //     if(element instanceof type.UMLAssociation){
 
-        forEach(newElements,function(newEle){
-            mUtils.createViewOfElement(newEle);
+        //     }
+        // });
+        // let ll=app.repository.get("AAAAAAFquLpFNIt3Kdo=");;
+        // app.diagrams.needRepaint([ll]);
+        // let voya=app.repository.get("AAAAAAFquNJRuMulQSw=");
+        // app.diagrams.needRepaint(voya);
+        // app.diagrams.diagramEditor.repaint();
+        // app.diagrams.repaint();
+
+
+        /* Create view of newaly added element */
+        console.log("Total new added elements", mUtils.getNewAddedElement());
+        let newElements = mUtils.getNewAddedElement();
+        let isFirstView = true;
+        forEach(newElements, function (newEle) {
+            if (newEle instanceof type.UMLAssociation) {
+
+                mUtils.createViewOfElement(newEle);
+
+            } else {
+
+                mUtils.createViewOfElement(newEle);
+            }
+            if (isFirstView) {
+                app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
+                isFirstView = false;
+            }
         });
-        app.diagrams.repaint();
+        //mUtils.resetNewAddedElement();
+
+
+        //let newElements=mUtils.getNewAddedElement();
+        //console.log("new last added relationship",newElements);
+        forEach(newElements, function (model) {
+            // if(model instanceof type.UMLClass){
+            // mUtils.createViewOfElement(model);
+            // }
+            /* var end1View = app.diagram.getViewOf(model.end1.reference);
+            var end2View = app.diagram.getViewOf(model.end2.reference);
+            let undirectedView = new UndirectedViewType()
+            undirectedView.model = model
+            undirectedView.tail = end1View
+            undirectedView.head = end2View
+            undirectedView.initialize(null, undirectedView.tail.left, undirectedView.tail.top, undirectedView.head.left, undirectedView.head.top) */
+            // if (options.viewInitializer) {
+            // options.viewInitializer(undirectedView)
+            // }
+            // app.engine.addViews(diagram, [undirectedView])
+        });
+        app.diagrams.repaint();;
+
 
 
 
