@@ -150,8 +150,8 @@ function setProperty(ownedElements, XMIData) {
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
-                    rel._parent={
-                        '$ref':element._id
+                    rel._parent = {
+                        '$ref': element._id
                     }
                     console.log("rel", rel);
                     attributes.push(rel);
@@ -400,13 +400,148 @@ function getXY() {
         pY: pY
     }
 }
+function getInterfaceRealizationView(model, diagram, options) {
+    var directedView = diagram.getViewOf(model)
+    var sourceView = diagram.getViewOf(model.source)
+    var targetView = diagram.getViewOf(model.target)
+    if (directedView) {
+        editor.selectView(directedView)
+        editor.selectAdditionalView(sourceView)
+        editor.selectAdditionalView(targetView)
+        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
+    } else {
+        if (!targetView) {
+            app.factory.createViewAndRelationships(editor, x, y, model.target)
+        }
+        if (!sourceView) {
+            app.factory.createViewAndRelationships(editor, x, y + 100, model.source)
+        }
+        if (targetView && sourceView) {
+            let typeName = null;
+
+            var metaClass = global.meta["UMLInterfaceRealization"];
+            if (metaClass) {
+                typeName = metaClass.view || null
+            }
+
+            var DirectedViewType = typeName ? type[typeName] : null
+            if (DirectedViewType) {
+                directedView = new DirectedViewType()
+                directedView.model = model
+                directedView.tail = sourceView
+                directedView.head = targetView
+                directedView.initialize(null, directedView.tail.left, directedView.tail.top, directedView.head.left, directedView.head.top)
+                if (options.viewInitializer) {
+                    options.viewInitializer(directedView)
+                }
+                app.engine.addViews(diagram, [directedView])
+                if (directedView) {
+                    directedView = app.repository.get(directedView._id)
+                }
+                options.factory.triggerElementCreated(null, directedView)
+                editor.selectView(directedView)
+            }
+        }
+
+    }
+    return directedView;
+}
+function getGeneralizationView(model, diagram, options) {
+    var directedView = diagram.getViewOf(model)
+    var sourceView = diagram.getViewOf(model.source)
+    var targetView = diagram.getViewOf(model.target)
+    if (directedView) {
+        editor.selectView(directedView)
+        editor.selectAdditionalView(sourceView)
+        editor.selectAdditionalView(targetView)
+        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
+    } else {
+        if (!targetView) {
+            app.factory.createViewAndRelationships(editor, x, y, model.target)
+        }
+        if (!sourceView) {
+            app.factory.createViewAndRelationships(editor, x, y + 100, model.source)
+        }
+        if (targetView && sourceView) {
+            let typeName = null;
+
+            var metaClass = global.meta["UMLGeneralization"];
+            if (metaClass) {
+                typeName = metaClass.view || null
+            }
+
+            var DirectedViewType = typeName ? type[typeName] : null
+            if (DirectedViewType) {
+                directedView = new DirectedViewType()
+                directedView.model = model
+                directedView.tail = sourceView
+                directedView.head = targetView
+                directedView.initialize(null, directedView.tail.left, directedView.tail.top, directedView.head.left, directedView.head.top)
+                if (options.viewInitializer) {
+                    options.viewInitializer(directedView)
+                }
+                app.engine.addViews(diagram, [directedView])
+                if (directedView) {
+                    directedView = app.repository.get(directedView._id)
+                }
+                options.factory.triggerElementCreated(null, directedView)
+                editor.selectView(directedView)
+            }
+        }
+
+    }
+    return directedView;
+}
+
+function getAssociationView(model, diagram, options) {
+    let editor=app.diagrams.getEditor();
+    var undirectedView = diagram.getViewOf(model)
+    var end1View = diagram.getViewOf(model.end1.reference)
+    var end2View = diagram.getViewOf(model.end2.reference)
+    if (undirectedView) {
+        editor.selectView(undirectedView)
+        editor.selectAdditionalView(end1View)
+        editor.selectAdditionalView(end2View)
+        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
+    } else {
+        if (!end2View) {
+            app.factory.createViewAndRelationships(editor, x, y, model.end2.reference)
+        }
+        if (!end1View) {
+            app.factory.createViewAndRelationships(editor, x, y + 100, model.end1.reference)
+        }
+        if (end1View && end2View) {
+            let typeName = null;
+            var metaClass = global.meta["UMLAssociation"];
+            if (metaClass) {
+                typeName = metaClass.view || null
+            }
+            var UndirectedViewType = typeName ? type[typeName] : null
+            if (UndirectedViewType) {
+                undirectedView = new UndirectedViewType()
+                undirectedView.model = model
+                undirectedView.tail = end1View
+                undirectedView.head = end2View
+                undirectedView.initialize(null, undirectedView.tail.left, undirectedView.tail.top, undirectedView.head.left, undirectedView.head.top)
+                if (options.viewInitializer) {
+                    options.viewInitializer(undirectedView)
+                }
+                app.engine.addViews(diagram, [undirectedView])
+                if (undirectedView) {
+                    undirectedView = app.repository.get(undirectedView._id)
+                }
+                editor.selectView(undirectedView)
+            }
+        }
+        return undirectedView
+    }
+}
 
 function createViewOfElement(newAdded) {
     try {
         var editor = app.diagrams.getEditor();
         var diagram = editor.diagram;
         var model = newAdded;
-
 
         var containerView = diagram.getViewAt(editor.canvas, getXY().pX, getXY().pY, true)
 
@@ -418,8 +553,19 @@ function createViewOfElement(newAdded) {
             model: model,
             containerView: containerView
         }
-        let returnedView = app.factory.createViewOf(options);
-        // let returnedView = app.factory.createViewAndRelationships(editor,getXY().pX,getXY().pY,model,containerView);
+        let returnedView = null;
+        if (newAdded instanceof type.UMLGeneralization) {
+            returnedView = getGeneralizationView(model, diagram, options);
+        } else if(newAdded instanceof type.UMLAssociation){
+            returnedView = getAssociationView(model,diagram,options);
+        } else if(newAdded instanceof type.UMLInterfaceRealization){
+            returnedView = getInterfaceRealizationView(model,diagram,options);
+        } else if(newAdded instanceof type.UMLAssociationClassLink){
+            returnedView = app.factory.createViewOf(options);
+        }
+        else {
+            returnedView = app.factory.createViewOf(options);
+        }
 
         if (returnedView != null) {
 
@@ -516,7 +662,7 @@ function setInterfaceViewAttributes(UMLInterfaceView) {
     app.engine.setProperty(UMLInterfaceView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectable, 1);
-    app.engine.setProperty(UMLInterfaceView, viewfields.selected, true);
+    // app.engine.setProperty(UMLInterfaceView, viewfields.selected, true);
     app.engine.setProperty(UMLInterfaceView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLInterfaceView, viewfields.showNamespace, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.showOperationSignature, true);
@@ -548,7 +694,7 @@ function setEnumerationViewAttributes(UMLEnumerationView) {
     app.engine.setProperty(UMLEnumerationView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectable, 1);
-    app.engine.setProperty(UMLEnumerationView, viewfields.selected, true);
+    // app.engine.setProperty(UMLEnumerationView, viewfields.selected, true);
     app.engine.setProperty(UMLEnumerationView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLEnumerationView, viewfields.showNamespace, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.showOperationSignature, true);
@@ -581,7 +727,7 @@ function setClassViewAttributes(UMLClassView) {
     app.engine.setProperty(UMLClassView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLClassView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLClassView, viewfields.selectable, 1);
-    app.engine.setProperty(UMLClassView, viewfields.selected, true);
+    // app.engine.setProperty(UMLClassView, viewfields.selected, true);
     app.engine.setProperty(UMLClassView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLClassView, viewfields.showNamespace, true);
     app.engine.setProperty(UMLClassView, viewfields.showOperationSignature, true);

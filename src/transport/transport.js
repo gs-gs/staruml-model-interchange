@@ -60,51 +60,6 @@ function getClasswiseAssociations(element) {
     return association;
 }
 
-// function getPackageWiseUMLAssociation(package) {
-//     let associations = app.repository.select("@UMLAssociation");
-//     filteredAssociation = [];
-//     forEach(associations, (item) => {
-//         //findParentPackage(package, item, item);
-//     });
-//     return filteredAssociation;
-// }
-// let filteredAssociation = [];
-
-// function findParentPackage(package, ele, item) {
-//     // return new Promise((resolve, reject) => {
-//     if (ele instanceof type.UMLPackage) {
-//         if (ele != null && ele.name == 'Movements' /* openAPI.getUMLPackage().name */ ) {
-//             // console.log("ele",ele);
-//             // console.log("item",item);
-//             filteredAssociation.push(item);
-//             // return item;
-//         }
-
-//         // resolve(assocItem);
-//     } else if (ele.hasOwnProperty('_parent') && ele._parent != null) {
-//         findParentPackage(package, ele._parent, item);
-//     }
-//     // return null;
-// }
-
-// function getAbstractClassView(umlPackage, uniqueAbstractArr) {
-//     let abstractClassViewList = [];
-
-//     let umlClassDiagram = app.repository.select(umlPackage.name + "::@UMLClassDiagram")[0];
-
-//     forEach(umlClassDiagram.ownedViews, (ownedViews) => {
-//         if (ownedViews instanceof type.UMLClassView) {
-//             forEach(uniqueAbstractArr, (absClass) => {
-//                 if (absClass._id == ownedViews.model._id) {
-//                     abstractClassViewList.push(ownedViews);
-//                 }
-//             });
-//         }
-//     });
-
-//     return abstractClassViewList;
-// }
-
 function importDataToModel(XMIData) {
 
     let mainOwnedElements = []
@@ -212,6 +167,18 @@ function importDataToModel(XMIData) {
                             }
                         }
                     });
+
+
+                    let newElements = mUtils.getNewAddedElement();
+                    let isFirstView = true;
+                    forEach(newElements, function (newEle) {
+                        mUtils.createViewOfElement(newEle);
+                        if (isFirstView) {
+                            app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
+                            isFirstView = false;
+                        }
+                    });
+                    mUtils.resetNewAddedElement();
 
                     /* Step - 2 : Update all existing elements */
                     /* Update Enumeration*/
@@ -390,59 +357,13 @@ function importDataToModel(XMIData) {
         mRelationship.setRelationship(result.ownedElements, XMIData);
 
 
-        // let mClasses=app.repository.select('Movements::@UMLClass');
-        // forEach(newElements,function(element){
-        //     if(element instanceof type.UMLAssociation){
-
-        //     }
-        // });
-        // let ll=app.repository.get("AAAAAAFquLpFNIt3Kdo=");;
-        // app.diagrams.needRepaint([ll]);
-        // let voya=app.repository.get("AAAAAAFquNJRuMulQSw=");
-        // app.diagrams.needRepaint(voya);
-        // app.diagrams.diagramEditor.repaint();
-        // app.diagrams.repaint();
-
-
         /* Create view of newaly added element */
         console.log("Total new added elements", mUtils.getNewAddedElement());
         let newElements = mUtils.getNewAddedElement();
-        let isFirstView = true;
         forEach(newElements, function (newEle) {
-            if (newEle instanceof type.UMLAssociation) {
-
-                mUtils.createViewOfElement(newEle);
-
-            } else {
-
-                mUtils.createViewOfElement(newEle);
-            }
-            if (isFirstView) {
-                app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
-                isFirstView = false;
-            }
+            mUtils.createViewOfElement(newEle);
         });
-        //mUtils.resetNewAddedElement();
-
-
-        //let newElements=mUtils.getNewAddedElement();
-        //console.log("new last added relationship",newElements);
-        forEach(newElements, function (model) {
-            // if(model instanceof type.UMLClass){
-            // mUtils.createViewOfElement(model);
-            // }
-            /* var end1View = app.diagram.getViewOf(model.end1.reference);
-            var end2View = app.diagram.getViewOf(model.end2.reference);
-            let undirectedView = new UndirectedViewType()
-            undirectedView.model = model
-            undirectedView.tail = end1View
-            undirectedView.head = end2View
-            undirectedView.initialize(null, undirectedView.tail.left, undirectedView.tail.top, undirectedView.head.left, undirectedView.head.top) */
-            // if (options.viewInitializer) {
-            // options.viewInitializer(undirectedView)
-            // }
-            // app.engine.addViews(diagram, [undirectedView])
-        });
+        
         app.diagrams.repaint();;
 
 

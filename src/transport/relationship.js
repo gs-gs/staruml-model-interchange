@@ -378,7 +378,7 @@ function addAssociationClassLink(objRelationship,entity, attr) {
     };
     /* associationSide */
     let associationSide = {};
-    let bindAssos = bindRelationshipToImport(entity, attr.association);
+    let bindAssos = bindRelationshipToImport(entity, attr.association,true);
     //let associationSide=app.repository.writeObject(bindAssos);
     if (bindAssos && bindAssos.hasOwnProperty('_id')) {
         associationSide['$ref'] = bindAssos._id;
@@ -574,7 +574,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     return UMLAssociation;
 }
 
-function bindRelationshipToImport(entity, attr) {
+function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */) {
     
     if (attr.type == fields.aggregation) {
 
@@ -589,7 +589,9 @@ function bindRelationshipToImport(entity, attr) {
                 let rel = app.repository.readObject(objRelationship);
                 // utils.recreateViewForRelationship(rel);
                 //console.log("rel created", rel);
-                utils.addNewAddedElement(rel);
+                if(isACL == null || !isACL){
+                    utils.addNewAddedElement(rel);  
+                }
                 return rel;
             } else {
                 return null;
@@ -606,6 +608,7 @@ function bindRelationshipToImport(entity, attr) {
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
                 let rel = app.repository.readObject(objRelationship);
                 console.log("rel", rel);
+                utils.addNewAddedElement(rel);
                 return rel;
             }
         }
@@ -639,6 +642,7 @@ function bindRelationshipToImport(entity, attr) {
         if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
             console.log("rel", rel);
+            utils.addNewAddedElement(rel);
             return rel;
         }
     } else if (attr.type == fields.interface) {
@@ -653,6 +657,7 @@ function bindRelationshipToImport(entity, attr) {
             objRelationship = addInterfaceToImport(objRelationship,entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
                 let rel = app.repository.readObject(objRelationship);
+                utils.addNewAddedElement(rel);
                 return rel;
             }
         }
@@ -667,14 +672,9 @@ function bindRelationshipToImport(entity, attr) {
 
             objRelationship = addAssociationClassLink(objRelationship,entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
-                try {
                     let rel = app.repository.readObject(objRelationship);
-                    console.log("rel", rel);
+                    utils.addNewAddedElement(rel);
                     return rel;
-                } catch (error) {
-                    console.error("Error : ", error.message);
-                    app.dialogs.showErrorDialog(error.message);
-                }
             }
         }
     }
