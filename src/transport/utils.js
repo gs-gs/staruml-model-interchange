@@ -400,7 +400,9 @@ function getXY() {
         pY: pY
     }
 }
+
 function getInterfaceRealizationView(model, diagram, options) {
+    let editor = app.diagrams.getEditor();
     var directedView = diagram.getViewOf(model)
     var sourceView = diagram.getViewOf(model.source)
     var targetView = diagram.getViewOf(model.target)
@@ -438,7 +440,7 @@ function getInterfaceRealizationView(model, diagram, options) {
                 if (directedView) {
                     directedView = app.repository.get(directedView._id)
                 }
-                options.factory.triggerElementCreated(null, directedView)
+                app.factory.triggerElementCreated(null, directedView)
                 editor.selectView(directedView)
             }
         }
@@ -446,7 +448,9 @@ function getInterfaceRealizationView(model, diagram, options) {
     }
     return directedView;
 }
+
 function getGeneralizationView(model, diagram, options) {
+    let editor = app.diagrams.getEditor();
     var directedView = diagram.getViewOf(model)
     var sourceView = diagram.getViewOf(model.source)
     var targetView = diagram.getViewOf(model.target)
@@ -484,7 +488,7 @@ function getGeneralizationView(model, diagram, options) {
                 if (directedView) {
                     directedView = app.repository.get(directedView._id)
                 }
-                options.factory.triggerElementCreated(null, directedView)
+                app.factory.triggerElementCreated(null, directedView)
                 editor.selectView(directedView)
             }
         }
@@ -494,7 +498,7 @@ function getGeneralizationView(model, diagram, options) {
 }
 
 function getAssociationView(model, diagram, options) {
-    let editor=app.diagrams.getEditor();
+    let editor = app.diagrams.getEditor();
     var undirectedView = diagram.getViewOf(model)
     var end1View = diagram.getViewOf(model.end1.reference)
     var end2View = diagram.getViewOf(model.end2.reference)
@@ -537,6 +541,66 @@ function getAssociationView(model, diagram, options) {
     }
 }
 
+function getAssociationClasslinkView(model, diagram, options) {
+    let editor = app.diagrams.getEditor();
+    var directedView = diagram.getViewOf(model)
+    var sourceView = diagram.getViewOf(model.classSide)
+    var targetView = diagram.getViewOf(model.associationSide)
+    if (directedView) {
+        editor.selectView(directedView)
+        editor.selectAdditionalView(sourceView)
+        editor.selectAdditionalView(targetView)
+        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
+    } else {
+        if (!targetView) {
+            let x=10,y=10;
+            let classView=diagram.getViewOf(model.associationSide);
+            if(classView!=null){
+                x=classView.left;
+                y=classView.top;
+            }
+            app.factory.createViewAndRelationships(editor, x, y, model.associationSide)
+        }
+        if (!sourceView) {
+            let x=10,y=10;
+            let assoView=diagram.getViewOf(model.classSide);
+            if(assoView!=null){
+                x=assoView.left;
+                y=assoView.top;
+            }
+            app.factory.createViewAndRelationships(editor,x,y + 100, model.classSide)
+        }
+        if (targetView && sourceView) {
+            let typeName = null;
+
+            var metaClass = global.meta["UMLAssociationClassLink"];
+            if (metaClass) {
+                typeName = metaClass.view || null
+            }
+
+            var DirectedViewType = typeName ? type[typeName] : null
+            if (DirectedViewType) {
+                directedView = new DirectedViewType()
+                directedView.model = model
+                directedView.tail = sourceView
+                directedView.head = targetView
+                directedView.initialize(null, directedView.tail.left, directedView.tail.top, directedView.head.left, directedView.head.top)
+                if (options.viewInitializer) {
+                    options.viewInitializer(directedView)
+                }
+                app.engine.addViews(diagram, [directedView])
+                if (directedView) {
+                    directedView = app.repository.get(directedView._id)
+                }
+                app.factory.triggerElementCreated(null, directedView)
+                editor.selectView(directedView)
+            }
+        }
+
+    }
+    return directedView;
+}
+
 function createViewOfElement(newAdded) {
     try {
         var editor = app.diagrams.getEditor();
@@ -556,14 +620,13 @@ function createViewOfElement(newAdded) {
         let returnedView = null;
         if (newAdded instanceof type.UMLGeneralization) {
             returnedView = getGeneralizationView(model, diagram, options);
-        } else if(newAdded instanceof type.UMLAssociation){
-            returnedView = getAssociationView(model,diagram,options);
-        } else if(newAdded instanceof type.UMLInterfaceRealization){
-            returnedView = getInterfaceRealizationView(model,diagram,options);
-        } else if(newAdded instanceof type.UMLAssociationClassLink){
-            returnedView = app.factory.createViewOf(options);
-        }
-        else {
+        } else if (newAdded instanceof type.UMLAssociation) {
+            returnedView = getAssociationView(model, diagram, options);
+        } else if (newAdded instanceof type.UMLInterfaceRealization) {
+            returnedView = getInterfaceRealizationView(model, diagram, options);
+        } else if (newAdded instanceof type.UMLAssociationClassLink) {
+            returnedView = getAssociationClasslinkView(model, diagram, options)
+        } else {
             returnedView = app.factory.createViewOf(options);
         }
 

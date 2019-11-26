@@ -169,6 +169,7 @@ function importDataToModel(XMIData) {
                     });
 
 
+                    /* Create view of all new added class, interface, enumeration */
                     let newElements = mUtils.getNewAddedElement();
                     let isFirstView = true;
                     forEach(newElements, function (newEle) {
@@ -178,6 +179,8 @@ function importDataToModel(XMIData) {
                             isFirstView = false;
                         }
                     });
+
+                    /* Reset new added class, interface, enumeration */
                     mUtils.resetNewAddedElement();
 
                     /* Step - 2 : Update all existing elements */

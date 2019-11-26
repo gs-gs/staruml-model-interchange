@@ -685,11 +685,7 @@ function setRelationship(ownedElements, XMIData) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
 
-            // let entityString = app.repository.writeObject(entity);
-            // let entityJson = JSON.parse(entityString, null, 4);
-
-
-            /* ownElements ( Relationship ) */
+            let oldOwnedElements=entity.ownedElements;
             let ownedElements = [];
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
@@ -702,16 +698,14 @@ function setRelationship(ownedElements, XMIData) {
                         relationship.type == fields.associationClassLink
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
-                        // console.log("-----parent-rel",rel);
-                        // console.log("-----parent",rel._parent);
                         ownedElements.push(rel);
+                        app.engine.setProperty(entity, 'ownedElements', ownedElements);
                     }
                 } catch (error) {
                     console.error("Error : " + mSubObject.name, error.message);
                     app.dialogs.showErrorDialog(error.message);
                 }
             });
-            app.engine.setProperty(entity, 'ownedElements', ownedElements);
         }
     });
 }

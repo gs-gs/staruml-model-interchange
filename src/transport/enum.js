@@ -1,7 +1,6 @@
 var fields = require('./fields');
 var utils = require('./utils');
 var forEach = require('async-foreach').forEach;
-var datatype = require('./datatype');
 
 function addEnumFields(enumObj, enume) {
     enumObj[fields.name] = enume.name;
@@ -72,40 +71,6 @@ function bindEnumToImport(enumeObject, mSubObject) {
 
 }
 
-function bindEnumAttributesToImport(enumeObject, mSubObject) {
-    /* UMLEnumeration fields */
-    enumeObject._type = 'UMLEnumeration';
-    enumeObject.name = mSubObject.name;
-    enumeObject[fields.isAbstract] = mSubObject.isAbstract;
-    enumeObject.documentation = mSubObject.description;
-
-    /* UMLAttribute */
-    let attributes = [];
-    enumeObject.attributes = attributes;
-
-    forEach(mSubObject[fields.Property], function (attr) {
-        let objAttr = {};
-        objAttr._type = 'UMLAttribute';
-        objAttr.name = attr.name;
-        objAttr.type = attr.DataType.type;
-        objAttr.isID = attr.isID;
-        objAttr.multiplicity = attr.cardinality;
-        objAttr.documentation = attr.description;
-        attributes.push(objAttr);
-    });
-
-    /* UMLEnumerationLiteral */
-    let literals = [];
-    enumeObject.literals = literals;
-
-    forEach(mSubObject[fields.Enum], function (literal) {
-        let objAttr = {};
-        objAttr._type = 'UMLEnumerationLiteral';
-        objAttr.name = literal;
-        literals.push(objAttr);
-    });
-
-}
 module.exports.addEnumFields = addEnumFields;
 module.exports.addEnumProperty = addEnumProperty;
 module.exports.addEnumLiterals = addEnumLiterals;
