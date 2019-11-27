@@ -36,5 +36,7 @@ const fields = {
     'aggregation': 'aggregation',
     'composition': 'composition',
     'interface': 'interface',
+    'value': 'value',
+    'tags': 'tags',
 };
 module.exports = fields;

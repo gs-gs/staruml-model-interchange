@@ -38,9 +38,19 @@ function addEnumLiterals(enumObj, enume) {
     enumObj[fields.Enum] = enumArr;
     let literals = enume.literals;
     forEach(literals, function (literal) {
-
-        enumArr.push(literal.name);
-
+        let literalObj = {};
+        literalObj[fields.name] = literal.name;
+        literalObj[fields.description] = literal.documentation;
+        enumArr.push(literalObj);
+        let tagArr = [];
+        literalObj[fields.tags] = tagArr;
+        let tags = literal.tags;
+        forEach(tags, function (tag) {
+                let tagObj = {};
+                tagObj[fields.name] = tag.name;
+                tagObj[fields.value] = tag.value;
+                tagArr.push(tagObj);
+            });
     });
 }
 
@@ -98,10 +108,11 @@ function bindEnumAttributesToImport(enumeObject, mSubObject) {
     let literals = [];
     enumeObject.literals = literals;
 
-    forEach(mSubObject[fields.Enum], function (literal) {
+    forEach(mSubObject[fields.Enum], function (attr) {
         let objAttr = {};
         objAttr._type = 'UMLEnumerationLiteral';
-        objAttr.name = literal;
+        objAttr.name = attr.name;
+        objAttr.documentation = attr.description;
         literals.push(objAttr);
     });
 
