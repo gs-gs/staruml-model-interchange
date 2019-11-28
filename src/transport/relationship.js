@@ -593,8 +593,6 @@ function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */
                     utils.addNewAddedElement(rel);  
                 }
                 return rel;
-            } else {
-                return null;
             }
         }
     } else if (attr.type == fields.composition) {
@@ -626,8 +624,6 @@ function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */
             
             if(!mAssoc.isExist){
                 utils.addNewAddedElement(rel);
-                //utils.createViewOfElement(rel);
-                //utils.recreateViewForRelationship(rel);
             }
             return rel;
         }
@@ -641,8 +637,10 @@ function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */
         objRelationship = addInterfaceRealizationToImport(objRelationship,entity, attr);
         if (objRelationship != null || Object.keys(objRelationship).length == 0) {
             let rel = app.repository.readObject(objRelationship);
-            console.log("rel", rel);
-            utils.addNewAddedElement(rel);
+            
+            if(!mAssoc.isExist){
+                utils.addNewAddedElement(rel);
+            }
             return rel;
         }
     } else if (attr.type == fields.interface) {
@@ -657,6 +655,7 @@ function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */
             objRelationship = addInterfaceToImport(objRelationship,entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
                 let rel = app.repository.readObject(objRelationship);
+                
                 utils.addNewAddedElement(rel);
                 return rel;
             }
@@ -672,9 +671,9 @@ function bindRelationshipToImport(entity, attr,isACL/* isAssociationClassLink */
 
             objRelationship = addAssociationClassLink(objRelationship,entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
-                    let rel = app.repository.readObject(objRelationship);
-                    utils.addNewAddedElement(rel);
-                    return rel;
+                let rel = app.repository.readObject(objRelationship);
+                utils.addNewAddedElement(rel);
+                return rel;
             }
         }
     }

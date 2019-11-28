@@ -150,9 +150,7 @@ function setProperty(ownedElements, XMIData) {
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
-                    rel._parent = {
-                        '$ref': element._id
-                    }
+                    rel._parent = element
                     console.log("rel", rel);
                     attributes.push(rel);
                 }
