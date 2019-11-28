@@ -237,8 +237,7 @@ function bindLiterals(attr) {
         let objTag = {};
         objTag._type = 'Tag';
         objTag.name = tag.name;
-        //TODO : Remove below comment and resolve issue
-        objTag.kind = 'string' //param.DataType.type;
+        objTag.kind = tag.kind
         objTag.value = tag.value;
 
         arrTags.push(objTag);

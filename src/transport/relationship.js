@@ -699,13 +699,14 @@ function setRelationship(ownedElements, XMIData) {
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
                         ownedElements.push(rel);
-                        app.engine.setProperty(entity, 'ownedElements', ownedElements);
+                        //app.engine.setProperty(entity, 'ownedElements', ownedElements);
                     }
                 } catch (error) {
                     console.error("Error : " + mSubObject.name, error.message);
                     app.dialogs.showErrorDialog(error.message);
                 }
             });
+            app.engine.setProperty(entity, 'ownedElements', ownedElements);
         }
     });
 }

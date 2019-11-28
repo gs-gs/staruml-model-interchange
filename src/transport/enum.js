@@ -48,6 +48,7 @@ function addEnumLiterals(enumObj, enume) {
                 let tagObj = {};
                 tagObj[fields.name] = tag.name;
                 tagObj[fields.value] = tag.value;
+                tagObj[fields.kind] = tag.kind;
                 tagArr.push(tagObj);
             });
     });

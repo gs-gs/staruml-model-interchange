@@ -38,5 +38,6 @@ const fields = {
     'interface': 'interface',
     'value': 'value',
     'tags': 'tags',
+    'kind': 'kind',
 };
 module.exports = fields;
