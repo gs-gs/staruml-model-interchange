@@ -227,8 +227,23 @@ function bindLiterals(attr) {
     /* UMLAttribute */
     let objAttr = {};
     objAttr._type = 'UMLEnumerationLiteral';
-    objAttr.name = attr;
-    return objAttr;
+    objAttr.name = attr.name;
+    objAttr.documentation = attr.description;
+    let tags = attr.tags;
+    let arrTags = [];
+    objAttr.tags = arrTags;
+    /* Tag */
+    forEach(tags, function (tag) {
+        let objTag = {};
+        objTag._type = 'Tag';
+        objTag.name = tag.name;
+        //TODO : Remove below comment and resolve issue
+        objTag.kind = 'string' //param.DataType.type;
+        objTag.value = tag.value;
+
+        arrTags.push(objTag);
+    });
+   return objAttr;
 }
 
 function bindProperty(attr) {
