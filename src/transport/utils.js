@@ -313,7 +313,7 @@ function isGeneralizationExist(entity, attr) {
     let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLGeneralization) {
-            if (aggr.name == attr.name &&
+            if (/* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {
@@ -335,7 +335,7 @@ function isInterfaceRealizationExist(entity, attr) {
     let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLInterfaceRealization) {
-            if (aggr.name == attr.name &&
+            if (/* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {

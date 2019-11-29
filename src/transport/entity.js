@@ -149,9 +149,9 @@ function addEntityRelationship(entityObj, entity) {
                 objTarget[fields.navigable] = end2.navigable;
                 
             }
-                /* class side association binding */
-                let objClass = {};
-                let classSide = element.classSide;
+            /* class side association binding */
+            let objClass = {};
+            let classSide = element.classSide;
             objRelationship[fields.class] = objClass;
 
             objClass[fields.name] = classSide.name
