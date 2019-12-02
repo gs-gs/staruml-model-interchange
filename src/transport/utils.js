@@ -77,28 +77,28 @@ function getDatatype(attr) {
     let dType = {};
     if (attr.type == fields.Entity) {
         let item = app.repository.select("@UMLClass[name="+ attr.name+ "]");
-        if(item === undefined){
+        if(item[0] === undefined){
             console.error("Class for "+ attr.name+ " not found.")
         } else{
-            dType['$ref'] = item._id;
+            dType['$ref'] = item[0]._id;
         }
         return dType;
 
     } else if (attr.type == fields.Event) {
         let item = app.repository.select("@UMLInterface[name="+ attr.name+ "]");
-        if(item === undefined){
+        if(item[0] === undefined){
             console.error("Class for "+ attr.name+ " not found.")
         } else{
-            dType['$ref'] = item._id;
+            dType['$ref'] = item[0]._id;
         }
         return dType;
 
     } else if (attr.type == fields.Enum) {
         let item = app.repository.select("@UMLEnumeration[name="+ attr.name+ "]");
-        if(item === undefined){
+        if(item[0] === undefined){
             console.error("Class for "+ attr.name+ " not found.")
         } else{
-            dType['$ref'] = item._id;
+            dType['$ref'] = item[0]._id;
         }
         return dType;
 
