@@ -255,6 +255,18 @@ function bindProperty(attr) {
     objAttr.isID = attr.isID;
     objAttr.multiplicity = attr.cardinality;
     objAttr.documentation = attr.description;
+
+    let tagArr = [];
+    objAttr[fields.tags] = tagArr;
+    let tags = attr.tags;
+    forEach(tags, function (tag) {
+            let tagObj = {};
+            tagObj._type = 'Tag';
+            tagObj[fields.name] = tag.name;
+            tagObj[fields.value] = tag.value;
+            tagObj[fields.kind] = tag.kind;
+            tagArr.push(tagObj);
+        });
     //attribute.push(objAttr);
     return objAttr;
 }
