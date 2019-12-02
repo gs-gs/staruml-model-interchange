@@ -76,32 +76,32 @@ function addDatatype(propertyObj, attr) {
 function getDatatype(attr) {
     let dType = {};
     if (attr.type == fields.Entity) {
-        let res = app.repository.search(attr.name);
-        forEach(res, function (item) {
-            if (item instanceof type.UMLClass) {
-                dType['$ref'] = item._id;
-            }
-        });
+        let item = app.repository.select("@UMLClass[name="+ attr.name+ "]");
+        if(item === undefined){
+            console.error("Class for "+ attr.name+ " not found.")
+        } else{
+            dType['$ref'] = item._id;
+        }
         return dType;
 
     } else if (attr.type == fields.Event) {
-        let res = app.repository.search(attr.name);
-        forEach(res, function (item) {
-            if (item instanceof type.UMLInterface) {
-                dType['$ref'] = item._id;
-            }
-        });
+        let item = app.repository.select("@UMLInterface[name="+ attr.name+ "]");
+        if(item === undefined){
+            console.error("Class for "+ attr.name+ " not found.")
+        } else{
+            dType['$ref'] = item._id;
+        }
         return dType;
 
     } else if (attr.type == fields.Enum) {
-
-        let res = app.repository.search(attr.name);
-        forEach(res, function (item) {
-            if (item instanceof type.UMLEnumeration) {
-                dType['$ref'] = item._id;
-            }
-        });
+        let item = app.repository.select("@UMLEnumeration[name="+ attr.name+ "]");
+        if(item === undefined){
+            console.error("Class for "+ attr.name+ " not found.")
+        } else{
+            dType['$ref'] = item._id;
+        }
         return dType;
+
     } else if (isString(attr.type)) {
         return attr.type
     }
