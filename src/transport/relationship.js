@@ -506,7 +506,7 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     });
 
     if (fRefClass.length > 0) {
-        classSide['$ref'] = refClass[0]._id;
+        classSide['$ref'] = fRefClass[0]._id;
     }
     return objRelationship;
 }
@@ -524,7 +524,8 @@ function updateAssociationClassLink(entity, attr, _id) {
 
     /* associationSide */
     // let associationSide = {};
-    let associationSide = bindRelationshipToImport(entity, attr.association);
+    let associationSide = bindRelationshipToImport(entity, attr.association, true);
+    // let associationSide = bindRelationshipToImport(entity, attr.association, true);
     //let associationSide=app.repository.writeObject(bindAssos);
     /* if (bindAssos && bindAssos.hasOwnProperty('_id')) {
         associationSide['$ref'] = bindAssos._id;
@@ -539,7 +540,7 @@ function updateAssociationClassLink(entity, attr, _id) {
 
     let classSide;
     if (fRefClass.length > 0) {
-        classSide = refClass[0];
+        classSide = fRefClass[0];
     }
     app.engine.setProperty(UMLAssociationClassLink, 'classSide', classSide);
     return UMLAssociationClassLink;
@@ -789,9 +790,10 @@ function setRelationship(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
-
+            console.log("class name " + mSubObject.name);
+            console.log("class name--------Relationship----Start");
             let oldOwnedElements = entity.ownedElements;
-            let ownedElements = [];
+            
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
                     if (
@@ -803,15 +805,25 @@ function setRelationship(ownedElements, XMIData) {
                         relationship.type == fields.associationClassLink
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
-                        ownedElements.push(rel);
-                        //app.engine.setProperty(entity, 'ownedElements', ownedElements);
+                        let mIndex=oldOwnedElements.findIndex(function (ele) {
+                            return ele._id == rel._id;
+                        });
+                        if (mIndex == -1) {
+                            /* New relationship */
+                            console.log(" New relationship ");
+                            oldOwnedElements.push(rel);
+                        } else {
+                            /* Existing relationship */
+                            oldOwnedElements[mIndex]=rel;
+                            console.log(" Existing relationship : " + mIndex);
+                        }
+                        app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
                     }
                 } catch (error) {
                     console.error("Error : " + mSubObject.name, error.message);
                     app.dialogs.showErrorDialog(error.message);
                 }
             });
-            app.engine.setProperty(entity, 'ownedElements', ownedElements);
         }
     });
 }
