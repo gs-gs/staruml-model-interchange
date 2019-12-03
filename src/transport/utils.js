@@ -76,28 +76,28 @@ function addDatatype(propertyObj, attr) {
 function getDatatype(attr) {
     let dType = {};
     if (attr.type == fields.Entity) {
-        let item = app.repository.select("@UMLClass[name="+ attr.name+ "]");
-        if(item[0] === undefined){
-            console.error("Class for "+ attr.name+ " not found.")
-        } else{
+        let item = app.repository.select("@UMLClass[name=" + attr.name + "]");
+        if (item[0] === undefined) {
+            console.error("Class for " + attr.name + " not found.")
+        } else {
             dType['$ref'] = item[0]._id;
         }
         return dType;
 
     } else if (attr.type == fields.Event) {
-        let item = app.repository.select("@UMLInterface[name="+ attr.name+ "]");
-        if(item[0] === undefined){
-            console.error("Class for "+ attr.name+ " not found.")
-        } else{
+        let item = app.repository.select("@UMLInterface[name=" + attr.name + "]");
+        if (item[0] === undefined) {
+            console.error("Class for " + attr.name + " not found.")
+        } else {
             dType['$ref'] = item[0]._id;
         }
         return dType;
 
     } else if (attr.type == fields.Enum) {
-        let item = app.repository.select("@UMLEnumeration[name="+ attr.name+ "]");
-        if(item[0] === undefined){
-            console.error("Class for "+ attr.name+ " not found.")
-        } else{
+        let item = app.repository.select("@UMLEnumeration[name=" + attr.name + "]");
+        if (item[0] === undefined) {
+            console.error("Class for " + attr.name + " not found.")
+        } else {
             dType['$ref'] = item[0]._id;
         }
         return dType;
@@ -227,20 +227,9 @@ function bindLiterals(attr) {
     objAttr._type = 'UMLEnumerationLiteral';
     objAttr.name = attr.name;
     objAttr.documentation = attr.description;
-    let tags = attr.tags;
-    let arrTags = [];
-    objAttr.tags = arrTags;
-    /* Tag */
-    forEach(tags, function (tag) {
-        let objTag = {};
-        objTag._type = 'Tag';
-        objTag.name = tag.name;
-        objTag.kind = tag.kind
-        objTag.value = tag.value;
+    objAttr.tags = getTagsToImport(attr);
 
-        arrTags.push(objTag);
-    });
-   return objAttr;
+    return objAttr;
 }
 
 function bindProperty(attr) {
@@ -255,19 +244,8 @@ function bindProperty(attr) {
     objAttr.isID = attr.isID;
     objAttr.multiplicity = attr.cardinality;
     objAttr.documentation = attr.description;
+    objAttr[fields.tags] = getTagsToImport(attr);
 
-    let tagArr = [];
-    objAttr[fields.tags] = tagArr;
-    let tags = attr.tags;
-    forEach(tags, function (tag) {
-            let tagObj = {};
-            tagObj._type = 'Tag';
-            tagObj[fields.name] = tag.name;
-            tagObj[fields.value] = tag.value;
-            tagObj[fields.kind] = tag.kind;
-            tagArr.push(tagObj);
-        });
-    //attribute.push(objAttr);
     return objAttr;
 }
 
@@ -325,7 +303,7 @@ function isGeneralizationExist(entity, attr) {
     let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLGeneralization) {
-            if (/* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
+            if ( /* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {
@@ -347,7 +325,7 @@ function isInterfaceRealizationExist(entity, attr) {
     let assoc = null;
     forEach(entity.ownedElements, function (aggr) {
         if (aggr instanceof type.UMLInterfaceRealization) {
-            if (/* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
+            if ( /* aggr.name == attr.name && */ /* Do not remove this commnet. Need to confirm */
                 aggr.source.name == attr.source.name && getElementType(aggr.source) == attr.source.type &&
                 aggr.target.name == attr.target.name && getElementType(aggr.target) == attr.target.type
             ) {
@@ -577,22 +555,24 @@ function getAssociationClasslinkView(model, diagram, options) {
         app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!targetView) {
-            let x=10,y=10;
-            let classView=diagram.getViewOf(model.associationSide);
-            if(classView!=null){
-                x=classView.left;
-                y=classView.top;
+            let x = 10,
+                y = 10;
+            let classView = diagram.getViewOf(model.associationSide);
+            if (classView != null) {
+                x = classView.left;
+                y = classView.top;
             }
             app.factory.createViewAndRelationships(editor, x, y, model.associationSide)
         }
         if (!sourceView) {
-            let x=10,y=10;
-            let assoView=diagram.getViewOf(model.classSide);
-            if(assoView!=null){
-                x=assoView.left;
-                y=assoView.top;
+            let x = 10,
+                y = 10;
+            let assoView = diagram.getViewOf(model.classSide);
+            if (assoView != null) {
+                x = assoView.left;
+                y = assoView.top;
             }
-            app.factory.createViewAndRelationships(editor,x,y + 100, model.classSide)
+            app.factory.createViewAndRelationships(editor, x, y + 100, model.classSide)
         }
         if (targetView && sourceView) {
             let typeName = null;
@@ -844,6 +824,41 @@ function getNewAddedElement() {
 function resetNewAddedElement() {
     newElements = [];
 }
+
+function getTagsToExport(literal) {
+    let tagArr = [];
+    if (literal.tags != null) {
+
+        let tags = literal.tags;
+        console.log(literal.tags);
+        forEach(tags, function (tag) {
+            let tagObj = {};
+            tagObj[fields.name] = tag.name;
+            tagObj[fields.value] = tag.value;
+            tagObj[fields.kind] = tag.kind;
+            tagArr.push(tagObj);
+        });
+    }
+    return tagArr;
+}
+
+function getTagsToImport(attr) {
+    let arrTags = [];
+    if (attr.tags != null) {
+        let tags = attr.tags;
+        /* Tag */
+        forEach(tags, function (tag) {
+            let objTag = {};
+            objTag._type = 'Tag';
+            objTag.name = tag.name;
+            objTag.kind = tag.kind
+            objTag.value = tag.value;
+
+            arrTags.push(objTag);
+        });
+    }
+    return arrTags;
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -867,3 +882,5 @@ module.exports.resetNewAddedElement = resetNewAddedElement;
 module.exports.getXY = getXY;
 module.exports.recreateView = recreateView;
 module.exports.recreateViewForRelationship = recreateViewForRelationship;
+module.exports.getTagsToExport = getTagsToExport;
+module.exports.getTagsToImport = getTagsToImport;

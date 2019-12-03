@@ -41,16 +41,7 @@ function addEntityProperty(entityObj, entity) {
 
         propertyObj[fields.cardinality] = attr.multiplicity;
 
-        let tagArr = [];
-        propertyObj[fields.tags] = tagArr;
-        let tags = attr.tags;
-        forEach(tags, function (tag) {
-                let tagObj = {};
-                tagObj[fields.name] = tag.name;
-                tagObj[fields.value] = tag.value;
-                tagObj[fields.kind] = tag.kind;
-                tagArr.push(tagObj);
-            });
+        propertyObj[fields.tags] = utils.getTagsToExport(attr);;
 
         /* Property DataType binding */
         utils.addDatatype(propertyObj, attr);

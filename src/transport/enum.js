@@ -40,17 +40,8 @@ function addEnumLiterals(enumObj, enume) {
         let literalObj = {};
         literalObj[fields.name] = literal.name;
         literalObj[fields.description] = literal.documentation;
+        literalObj[fields.tags] = utils.getTagsToExport(literal);
         enumArr.push(literalObj);
-        let tagArr = [];
-        literalObj[fields.tags] = tagArr;
-        let tags = literal.tags;
-        forEach(tags, function (tag) {
-                let tagObj = {};
-                tagObj[fields.name] = tag.name;
-                tagObj[fields.value] = tag.value;
-                tagObj[fields.kind] = tag.kind;
-                tagArr.push(tagObj);
-            });
     });
 }
 
