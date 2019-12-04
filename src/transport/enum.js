@@ -25,6 +25,7 @@ function addEnumProperty(enumObj, enume) {
 
         propertyObj[fields.cardinality] = attr.multiplicity;
 
+        propertyObj[fields.defaultValue] = attr.defaultValue
         /* Property DataType binding */
         utils.addDatatype(propertyObj, attr);
 

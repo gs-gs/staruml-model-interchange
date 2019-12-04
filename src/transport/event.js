@@ -38,6 +38,8 @@ function addEventProperty(eventObj, event) {
         propertyObj[fields.isID] = attr.isID;
         // }
         propertyObj[fields.cardinality] = attr.multiplicity;
+
+        propertyObj[fields.defaultValue] = attr.defaultValue
         /* Property DataType binding */
         utils.addDatatype(propertyObj, attr);
 

@@ -245,6 +245,7 @@ function bindProperty(attr) {
     objAttr.multiplicity = attr.cardinality;
     objAttr.documentation = attr.description;
     objAttr[fields.tags] = getTagsToImport(attr);
+    objAttr[fields.defaultValue] = attr.defaultValue
 
     return objAttr;
 }

@@ -39,5 +39,6 @@ const fields = {
     'value': 'value',
     'tags': 'tags',
     'kind': 'kind',
+    'defaultValue': 'defaultValue',
 };
 module.exports = fields;

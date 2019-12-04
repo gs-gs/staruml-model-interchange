@@ -392,30 +392,15 @@ async function importModel() {
         let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
         setTimeout(async function () {
 
-            // try {
-
             let res = await processImport(MainXMIData);
             if (res != null && res.success) {
                 vDialog.close();
                 app.modelExplorer.rebuild();
-                /* var selected = app.selections.getSelected();
-                if(!selected){
-                    selected=app.project.getProject()[0];
-                }
-                console.log("Get selected",selected); */
                 setTimeout(function () {
-                    // app.modelExplorer.expand(selected);
                     app.dialogs.showInfoDialog(constant.mi_msg_success);
-
                 });
             }
-            // } catch (error) {
-            //     console.log("importModel", error.message);
-            // };
         });
-        // }catch(error){
-        //     console.error(error.message);
-        // }
     }
 }
 
@@ -545,14 +530,9 @@ function exportModel() {
 
 
                     });
-                    /*  
-                        CircularJSON.stringify : 
-                        Dealing with "TypeError: Converting circular structure to JSON" 
-                        on JavaScript JavaScript structures that include circular references can't be 
-                        serialized with a"plain" JSON.stringify. 
-                    */
+                   
                     setTimeout(function () {
-                        fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4) /* JSON.stringify(jsonProcess,null,4) */ , 'utf-8', function (err) {
+                        fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4), 'utf-8', function (err) {
                             if (err) {
                                 console.error("Error : ", err.message);
                                 app.dialogs.showErrorDialog(err.message);

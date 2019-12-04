@@ -15,18 +15,6 @@ function _projectClosed() {
      console.log("project closed");
 }
 
-function test() {
-
-
-     /* ,{
-          "label": "Test",
-          "id": "tool.transport.test",
-          "command": "tool.transport:test"
-     } */
-
-     console.log("afasdf");
-}
-
 /**
  * @function init
  * @description function will be called when the extension is loaded

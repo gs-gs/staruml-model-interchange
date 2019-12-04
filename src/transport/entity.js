@@ -41,7 +41,9 @@ function addEntityProperty(entityObj, entity) {
 
         propertyObj[fields.cardinality] = attr.multiplicity;
 
-        propertyObj[fields.tags] = utils.getTagsToExport(attr);;
+        propertyObj[fields.tags] = utils.getTagsToExport(attr);
+
+        propertyObj[fields.defaultValue] = attr.defaultValue
 
         /* Property DataType binding */
         utils.addDatatype(propertyObj, attr);
