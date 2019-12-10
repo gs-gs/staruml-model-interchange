@@ -23,7 +23,6 @@ function init() {
      app.commands.register('tool.transport:import', transport.importModel);
 
      app.commands.register('tool.transport:export', transport.exportModel);
-     app.commands.register('tool.transport:test', test);
 
      app.commands.register('tool.git:init', git.getInit);
      app.commands.register('tool.git:addremote', git.getAddRemote);

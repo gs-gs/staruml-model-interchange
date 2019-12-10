@@ -9,7 +9,7 @@ const fs = require('fs');
 const CircularJSON = require('circular-json');
 var path = require('path');
 var mRelationship = require('./relationship');
-// app.diagrams.getEditor().canvasElement.height
+var diagramEle = require('./diagramElement');
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
@@ -64,16 +64,41 @@ function importDataToModel(XMIData) {
 
     let mainOwnedElements = []
     let Package = {
-        '_type': 'UMLPackage',
+        '_type': XMIData.type,
         'name': XMIData.name,
         'ownedElements': mainOwnedElements
     };
     mUtils.resetNewAddedElement();
 
-    if (XMIData.type == fields.package) {
+    if (XMIData.type == fields.package /* || XMIData.type == fields.diagram */) {
         // let mPackage=XMIData[key];
         let mProject = app.project.getProject();
         let searchedPackage = app.repository.select(Package.name);
+        // Code is in progress for When user Import UMLClassDiagram
+        if (XMIData.type === fields.diagram) {
+            let tmpSel = searchedPackage.filter(function (item) {
+                return item instanceof type.UMLClassDiagram
+            });
+            if (tmpSel.length == 1) {
+                searchedPackage=[];
+                let returnValue=tmpSel[0];
+                let tempPackage = diagramEle.filterUMLClassDiagram(returnValue);
+                let mNewDiagram = app.repository.readObject(tempPackage);
+                searchedPackage.push(mNewDiagram);
+
+            }
+
+        } else if (XMIData.type === fields.package) {
+            let tmpSel = searchedPackage.filter(function (item) {
+                return item instanceof type.UMLPackage
+            });
+            if (tmpSel.length == 1) {
+                searchedPackage=[];
+                let returnValue=tmpSel[0];
+                searchedPackage.push(returnValue);
+
+            }
+        }
         let result = null;
         /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
@@ -206,11 +231,9 @@ function importDataToModel(XMIData) {
                                 forEach(searchedEnumRes, function (ety) {
 
                                     if (ety instanceof type.UMLEnumeration) {
-                                        console.time("Updated : Enum : ");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.timeEnd();
                                         console.log("Updated : Enum : ", ety.name);
                                     }
                                 });
@@ -239,12 +262,10 @@ function importDataToModel(XMIData) {
                                 forEach(searchedEntityRes, function (ety) {
 
                                     if (ety instanceof type.UMLClass) {
-                                        console.time("Updated : Entity");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
                                         console.log("Updated : Entity : ", ety.name);
-                                        console.timeEnd();
                                     }
                                 });
                             }
@@ -269,12 +290,10 @@ function importDataToModel(XMIData) {
                                 forEach(searchedEventRes, function (ety) {
 
                                     if (ety instanceof type.UMLInterface) {
-                                        console.time("Enum");
                                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                                         //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
                                         console.log("Updated : Event : ", ety.name);
-                                        console.timeEnd("Enum");
                                     }
                                 });
                             }
@@ -366,7 +385,7 @@ function importDataToModel(XMIData) {
         forEach(newElements, function (newEle) {
             mUtils.createViewOfElement(newEle);
         });
-        
+
         app.diagrams.repaint();;
 
 
@@ -445,17 +464,57 @@ function exportModel() {
             returnValue
         }) {
             if (buttonId === "ok") {
+                let umlPackage;
                 let varSel = returnValue.getClassName();
                 let valPackagename = type.UMLPackage.name;
-                if (varSel == valPackagename) {
-                    let umlPackage = returnValue;
+                let valClassDiagram = type.UMLClassDiagram.name;
+                if (varSel == valClassDiagram) {
+                    app.dialogs.showErrorDialog(constant.PACKAGE_SELECT_MESSAGE);
+                    return;
+
+                    /* 
+                    let tempPackage = diagramEle.filterUMLClassDiagram(returnValue);
+                    let mNewDiagram = app.repository.readObject(tempPackage);
+                    umlPackage = mNewDiagram; 
+                    */
+                    
+
+                } else if (varSel == valPackagename) {
+
+                    umlPackage = returnValue;
+                    let ownedElements = [];
+                    umlPackage.ownedElements.filter(function (item) {
+                        if (item instanceof type.UMLClass ||
+                            item instanceof type.UMLInterface ||
+                            item instanceof type.UMLEnumeration) {
+
+                            ownedElements.push(item);
+                        }
+                    });
+                    if (ownedElements.length == 0) {
+                        app.dialogs.showErrorDialog(constant.PACKAGE_SELECTION_ERROR);
+                        return;
+                    }
+
+                } else {
+                    app.dialogs.showErrorDialog(constant.PACKAGE_SELECT_MESSAGE);
+                    return;
+                }
+
+                if (umlPackage != null) {
                     let expPackages = [];
                     let filename = umlPackage.name;
                     /* Export main package */
                     let jsonProcess = {};
                     if (filename) {
                         console.log("Filename : ", filename);
-                        jsonProcess[fields.type] = fields.package;
+                        let type = '';
+                        if (varSel == valClassDiagram) {
+                            type = fields.diagram;
+                        } else if (varSel == valPackagename) {
+                            type = fields.package;
+                        }
+                        jsonProcess[fields.type] = type;
                         jsonProcess[fields.name] = umlPackage.name;
 
                         /* Enum binding--- */
@@ -530,7 +589,7 @@ function exportModel() {
 
 
                     });
-                   
+
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4), 'utf-8', function (err) {
                             if (err) {
@@ -539,6 +598,10 @@ function exportModel() {
                                 return;
                             } else {
                                 app.dialogs.showInfoDialog("Package \'" + umlPackage.name + "\' is exported to path : " + fName);
+                                if (varSel == valClassDiagram) {
+                                    diagramEle.removeDiagram(umlPackage);
+                                    console.log("Deleted temp generated diagram package")
+                                }
                                 return;
                             }
                         });

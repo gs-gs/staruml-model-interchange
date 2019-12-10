@@ -22,6 +22,9 @@ const constant = {
     mi_msg_success: "Package Imported",
     source: "Source",
     target: "Target",
+    DIALOG_MSG_ERROR_SELECT_PACKAGE: "Please select a package or diagram to generate OpenAPI Specification.",
+    PACKAGE_SELECT_MESSAGE: "Please select package",
+    PACKAGE_SELECTION_ERROR: "No elements found in selected package. Please select other package.",
     ref_not_found: '\' \'$ref\' not found',
 
 }

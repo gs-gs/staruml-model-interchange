@@ -1,5 +1,6 @@
 const fields = {
     'package': 'Package',
+    'diagram': 'UMLClassDiagram',
     'type': 'type',
     'name': 'name',
     'abstractFiles': 'abstractFiles',
