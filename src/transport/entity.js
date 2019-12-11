@@ -181,7 +181,7 @@ function addEntityRelationship(entityObj, entity) {
             objTarget[fields.type] = utils.getElementType(target);
         }
         Relationship.push(objRelationship);
-    })
+    });
 }
 
 function bindEntityToExport(mPackage, jsonProcess) {

@@ -3,30 +3,52 @@ const fs = require('fs');
 const git = require('simple-git/promise');
 const constant = require('../constant');
 var _fname = null;
-var _dirname = null;
+var _mdirname = null;
 var junk = require('junk');
 
 function _projectLoaded() {
 
-     _fname = app.project.getFilename();
-     if (_fname) {
-          _dirname = path.dirname(_fname);
-          fs.readdir(_dirname, function (err, files) {
+     /*_fname = app.project.getFilename();
+      if (_fname) {
+          _mdirname = path.dirname(_fname);
+          _mdirname = _mdirname+path.sep;
+          fs.readdir(_mdirname, function (err, files) {
                console.log(files.filter(junk.not));
           });
+     } */
+
+
+     
+     _fname = app.project.getFilename();
+     if (_fname) {
+          _mdirname = path.dirname(_fname);
+          _mdirname = _mdirname+path.sep+'tmp';
+
+          if (!fs.existsSync(_mdirname)){
+               fs.mkdirSync(_mdirname);
+               /* git=gitP(__dirname); */
+               fs.readdir(_mdirname, function (err, files) {
+                    console.log(files.filter(junk.not));
+               });
+          }/* else{
+               const git;
+          } */
+          
      }
+    
 }
 async function _gitInit() {
 
-     if (!_fname && !_dirname) {
+     if (!_fname && !_mdirname) {
           app.dialogs.showInfoDialog(constant.project_not_found);
           return;
      }
      try {
-          let isRepo = await git(_dirname).checkIsRepo();
+          let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
-               await git(_dirname).init();
-               await git(_dirname).add('./*');
+               await git(_mdirname).init();
+               /* Getting fatal error : pathspec'./*' did not match any files
+               await git(_mdirname).add('./*'); */
                app.dialogs.showInfoDialog(constant.repo_initialized);
           } else {
                app.dialogs.showInfoDialog(constant.repo_already_initialized);
@@ -39,7 +61,7 @@ async function _gitInit() {
 
 async function _gitAddRemote() {
 
-     let isRepo = await git(_dirname).checkIsRepo();
+     let isRepo = await git(_mdirname).checkIsRepo();
      if (!isRepo) {
           app.dialogs.showErrorDialog(constant.init_repo_first);
           return;
@@ -48,7 +70,7 @@ async function _gitAddRemote() {
      if (resAddRemote.buttonId == 'ok') {
           if (resAddRemote.returnValue) {
                try {
-                    await git(_dirname).addRemote('origin', resAddRemote.returnValue);
+                    await git(_mdirname).addRemote('origin', resAddRemote.returnValue);
                     app.dialogs.showInfoDialog(constant.repo_added_success);
                } catch (error) {
                     app.dialogs.showErrorDialog(error.message);
@@ -61,7 +83,7 @@ async function _gitAddRemote() {
 
 async function _gitCommit() {
 
-     let isRepo = await git(_dirname).checkIsRepo();
+     let isRepo = await git(_mdirname).checkIsRepo();
      if (!isRepo) {
           app.dialogs.showErrorDialog(constant.init_repo_first);
           return;
@@ -71,8 +93,8 @@ async function _gitCommit() {
      if (resCommit.buttonId == "ok") {
           if (resCommit.returnValue) {
                try {
-
-                    let commit = await git(_dirname).commit(resCommit.returnValue);
+                    let result = await git(_mdirname).add('./*');
+                    let commit = await git(_mdirname).commit(resCommit.returnValue);
                     console.log(commit);
                } catch (error) {
                     app.dialogs.showErrorDialog(error.message);
@@ -85,7 +107,7 @@ async function _gitCommit() {
 
 async function _gitAddConfig() {
      try {
-          let isRepo = await git(_dirname).checkIsRepo();
+          let isRepo = await git(_mdirname).checkIsRepo();
 
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
@@ -105,8 +127,8 @@ async function _gitAddConfig() {
                               console.log("username", _username);
                               console.log("email", _email);
 
-                              git(_dirname).addConfig('user.name', _username);
-                              git(_dirname).addConfig('user.email', _email);
+                              git(_mdirname).addConfig('user.name', _username);
+                              git(_mdirname).addConfig('user.email', _email);
 
                               app.dialogs.showInfoDialog(constant.getConfigMsg(_username, _email));
                          } else {
@@ -128,14 +150,14 @@ async function _gitConfigList() {
 
      try {
 
-          let isRepo = await git(_dirname).checkIsRepo();
+          let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
 
 
-          let result = await git(_dirname).raw([
+          let result = await git(_mdirname).raw([
                'config',
                '--list'
           ]);
@@ -154,14 +176,14 @@ async function _gitConfigList() {
 
 async function _gitPush() {
      try {
-          let isRepo = await git(_dirname).checkIsRepo();
+          let isRepo = await git(_mdirname).checkIsRepo();
 
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
 
-          let result = await git(_dirname).push(['-u', 'origin', 'master'])
+          let result = await git(_mdirname).push(['-u', 'origin', 'master'])
           app.dialogs.showInfoDialog(result);
           console.log(result);
      } catch (error) {
@@ -174,16 +196,21 @@ async function _gitPush() {
 async function _gitSaveChanges() {
      try {
 
-          let isRepo = await git(_dirname).checkIsRepo();
+          let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
-          let result = await git(_dirname).add('./*');
+          let result = await git(_mdirname).add('./*');
+          console.log("save changes",result);
           app.dialogs.showInfoDialog(constant.changes_saved);
      } catch (error) {
           console.log(error);
      }
+}
+
+function _getDirectory(){
+     return _mdirname;
 }
 module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
@@ -193,3 +220,4 @@ module.exports.getSaveChanges = _gitSaveChanges;
 module.exports.getConfigList = _gitConfigList;
 module.exports.getPush = _gitPush;
 module.exports.projectLoaded = _projectLoaded;
+module.exports.getDirectory = _getDirectory;
