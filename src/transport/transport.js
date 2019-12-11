@@ -7,6 +7,7 @@ var mUtils = require('./utils');
 var constant = require('../constant');
 const fs = require('fs');
 const CircularJSON = require('circular-json');
+const git = require('../git/git');
 var path = require('path');
 var mRelationship = require('./relationship');
 // app.diagrams.getEditor().canvasElement.height
@@ -477,7 +478,8 @@ function exportModel() {
                     console.log("Abstrack Class", absClass);
 
                     var _filename = filename;
-                    var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
+                    var fName = git.getDirectory()+path.sep+_filename+'.json';
+                    // var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
 
                     forEach(absClass, function (item) {
                         if (item._parent instanceof type.UMLPackage) {
@@ -542,7 +544,7 @@ function exportModel() {
                                 return;
                             }
                         });
-                    }, 10)
+                    }, 10);
                 } else {
                     app.dialogs.showErrorDialog("Please select a package");
                 }
