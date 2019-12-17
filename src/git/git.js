@@ -246,6 +246,34 @@ async function _gitPush() {
      }
 }
 
+async function _gitPull() {
+
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+          let res = await git(_mdirname).getRemotes(true);
+          if (res.length == 1) {
+               let remote = res[0];
+               let pushURL = remote.refs.fetch;
+               let USER='mayurm-virtueinfo';
+               let PASS='mayurm_virtueinfo';
+               const REPO = pushURL;
+               let URL = url.parse(REPO)
+
+               const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+               let resPull = await git(_mdirname).pull(pushURL/* gitPushUrl */, 'master');
+               console.log("resPull", resPull);
+          }
+
+     } catch (error) {
+          console.error(error.message);
+          app.dialogs.showErrorDialog(error.message);
+     }
+}
 
 
 async function _gitSaveChanges() {
@@ -257,14 +285,15 @@ async function _gitSaveChanges() {
                return;
           }
           let result = await git(_mdirname).add('./*');
-          console.log("save changes",result);
+          console.log("save changes", result);
           app.dialogs.showInfoDialog(constant.changes_saved);
      } catch (error) {
-          console.log(error);
+          console.error(error.message);
+          app.dialogs.showErrorDialog(error.message);
      }
 }
 
-function _getDirectory(){
+function _getDirectory() {
      return _mdirname;
 }
 module.exports.getInit = _gitInit;
@@ -274,5 +303,6 @@ module.exports.getAddConfig = _gitAddConfig;
 module.exports.getSaveChanges = _gitSaveChanges;
 module.exports.getConfigList = _gitConfigList;
 module.exports.getPush = _gitPush;
+module.exports.getPull = _gitPull;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
