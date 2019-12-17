@@ -1,3 +1,4 @@
+var url = require('url');
 var path = require('path');
 const fs = require('fs');
 const git = require('simple-git/promise');
@@ -199,17 +200,47 @@ async function _gitConfigList() {
 }
 
 async function _gitPush() {
+     const mGit = git(_mdirname);
+
      try {
-          let isRepo = await git(_mdirname).checkIsRepo();
+          let isRepo = await mGit.checkIsRepo();
 
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
 
-          let result = await git(_mdirname).push(['-u', 'origin', 'master'])
-          app.dialogs.showInfoDialog(result);
-          console.log(result);
+
+          let res = await git(_mdirname).getRemotes(true);
+          if (res.length == 1) {
+               let remote = res[0];
+               let pushURL = remote.refs.push
+
+               let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+               let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+
+               let USER = resUSER.returnValue;
+               let PASS = resPASS.returnValue;
+               const REPO = pushURL;
+               let URL = url.parse(REPO)
+
+               const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+               console.log("Git Push url", gitPushUrl);
+
+               mGit.push(gitPushUrl, 'master')
+                    .then((success) => {
+                         app.dialogs.showInfoDialog("Pushed Successfull");
+                         // console.log('repo successfully pushed');
+                    }, (error) => {
+                         // console.log('repo push failed');
+                         let eMsg = 'Push Failed' + '\n' + error.message;
+                         app.dialogs.showErrorDialog(eMsg);
+                         console.error(error.message);
+                    });
+          } else {
+               app.dialogs.showInfoDialog(constant.add_remote);
+          }
+
      } catch (error) {
           app.dialogs.showErrorDialog(error.message);
      }
