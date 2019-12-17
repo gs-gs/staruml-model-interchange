@@ -18,24 +18,25 @@ function _projectLoaded() {
      } */
 
 
-     
+
      _fname = app.project.getFilename();
      if (_fname) {
           _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname+path.sep+'tmp';
+          _mdirname = _mdirname + path.sep + 'tmp';
 
-          if (!fs.existsSync(_mdirname)){
+          if (!fs.existsSync(_mdirname)) {
                fs.mkdirSync(_mdirname);
                /* git=gitP(__dirname); */
                fs.readdir(_mdirname, function (err, files) {
                     console.log(files.filter(junk.not));
                });
-          }/* else{
-               const git;
-          } */
-          
+          }
+          /* else{
+                         const git;
+                    } */
+
      }
-    
+
 }
 async function _gitInit() {
 
@@ -86,6 +87,29 @@ async function _gitCommit() {
      let isRepo = await git(_mdirname).checkIsRepo();
      if (!isRepo) {
           app.dialogs.showErrorDialog(constant.init_repo_first);
+          return;
+     }
+     let StatusSummary = await git(_mdirname).status();
+     console.log("StatusSummary", StatusSummary);
+     if (StatusSummary.files.length == 0) {
+          app.dialogs.showInfoDialog(constant.file_change_not_found_msg);
+          return;
+     }
+
+     let user = await git(_mdirname).raw([
+          'config',
+          'user.name'
+     ]);
+     console.log("User", user);
+
+     let email = await git(_mdirname).raw([
+          'config',
+          'user.email'
+     ]);
+     console.log("Email", email);
+
+     if (user == null || email == null) {
+          app.dialogs.showInfoDialog(constant.add_credential);
           return;
      }
 
