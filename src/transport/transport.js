@@ -367,7 +367,7 @@ function importDataToModel(XMIData) {
         forEach(newElements, function (newEle) {
             mUtils.createViewOfElement(newEle);
         });
-        
+
         app.diagrams.repaint();;
 
 
@@ -377,32 +377,41 @@ function importDataToModel(XMIData) {
 }
 
 
-async function importModel() {
+async function importModel(file) {
 
-    var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
-    if (mFiles && mFiles.length > 0) {
-        // try {
-        /* Main XMIData */
-        let filePath = mFiles[0];
-        var contentStr = fs.readFileSync(filePath, 'utf8');
-        var content = JSON.parse(contentStr);
-        var MainXMIData = content;
-        console.log("Main XMIData", MainXMIData);
+    let finalPath = null;
+    if (file) {
+        finalPath = file;
+    } else {
 
-        let dm = app.dialogs;
-        let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
-        setTimeout(async function () {
-
-            let res = await processImport(MainXMIData);
-            if (res != null && res.success) {
-                vDialog.close();
-                app.modelExplorer.rebuild();
-                setTimeout(function () {
-                    app.dialogs.showInfoDialog(constant.mi_msg_success);
-                });
-            }
-        });
+        var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
+        if (mFiles && mFiles.length > 0) {
+            // try {
+            /* Main XMIData */
+            finalPath = mFiles[0];
+        }
     }
+
+    let filePath = finalPath;
+    var contentStr = fs.readFileSync(filePath, 'utf8');
+    var content = JSON.parse(contentStr);
+    var MainXMIData = content;
+    console.log("Main XMIData", MainXMIData);
+
+    let dm = app.dialogs;
+    let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
+    setTimeout(async function () {
+
+        let res = await processImport(MainXMIData);
+        if (res != null && res.success) {
+            vDialog.close();
+            app.modelExplorer.rebuild();
+            setTimeout(function () {
+                app.dialogs.showInfoDialog(constant.mi_msg_success);
+            });
+        }
+    });
+
 }
 
 function processImport(MainXMIData) {
@@ -478,7 +487,7 @@ function exportModel() {
                     console.log("Abstrack Class", absClass);
 
                     var _filename = filename;
-                    var fName = git.getDirectory()+path.sep+_filename+'.json';
+                    var fName = git.getDirectory() + path.sep + _filename + '.json';
                     // var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
 
                     forEach(absClass, function (item) {
@@ -532,7 +541,7 @@ function exportModel() {
 
 
                     });
-                   
+
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4), 'utf-8', function (err) {
                             if (err) {

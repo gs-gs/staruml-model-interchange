@@ -7,6 +7,7 @@ const constant = {
     enter_username: "Enter username",
     enter_password: "Enter password",
     file_change_not_found_msg: "No changes to commit",
+    commit_changes: "commit changes before pull",
     add_credential: "add credential to commit",
     add_remote: "add remote to push",
     repo_added_success: "Repository added successfully",

@@ -1,3 +1,4 @@
+const transport = require('../transport/transport');
 var url = require('url');
 var path = require('path');
 const fs = require('fs');
@@ -187,10 +188,6 @@ async function _gitConfigList() {
                '--list'
           ]);
           console.log(result);
-          let buttons = [{
-               id: 1,
-               text: "ok"
-          }];
           app.dialogs.showInfoDialog(result);
      } catch (error) {
           console.log(error);
@@ -216,22 +213,33 @@ async function _gitPush() {
                let remote = res[0];
                let pushURL = remote.refs.push
 
-               let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+               /* let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
                let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
 
                let USER = resUSER.returnValue;
-               let PASS = resPASS.returnValue;
+               let PASS = resPASS.returnValue; */
+
+               let USER = 'mayurm-virtueinfo';
+               let PASS = 'mayurm_virtueinfo';
+
                const REPO = pushURL;
                let URL = url.parse(REPO)
 
                const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
                console.log("Git Push url", gitPushUrl);
 
+               let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
                mGit.push(gitPushUrl, 'master')
                     .then((success) => {
-                         app.dialogs.showInfoDialog("Pushed Successfull");
-                         // console.log('repo successfully pushed');
+                         vDialog.close();
+
+                         setTimeout(function () {
+                              app.dialogs.showInfoDialog("Push Successfull");
+                         });
+
+                         // console.log('repo successfully push');
                     }, (error) => {
+                         vDialog.close();
                          // console.log('repo push failed');
                          let eMsg = 'Push Failed' + '\n' + error.message;
                          app.dialogs.showErrorDialog(eMsg);
@@ -248,30 +256,65 @@ async function _gitPush() {
 
 async function _gitPull() {
 
+     let vDialog = null;
      try {
           let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
+
+          let StatusSummary = await git(_mdirname).status();
+          console.log("StatusSummary", StatusSummary);
+          if (StatusSummary.files.length == 1) {
+               app.dialogs.showInfoDialog(constant.commit_changes);
+               return;
+          }
+
           let res = await git(_mdirname).getRemotes(true);
           if (res.length == 1) {
                let remote = res[0];
                let pushURL = remote.refs.fetch;
-               let USER='mayurm-virtueinfo';
-               let PASS='mayurm_virtueinfo';
-               const REPO = pushURL;
-               let URL = url.parse(REPO)
-
-               const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
-
-               let resPull = await git(_mdirname).pull(pushURL/* gitPushUrl */, 'master');
-               console.log("resPull", resPull);
+               
+               vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
+               let options = {
+                    // '--rebase': 'true'
+                    // '--no-rebase': null
+                    '--allow-unrelated-histories':null
+                    // '-a':null,
+               };
+               let resPull = await git(_mdirname).pull(pushURL, 'master', options);
+               console.log("Pull result",resPull);
+               vDialog.close();
+               if (resPull == null) {
+                    return;
+               }
+               app.toast.info("Pull Successfull");
+               fs.readdir(_mdirname, function (err, files) {
+                    if (files && files.length > 0) {
+                         files.filter(junk.not);
+                         let filesList = files.filter(function (e) {
+                              return path.extname(e).toLowerCase() === '.json'
+                         });
+                         if (filesList.length == 1) {
+                              let mFile = filesList[0];
+                              let finalPath = _mdirname + path.sep + mFile;
+                              transport.importModel(finalPath);
+                         }
+                    } else if (err) {
+                         app.toast.error(err.message);
+                    }
+               });
           }
 
      } catch (error) {
           console.error(error.message);
-          app.dialogs.showErrorDialog(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
      }
 }
 
