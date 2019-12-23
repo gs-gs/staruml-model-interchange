@@ -11,7 +11,7 @@
                          "id": "tool.git.init",
                          "command": "tool.git:init"
                     },{
-                         "label": "add repo",
+                         "label": "remote",
                          "id": "tool.git.addremote",
                          "command": "tool.git:addremote"
           
@@ -21,17 +21,12 @@
                          "command": "tool.git:commit"
           
                     },{
-                         "label": "add config",
+                         "label": "credential",
                          "id": "tool.git.addconfig",
                          "command": "tool.git:addconfig"
           
                     },{
-                         "label": "save changes",
-                         "id": "tool.git.savechanges",
-                         "command": "tool.git:savechanges"
-          
-                    },{
-                         "label": "config list",
+                         "label": "config",
                          "id": "tool.git.configlist",
                          "command": "tool.git:configlist"
           
@@ -39,6 +34,11 @@
                          "label": "push",
                          "id": "tool.git.push",
                          "command": "tool.git:push"
+          
+                    },{
+                         "label": "pull",
+                         "id": "tool.git.pull",
+                         "command": "tool.git:pull"
           
                     }]
 

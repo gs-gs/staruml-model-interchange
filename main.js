@@ -31,6 +31,7 @@ function init() {
      app.commands.register('tool.git:savechanges', git.getSaveChanges);
      app.commands.register('tool.git:configlist', git.getConfigList);
      app.commands.register('tool.git:push', git.getPush);
+     app.commands.register('tool.git:pull', git.getPull);
 
      app.project.on('projectLoaded', git.projectLoaded);
      app.project.on('projectClosed', _projectClosed);
