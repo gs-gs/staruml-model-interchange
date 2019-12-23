@@ -213,15 +213,13 @@ async function _gitPush() {
                let remote = res[0];
                let pushURL = remote.refs.push
 
-               /* let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+               let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
                let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
 
                let USER = resUSER.returnValue;
-               let PASS = resPASS.returnValue; */
+               let PASS = resPASS.returnValue;
 
-               let USER = 'mayurm-virtueinfo';
-               let PASS = 'mayurm_virtueinfo';
-
+               
                const REPO = pushURL;
                let URL = url.parse(REPO)
 

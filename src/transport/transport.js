@@ -542,6 +542,7 @@ function exportModel() {
 
                     });
 
+                    /* Export json file at path */
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4), 'utf-8', function (err) {
                             if (err) {
