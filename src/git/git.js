@@ -316,6 +316,46 @@ async function _gitPull() {
      }
 }
 
+async function _gitLog() {
+
+     let vDialog = null;
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+
+          let logSummery = await git(_mdirname).log();
+          if(logSummery!=null)
+          {
+               let strCommit='';
+               logSummery.all.forEach(commit => {
+                    let cmt='Commit : '+commit.message+
+                    '<br>Email : '+commit.author_email+
+                    '<br>Name : '+commit.author_name+
+                    '<br>Date : '+commit.date;
+
+                    cmt+='<br><br>';
+
+                    strCommit+=cmt
+
+               });
+               console.log("logSummery", strCommit);
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, strCommit, [], true);
+          }
+          
+     } catch (error) {
+          console.error(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
+     }
+}
+
 
 async function _gitSaveChanges() {
      try {
@@ -345,5 +385,6 @@ module.exports.getSaveChanges = _gitSaveChanges;
 module.exports.getConfigList = _gitConfigList;
 module.exports.getPush = _gitPush;
 module.exports.getPull = _gitPull;
+module.exports.getLog = _gitLog;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;

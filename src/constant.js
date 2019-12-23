@@ -25,6 +25,7 @@ const constant = {
     title_import_mi_1: "Please wait untill model interchange is being processed for the \'",
     title_import_mi_2: "\' package",
     title_import_mi: "Model Interchange",
+    title_import_mi_commit_history: "Model Interchange - Commit History",
     mi_msg_success: "Package Imported",
     source: "Source",
     target: "Target",
