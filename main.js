@@ -33,6 +33,7 @@ function init() {
      app.commands.register('tool.git:push', git.getPush);
      app.commands.register('tool.git:pull', git.getPull);
      app.commands.register('tool.git:log', git.getLog);
+     app.commands.register('tool.git:status', git.getStatus);
 
      app.project.on('projectLoaded', git.projectLoaded);
      app.project.on('projectClosed', _projectClosed);

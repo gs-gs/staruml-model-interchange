@@ -45,6 +45,11 @@
                          "id": "tool.git.log",
                          "command": "tool.git:log"
           
+                    },{
+                         "label": "status",
+                         "id": "tool.git.status",
+                         "command": "tool.git:status"
+          
                     }]
 
           },{
