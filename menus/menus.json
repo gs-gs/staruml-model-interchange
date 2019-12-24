@@ -50,6 +50,11 @@
                          "id": "tool.git.status",
                          "command": "tool.git:status"
           
+                    },{
+                         "label": "diff",
+                         "id": "tool.git.diff",
+                         "command": "tool.git:diff"
+          
                     }]
 
           },{

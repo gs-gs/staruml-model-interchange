@@ -831,7 +831,6 @@ function getTagsToExport(literal) {
     if (literal.tags != null) {
 
         let tags = literal.tags;
-        console.log(literal.tags);
         forEach(tags, function (tag) {
             let tagObj = {};
             tagObj[fields.name] = tag.name;

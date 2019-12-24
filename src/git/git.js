@@ -382,8 +382,55 @@ async function _gitStatus() {
                staged.forEach(staged => {
                     stagedFiles += '<br>' + staged;
                });
+               let finalStatus = modifiedFiles + '<br><br>' + stagedFiles + '<br><br>';
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_status, finalStatus, [], true);
+          }
+
+     } catch (error) {
+          console.error(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
+     }
+}
+
+async function _gitDiff() {
+     let vDialog = null;
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+
+          let diffSummery = await git(_mdirname).diff();
+          if (diffSummery != '') {
+               console.log('diffSummery', diffSummery);
+
+               let strDiff = diffSummery.replace(/(?:\r\n|\r|\n)/g, '<br>');
+               if (strDiff != null) {
+                    app.dialogs.showModalDialog("", constant.title_import_mi_commit_diff, strDiff, [], true);
+               }
+
+               /* let modifiedFiles = '------------------------------<br><b>Modefied files</b><br>------------------------------';
+
+
+               let modified = statusSummery.modified;
+               modified.forEach(modified => {
+                    modifiedFiles += '<br>' + modified;
+               });
+
+               let stagedFiles = '------------------------------<br><b>Staged files</b><br>------------------------------';
+
+               let staged = statusSummery.staged;
+               staged.forEach(staged => {
+                    stagedFiles += '<br>' + staged;
+               });
                let finalStatus=modifiedFiles + '<br><br>' + stagedFiles+'<br><br>';
-               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, finalStatus, [], true);
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, finalStatus, [], true); */
           }
 
      } catch (error) {
@@ -427,5 +474,6 @@ module.exports.getPush = _gitPush;
 module.exports.getPull = _gitPull;
 module.exports.getLog = _gitLog;
 module.exports.getStatus = _gitStatus;
+module.exports.getDiff = _gitDiff;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
