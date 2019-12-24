@@ -22,9 +22,11 @@ function _projectLoaded() {
 
 
      _fname = app.project.getFilename();
+     let basefile=path.basename(_fname);
+     let basefileName=path.parse(basefile).name;
      if (_fname) {
           _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname + path.sep + 'tmp';
+          _mdirname = _mdirname + path.sep + basefileName + '_git';
 
           if (!fs.existsSync(_mdirname)) {
                fs.mkdirSync(_mdirname);
