@@ -40,6 +40,21 @@
                          "id": "tool.git.pull",
                          "command": "tool.git:pull"
           
+                    },{
+                         "label": "log",
+                         "id": "tool.git.log",
+                         "command": "tool.git:log"
+          
+                    },{
+                         "label": "status",
+                         "id": "tool.git.status",
+                         "command": "tool.git:status"
+          
+                    },{
+                         "label": "diff",
+                         "id": "tool.git.diff",
+                         "command": "tool.git:diff"
+          
                     }]
 
           },{

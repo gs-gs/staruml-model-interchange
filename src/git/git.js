@@ -22,9 +22,11 @@ function _projectLoaded() {
 
 
      _fname = app.project.getFilename();
+     let basefile=path.basename(_fname);
+     let basefileName=path.parse(basefile).name;
      if (_fname) {
           _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname + path.sep + 'tmp';
+          _mdirname = _mdirname + path.sep + basefileName + '_git';
 
           if (!fs.existsSync(_mdirname)) {
                fs.mkdirSync(_mdirname);
@@ -219,7 +221,7 @@ async function _gitPush() {
                let USER = resUSER.returnValue;
                let PASS = resPASS.returnValue;
 
-               
+
                const REPO = pushURL;
                let URL = url.parse(REPO)
 
@@ -273,16 +275,16 @@ async function _gitPull() {
           if (res.length == 1) {
                let remote = res[0];
                let pushURL = remote.refs.fetch;
-               
+
                vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
                let options = {
                     // '--rebase': 'true'
                     // '--no-rebase': null
-                    '--allow-unrelated-histories':null
+                    '--allow-unrelated-histories': null
                     // '-a':null,
                };
                let resPull = await git(_mdirname).pull(pushURL, 'master', options);
-               console.log("Pull result",resPull);
+               console.log("Pull result", resPull);
                vDialog.close();
                if (resPull == null) {
                     return;
@@ -316,6 +318,131 @@ async function _gitPull() {
      }
 }
 
+async function _gitLog() {
+
+     let vDialog = null;
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+
+          let logSummery = await git(_mdirname).log();
+          if (logSummery != null) {
+               let strCommit = '';
+               logSummery.all.forEach(commit => {
+                    let cmt = 'Commit : ' + commit.message +
+                         '<br>Email : ' + commit.author_email +
+                         '<br>Name : ' + commit.author_name +
+                         '<br>Date : ' + commit.date;
+                    cmt += '<br><br>';
+                    strCommit += cmt
+               });
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, strCommit, [], true);
+          }
+
+     } catch (error) {
+          console.error(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
+     }
+}
+
+async function _gitStatus() {
+
+     let vDialog = null;
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+
+          let statusSummery = await git(_mdirname).status();
+          if (statusSummery != null) {
+               let strCommit = '';
+               console.log('statusSummery', statusSummery);
+
+               let modifiedFiles = '------------------------------<br><b>Modefied files</b><br>------------------------------';
+
+
+               let modified = statusSummery.modified;
+               modified.forEach(modified => {
+                    modifiedFiles += '<br>' + modified;
+               });
+
+               let stagedFiles = '------------------------------<br><b>Staged files</b><br>------------------------------';
+
+               let staged = statusSummery.staged;
+               staged.forEach(staged => {
+                    stagedFiles += '<br>' + staged;
+               });
+               let finalStatus = modifiedFiles + '<br><br>' + stagedFiles + '<br><br>';
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_status, finalStatus, [], true);
+          }
+
+     } catch (error) {
+          console.error(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
+     }
+}
+
+async function _gitDiff() {
+     let vDialog = null;
+     try {
+          let isRepo = await git(_mdirname).checkIsRepo();
+          if (!isRepo) {
+               app.dialogs.showErrorDialog(constant.init_repo_first);
+               return;
+          }
+
+          let diffSummery = await git(_mdirname).diff();
+          if (diffSummery != '') {
+               console.log('diffSummery', diffSummery);
+
+               let strDiff = diffSummery.replace(/(?:\r\n|\r|\n)/g, '<br>');
+               if (strDiff != null) {
+                    app.dialogs.showModalDialog("", constant.title_import_mi_commit_diff, strDiff, [], true);
+               }
+
+               /* let modifiedFiles = '------------------------------<br><b>Modefied files</b><br>------------------------------';
+
+
+               let modified = statusSummery.modified;
+               modified.forEach(modified => {
+                    modifiedFiles += '<br>' + modified;
+               });
+
+               let stagedFiles = '------------------------------<br><b>Staged files</b><br>------------------------------';
+
+               let staged = statusSummery.staged;
+               staged.forEach(staged => {
+                    stagedFiles += '<br>' + staged;
+               });
+               let finalStatus=modifiedFiles + '<br><br>' + stagedFiles+'<br><br>';
+               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, finalStatus, [], true); */
+          }
+
+     } catch (error) {
+          console.error(error.message);
+          if (vDialog != null) {
+               vDialog.close()
+          }
+          setTimeout(function () {
+               app.dialogs.showErrorDialog(error.message);
+          })
+     }
+}
 
 async function _gitSaveChanges() {
      try {
@@ -345,5 +472,8 @@ module.exports.getSaveChanges = _gitSaveChanges;
 module.exports.getConfigList = _gitConfigList;
 module.exports.getPush = _gitPush;
 module.exports.getPull = _gitPull;
+module.exports.getLog = _gitLog;
+module.exports.getStatus = _gitStatus;
+module.exports.getDiff = _gitDiff;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
