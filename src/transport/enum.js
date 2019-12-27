@@ -1,14 +1,24 @@
 var fields = require('./fields');
 var utils = require('./utils');
 var forEach = require('async-foreach').forEach;
-
+/**
+ * @function addEnumFields
+ * @description Bind enumeration fields to enumObj from enume (UMLEnumeration)
+ * @param {Object} enumObj
+ * @param {UMLEnumeration} enume
+ */
 function addEnumFields(enumObj, enume) {
     enumObj[fields.name] = enume.name;
     enumObj[fields.type] = utils.getElementType(enume);
     enumObj[fields.isAbstract] = enume.isAbstract;
     enumObj[fields.description] = enume.documentation;
 }
-
+/**
+ * @function addEnumProperty
+ * @description Bind enumeration property array field in enumObj from enume attributes (UMLAttribute)
+ * @param {Object} enumObj
+ * @param {UMLEnumeration} enume
+ */
 function addEnumProperty(enumObj, enume) {
     let enumArr = [];
     enumObj[fields.Property] = enumArr;
@@ -32,7 +42,12 @@ function addEnumProperty(enumObj, enume) {
         enumArr.push(propertyObj);
     });
 }
-
+/**
+ * @function addEnumLiterals
+ * @description Bind enumeration literals in enumObj from enume literals (UMLEnumerationLiteral)
+ * @param {Object} enumObj
+ * @param {UMLEnumeration} enume
+ */
 function addEnumLiterals(enumObj, enume) {
     let enumArr = [];
     enumObj[fields.Enum] = enumArr;
@@ -45,7 +60,12 @@ function addEnumLiterals(enumObj, enume) {
         enumArr.push(literalObj);
     });
 }
-
+/**
+ * @function bindEnumToExport
+ * @description Bind enumeration fields, properties, literals in enumObj from enume (UMLEnumeration)
+ * @param {UMLPackage} mPackage
+ * @param {Object} jsonProcess
+ */
 function bindEnumToExport(mPackage, jsonProcess) {
     let allEnumeration = app.repository.select(mPackage.name + '::@UMLEnumeration');
     forEach(allEnumeration, function (enume) {
@@ -64,7 +84,12 @@ function bindEnumToExport(mPackage, jsonProcess) {
 
     });
 }
-
+/**
+ * @function bindEnumToImport
+ * @description Bind enumeration fields in enumeObject from mSubObject
+ * @param {Object} enumeObject
+ * @param {Object} mSubObject
+ */
 function bindEnumToImport(enumeObject, mSubObject) {
     /* UMLEnumeration fields */
     enumeObject._type = 'UMLEnumeration';
@@ -73,7 +98,12 @@ function bindEnumToImport(enumeObject, mSubObject) {
     enumeObject.documentation = mSubObject.description;
 
 }
-
+/**
+ * @function bindEnumAttributesToImport
+ * @description Bind enumeration properties array field in enumeObject from mSubObject
+ * @param {Object} enumeObject
+ * @param {Object} mSubObject
+ */
 function bindEnumAttributesToImport(enumeObject, mSubObject) {
     /* UMLEnumeration fields */
     enumeObject._type = 'UMLEnumeration';
