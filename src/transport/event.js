@@ -2,7 +2,12 @@ var fields = require('./fields');
 var utils = require('./utils');
 var forEach = require('async-foreach').forEach;
 var datatype = require('./datatype');
-
+/**
+ * @function addEventFields
+ * @description Bind fields in eventObj from event (UMLInterface)
+ * @param {Object} eventObj
+ * @param {UMLInterface} event
+ */
 function addEventFields(eventObj, event) {
     eventObj[fields.type] = utils.getElementType(event);
     eventObj[fields.name] = event.name;
@@ -12,7 +17,12 @@ function addEventFields(eventObj, event) {
     eventObj[fields.from] = objFrom;
     eventObj[fields.to] = objTo;
 }
-
+/**
+ * @function addEventRequired
+ * @description Bind required field array in eventObj from event (UMLInterface) 
+ * @param {Object} eventObj
+ * @param {UMLInterface} event
+ */
 function addEventRequired(eventObj, event) {
     let requiredArr = [];
     eventObj[fields.Required] = requiredArr;
@@ -23,7 +33,12 @@ function addEventRequired(eventObj, event) {
         }
     });
 }
-
+/**
+ * @function addEventProperty
+ * @description Bind properties array in eventObj from event (UMLInterface) attributes array
+ * @param {Object} eventObj
+ * @param {UMLInterface} event
+ */
 function addEventProperty(eventObj, event) {
     let propertyArr = [];
     eventObj[fields.Property] = propertyArr;
@@ -46,7 +61,12 @@ function addEventProperty(eventObj, event) {
         propertyArr.push(propertyObj);
     });
 }
-
+/**
+ * @function addEventRelationship
+ * @description Bind relationship array in eventObj from event (UMLInterface) ownedElements array
+ * @param {Object} eventObj
+ * @param {UMLInterface} event
+ */
 function addEventRelationship(eventObj, event) {
     let Relationship = [];
     eventObj[fields.Relationship] = Relationship;
@@ -167,7 +187,12 @@ function addEventRelationship(eventObj, event) {
         Relationship.push(objRelationship);
     })
 }
-
+/**
+ * @function addEventOperation
+ * @description Bind operations field array in eventObj from event (UMLInterface) operations
+ * @param {Object} eventObj
+ * @param {UMLInterface} event
+ */
 function addEventOperation(eventObj, event) {
     let Operations = [];
     eventObj[fields.Operation] = Operations;
@@ -192,7 +217,12 @@ function addEventOperation(eventObj, event) {
         Operations.push(objOperation);
     })
 }
-
+/**
+ * @function bindEventToExport
+ * @description Bind fields, required, properties, relationship and operation in eventObj from allEvent array
+ * @param {UMLPackage} mPackage
+ * @param {Object} jsonProcess
+ */
 function bindEventToExport(mPackage, jsonProcess) {
     let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
     forEach(allEvents, function (event) {
@@ -217,7 +247,12 @@ function bindEventToExport(mPackage, jsonProcess) {
 
     });
 }
-
+/**
+ * @function bindAbstractEventToExport
+ * @description Bind fields, required, property and operation in eventObj from all abstract event array
+ * @param {UMLPackage} mPackage
+ * @param {Object} jsonProcess
+ */
 function bindAbstractEventToExport(mPackage, jsonProcess) {
     //let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
     forEach(mPackage.ownedElements, function (event) {
@@ -244,7 +279,12 @@ function bindAbstractEventToExport(mPackage, jsonProcess) {
 
     });
 }
-
+/**
+ * @function bindEventToImport
+ * @description Bind fields in interfaceObject from mSubObject
+ * @param {Object} interfaceObject
+ * @param {Object} mSubObject
+ */
 function bindEventToImport(interfaceObject, mSubObject) {
     /* UMLInterface fields */
     interfaceObject._type = 'UMLInterface';
