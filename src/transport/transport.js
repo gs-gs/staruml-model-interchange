@@ -15,7 +15,12 @@ const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
 }]
-
+/**
+ * @function getAbstractClass
+ * @description Find abstract class reference and return abstract class array
+ * @param {UMLPackage} umlPackage
+ * @returns {uniqueAbstractArr}
+ */
 function getAbstractClass(umlPackage) {
     let uniqueAbstractArr = [];
     let abstractClassList = [];
@@ -53,14 +58,23 @@ function getAbstractClass(umlPackage) {
 
     return uniqueAbstractArr;
 }
-
+/**
+ * @function getClasswiseAssociations
+ * @description Return array of association (UMLAssociation) from element (UMLClass)
+ * @param {*} element
+ * @returns {association}
+ */
 function getClasswiseAssociations(element) {
     let association = element.ownedElements.filter(function (item) {
         return item instanceof type.UMLAssociation
     });
     return association;
 }
-
+/**
+ * @function importDataToModel
+ * @description Import package from XMIData data. If package name not exist in StarUML, create new package. If package name exist in StarUML, Update or Create all existing elements like UMLClass, UMLInterface, UMLAttribute, UMLOperations, UMLParameter, UMLEnumeration, UMLEmumerationLiterals, UMLAssociation, UMLAssociationClassLink, UMLInterfaceRealization, UMLGeneralization based on its availibity in StarUML
+ * @param {Object} XMIData
+ */
 function importDataToModel(XMIData) {
 
     let mainOwnedElements = []
@@ -376,7 +390,11 @@ function importDataToModel(XMIData) {
     }
 }
 
-
+/**
+ * @function importModel
+ * @description Read file from file path and parse it to JSONObject
+ * @param {string} file
+ */
 async function importModel(file) {
 
     let finalPath = null;
@@ -413,7 +431,12 @@ async function importModel(file) {
     });
 
 }
-
+/**
+ * @function MainXMIData
+ * @description Process to import and handle abstract and non abstrack package
+ * @param {Object} MainXMIData
+ * @returns {Promise}
+ */
 function processImport(MainXMIData) {
     return new Promise((resolve, reject) => {
         // try {
@@ -445,7 +468,10 @@ function processImport(MainXMIData) {
         // };
     });
 }
-
+/**
+ * @function exportModel
+ * @description Export the selected package in JSONSchema standars
+ */
 function exportModel() {
 
     app.elementPickerDialog
