@@ -34,7 +34,13 @@ const constant = {
     ref_not_found: '\' \'$ref\' not found',
 
 }
-
+/**
+ * @function configMessage
+ * @description returns config message
+ * @param {*} _username
+ * @param {*} _email
+ * @returns {string}
+ */
 function configMessage(_username, _email) {
     return "Your local configuration is\nuser.name : " + _username + "\nuser.email : " + _email;
 }

@@ -3,7 +3,12 @@ var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var viewfields = require('./viewfields');
 var datatype = require('./datatype');
-
+/**
+ * @function getElementType
+ * @description return element type in string from element object
+ * @param {*} element
+ * @returns {string}
+ */
 function getElementType(element) {
     if (element instanceof type.UMLClass) {
         return fields.Entity;
@@ -22,7 +27,13 @@ function getElementType(element) {
     }
 
 }
-
+/**
+ * @function getRelationshipType
+ * @description returns type of relationship in string from end1 and end2 parameter which is UMLAssociation
+ * @param {*} end1 
+ * @param {*} end2
+ * @returns {string}
+ */
 function getRelationshipType(end1, end2) {
     if (end1.aggregation == 'shared' && end2.aggregation == 'none') {
         /* aggregation */
@@ -35,7 +46,12 @@ function getRelationshipType(end1, end2) {
         return fields.interface;
     }
 }
-
+/**
+ * @function isString
+ * @description check object is string or not. If it is string then it returns true, returns false
+ * @param {*} s
+ * @returns
+ */
 function isString(s) {
     return typeof (s) === 'string' || s instanceof String;
 }
@@ -72,7 +88,12 @@ function addDatatype(propertyObj, attr) {
 
     }
 }
-
+/**
+ * @function getDatatype
+ * @description returns datatype of property in string or ref if type is exist in model.
+ * @param {*} attr
+ * @returns {*}
+ */
 function getDatatype(attr) {
     let dType = {};
     if (attr.type == fields.Entity) {
@@ -106,7 +127,12 @@ function getDatatype(attr) {
         return attr.type
     }
 }
-
+/**
+ * @function setProperty
+ * @description set property in element
+ * @param {Array} ownedElements
+ * @param {Object} XMIData
+ */
 function setProperty(ownedElements, XMIData) {
 
     forEach(ownedElements, function (element) {
@@ -116,7 +142,7 @@ function setProperty(ownedElements, XMIData) {
             let entityJson = JSON.parse(entityString, null, 4);
 
             /* Check for new properties to be added */
-            let newProps = [];
+            /* let newProps = [];
             let existProps = [];
             forEach(mSubObject.Property, function (item) {
                 let chkForDuplicate = newProps.filter(function (mFltr) {
@@ -136,16 +162,16 @@ function setProperty(ownedElements, XMIData) {
                         existProps.push(atbts[0]);
                     }
                 }
-            });
+            }); */
             /*  */
 
             /* attribute ( Property ) */
             let attributes = [];
             entityJson.attributes = attributes;
             forEach(mSubObject.Property, function (attr) {
-                let chkNew = newProps.filter(function (nItem) {
+                /* let chkNew = newProps.filter(function (nItem) {
                     return attr.name == nItem.name
-                });
+                }); */
 
                 let objProp = bindProperty(attr);
                 if (objProp != null) {
@@ -160,7 +186,12 @@ function setProperty(ownedElements, XMIData) {
         }
     });
 }
-
+/**
+ * @function setLiterals
+ * @description set literals in UMLEnumeration
+ * @param {Array} ownedElements
+ * @param {Object} XMIData
+ */
 function setLiterals(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLEnumeration) {
@@ -189,7 +220,12 @@ function setLiterals(ownedElements, XMIData) {
         }
     });
 }
-
+/**
+ * @function setOperation
+ * @description set operations in UMLInterface
+ * @param {Array} ownedElements
+ * @param {Object} XMIData
+ */
 function setOperation(ownedElements, XMIData) {
 
     /* UMLOperation */
@@ -220,7 +256,12 @@ function setOperation(ownedElements, XMIData) {
         }
     });
 }
-
+/**
+ * @function bindLiterals
+ * @description bind literal fileds in objAttr and returns literal object
+ * @param {*} attr
+ * @returns {Object}
+ */
 function bindLiterals(attr) {
     /* UMLAttribute */
     let objAttr = {};
@@ -231,7 +272,12 @@ function bindLiterals(attr) {
 
     return objAttr;
 }
-
+/**
+ * @function bindProperty
+ * @description bind attribute fields in objAttr and returns attribute object 
+ * @param {*} attr
+ * @returns {Object}
+ */
 function bindProperty(attr) {
     /* UMLAttribute */
     let objAttr = {};
@@ -249,9 +295,14 @@ function bindProperty(attr) {
 
     return objAttr;
 }
-
+/**
+ * @function bindOperation
+ * @description bind operation and parameter fields in objOpr and returns operation object
+ * @param {*} attr
+ * @returns {Object}
+ */
 function bindOperation(attr) {
-    /* UMLAttribute */
+    /* UMLOperation */
     let objOpr = {};
     objOpr._type = 'UMLOperation';
     objOpr.name = attr.name;
@@ -276,7 +327,13 @@ function bindOperation(attr) {
     });
     return objOpr;
 }
-
+/**
+ * @function isAssociationExist
+ * @description check UMLAssociation is exist in model and returns object with boolean and UMLAssociation
+ * @param {*} entity
+ * @param {*} attr
+ * @returns {Object}
+ */
 function isAssociationExist(entity, attr) {
     let isExist = false;
     let assoc = null;
@@ -298,7 +355,13 @@ function isAssociationExist(entity, attr) {
     };
     return val;
 }
-
+/**
+ * @function isGeneralizationExist
+ * @description check UMLGeneralization is exist in model and returns object with boolean and UMLGeneralization
+ * @param {*} entity
+ * @param {*} attr
+ * @returns {Object}
+ */
 function isGeneralizationExist(entity, attr) {
     let isExist = false;
     let assoc = null;
@@ -320,7 +383,13 @@ function isGeneralizationExist(entity, attr) {
     };
     return val;
 }
-
+/**
+ * @function isInterfaceRealizationExist
+ * @description check UMLInterfaceRealization is exist in model and returns object with boolean and UMLInterfaceRealization
+ * @param {*} entity
+ * @param {*} attr
+ * @returns {Object}
+ */
 function isInterfaceRealizationExist(entity, attr) {
     let isExist = false;
     let assoc = null;
@@ -342,7 +411,13 @@ function isInterfaceRealizationExist(entity, attr) {
     };
     return val;
 }
-
+/**
+ * @function isAssociationClassLinkExist
+ * @description check UMLAssociationClassLink is exist in model and returns object with boolean and UMLAssociationClassLink
+ * @param {*} entity
+ * @param {*} attr
+ * @returns {Object}
+ */
 function isAssociationClassLinkExist(entity, attr) {
     let isExist = false;
     let assoc = null;
@@ -371,6 +446,11 @@ let pX = 0;
 let pY = 0;
 let incrementValue = 100;
 
+/**
+ * @function calculateXY
+ * @description find X, Y coordinate of last view displayed in diagramview
+ * @returns {Object}
+ */
 function calculateXY() {
     let lastMaxView = null;
     let maxLeft;
@@ -396,14 +476,25 @@ function calculateXY() {
     }
     return lastView;
 }
-
+/**
+ * @function getXY
+ * @description returns object of X, Y coordinate of view element
+ * @returns {Object}
+ */
 function getXY() {
     return {
         pX: pX,
         pY: pY
     }
 }
-
+/**
+ * @function getInterfaceRealizationView
+ * @description returns UMLInterfaceRealizationView 
+ * @param {*} model
+ * @param {UMLClassDiagram} diagram
+ * @param {Object} options
+ * @returns {UMLInterfaceRealizationView}
+ */
 function getInterfaceRealizationView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var directedView = diagram.getViewOf(model)
@@ -451,7 +542,14 @@ function getInterfaceRealizationView(model, diagram, options) {
     }
     return directedView;
 }
-
+/**
+ * @function getGeneralizationView
+ * @description returns UMLGeneralizationView
+ * @param {*} model
+ * @param {UMLClassDiagram} diagram
+ * @param {Object} options
+ * @returns {UMLGeneralizationView}
+ */
 function getGeneralizationView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var directedView = diagram.getViewOf(model)
@@ -499,7 +597,14 @@ function getGeneralizationView(model, diagram, options) {
     }
     return directedView;
 }
-
+/**
+ * @function getAssociationView
+ * @description returns UMLAssociationView
+ * @param {*} model
+ * @param {UMLClassDiagram} diagram
+ * @param {Object} options
+ * @returns {UMLAssociationView}
+ */
 function getAssociationView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var undirectedView = diagram.getViewOf(model)
@@ -543,7 +648,14 @@ function getAssociationView(model, diagram, options) {
         return undirectedView
     }
 }
-
+/**
+ * @function getAssociationClasslinkView
+ * @description returns UMLAssociationClasslinkView
+ * @param {*} model
+ * @param {UMLClassDiagram} diagram
+ * @param {Object} options
+ * @returns {UMLAssociationClasslinkView}
+ */
 function getAssociationClasslinkView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var directedView = diagram.getViewOf(model)
@@ -605,7 +717,11 @@ function getAssociationClasslinkView(model, diagram, options) {
     }
     return directedView;
 }
-
+/**
+ * @function createViewOfElement
+ * @description create view of existing element in model explorer
+ * @param {*} newAdded
+ */
 function createViewOfElement(newAdded) {
     try {
         var editor = app.diagrams.getEditor();
@@ -663,7 +779,12 @@ function createViewOfElement(newAdded) {
         console.error(err)
     }
 }
-
+/**
+ * @function recreateView
+ * @description recreate view for Class, Interface, Enumeration
+ * @param {*} newAdded
+ * @param {*} view
+ */
 function recreateView(newAdded, view) {
     try {
         var editor = app.diagrams.getEditor();
@@ -695,7 +816,11 @@ function recreateView(newAdded, view) {
         console.error(err)
     }
 }
-
+/**
+ * @function recreateViewForRelationship
+ * @description recreate view for relationship 
+ * @param {*} rel
+ */
 function recreateViewForRelationship(rel) {
     let rel_created_view = app.repository.getViewsOf(rel._parent)
     let newViews = []
@@ -715,7 +840,11 @@ function recreateViewForRelationship(rel) {
         recreateView(nView.model, nView);
     });
 }
-
+/**
+ * @function setInterfaceViewAttributes
+ * @description set dafault property to UMLInterfaceView
+ * @param {*} UMLInterfaceView
+ */
 function setInterfaceViewAttributes(UMLInterfaceView) {
     app.engine.setProperty(UMLInterfaceView, viewfields.autoResize, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.containerChangeable, true);
@@ -747,7 +876,11 @@ function setInterfaceViewAttributes(UMLInterfaceView) {
     app.engine.setProperty(UMLInterfaceView, viewfields.wordWrap, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.zIndex, 0);
 }
-
+/**
+ * @function setEnumerationViewAttributes
+ * @description set dafault property to UMLEnumerationView
+ * @param {*} UMLEnumerationView
+ */
 function setEnumerationViewAttributes(UMLEnumerationView) {
     app.engine.setProperty(UMLEnumerationView, viewfields.autoResize, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.containerChangeable, true);
@@ -780,7 +913,11 @@ function setEnumerationViewAttributes(UMLEnumerationView) {
     app.engine.setProperty(UMLEnumerationView, viewfields.wordWrap, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.zIndex, 0);
 }
-
+/**
+ * @function setClassViewAttributes
+ * @description set dafault property to UMLClassView
+ * @param {UMLClassView} UMLClassView
+ */
 function setClassViewAttributes(UMLClassView) {
     app.engine.setProperty(UMLClassView, viewfields.autoResize, false);
     app.engine.setProperty(UMLClassView, viewfields.containerChangeable, true);
@@ -813,19 +950,35 @@ function setClassViewAttributes(UMLClassView) {
     app.engine.setProperty(UMLClassView, viewfields.zIndex, 0);
 }
 let newElements = [];
-
+/**
+ * @function addNewAddedElement
+ * @description add element in newElements array
+ * @param {*} element
+ */
 function addNewAddedElement(element) {
     newElements.push(element);
 }
-
+/**
+ * @function getNewAddedElement
+ * @description returns array of newElements
+ * @returns {Array}
+ */
 function getNewAddedElement() {
     return newElements;
 }
-
+/**
+ *@function resetNewAddedElement
+ *@description reset newElements array
+ */
 function resetNewAddedElement() {
     newElements = [];
 }
-
+/**
+ * @function getTagsToExport
+ * @description bind Tag fields from attr tags and returns array of Tag to Export
+ * @param {*} literal
+ * @returns {Array}
+ */
 function getTagsToExport(literal) {
     let tagArr = [];
     if (literal.tags != null) {
@@ -841,7 +994,12 @@ function getTagsToExport(literal) {
     }
     return tagArr;
 }
-
+/**
+ * @function getTagsToImport
+ * @description bind Tag fields from attr tags and returns array of Tag to Import
+ * @param {*} attr
+ * @returns {Array}
+ */
 function getTagsToImport(attr) {
     let arrTags = [];
     if (attr.tags != null) {
