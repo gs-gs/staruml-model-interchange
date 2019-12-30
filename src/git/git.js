@@ -7,23 +7,15 @@ const constant = require('../constant');
 var _fname = null;
 var _mdirname = null;
 var junk = require('junk');
-
+/**
+ * @function _projectLoaded
+ * @description setup directory structure for git directory when project loaded
+ */
 function _projectLoaded() {
 
-     /*_fname = app.project.getFilename();
-      if (_fname) {
-          _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname+path.sep;
-          fs.readdir(_mdirname, function (err, files) {
-               console.log(files.filter(junk.not));
-          });
-     } */
-
-
-
      _fname = app.project.getFilename();
-     let basefile=path.basename(_fname);
-     let basefileName=path.parse(basefile).name;
+     let basefile = path.basename(_fname);
+     let basefileName = path.parse(basefile).name;
      if (_fname) {
           _mdirname = path.dirname(_fname);
           _mdirname = _mdirname + path.sep + basefileName + '_git';
@@ -42,6 +34,11 @@ function _projectLoaded() {
      }
 
 }
+/**
+ * @function _gitInit
+ * @description Initialize git in git directory
+ *
+ */
 async function _gitInit() {
 
      if (!_fname && !_mdirname) {
@@ -63,7 +60,10 @@ async function _gitInit() {
      }
 
 }
-
+/**
+ * @function _gitAddRemote
+ * @description Add remote address to git repository
+ */
 async function _gitAddRemote() {
 
      let isRepo = await git(_mdirname).checkIsRepo();
@@ -85,7 +85,10 @@ async function _gitAddRemote() {
           }
      }
 }
-
+/**
+ * @function _gitCommit
+ * @description Add commit to git repository
+ */
 async function _gitCommit() {
 
      let isRepo = await git(_mdirname).checkIsRepo();
@@ -132,7 +135,10 @@ async function _gitCommit() {
           }
      }
 }
-
+/**
+ * @function _gitAddConfig
+ * @description Add username and email to git local configuration
+ */
 async function _gitAddConfig() {
      try {
           let isRepo = await git(_mdirname).checkIsRepo();
@@ -173,7 +179,10 @@ async function _gitAddConfig() {
           app.dialogs.showErrorDialog(err.message);
      }
 }
-
+/**
+ * @function _gitConfigList
+ * @description display local configuration list to modal dialog
+ */
 async function _gitConfigList() {
 
      try {
@@ -197,7 +206,10 @@ async function _gitConfigList() {
 
 
 }
-
+/**
+ * @function _gitPush
+ * @description Push all local commit to remote master repository
+ */
 async function _gitPush() {
      const mGit = git(_mdirname);
 
@@ -253,7 +265,10 @@ async function _gitPush() {
           app.dialogs.showErrorDialog(error.message);
      }
 }
-
+/**
+ * @function _gitPull
+ * @description Pull latest changes from remote master repository
+ */
 async function _gitPull() {
 
      let vDialog = null;
@@ -317,7 +332,11 @@ async function _gitPull() {
           })
      }
 }
-
+/**
+ * @function _gitLog
+ * @description display all local commits in modal dialog 
+ * @returns
+ */
 async function _gitLog() {
 
      let vDialog = null;
@@ -352,7 +371,10 @@ async function _gitLog() {
           })
      }
 }
-
+/**
+ * @function _gitStatus
+ * @description display all file changes in modal dialog
+ */
 async function _gitStatus() {
 
      let vDialog = null;
@@ -396,7 +418,11 @@ async function _gitStatus() {
           })
      }
 }
-
+/**
+ * @function _gitDiff
+ * @description Display all file difference in modal dialog
+ * @returns
+ */
 async function _gitDiff() {
      let vDialog = null;
      try {
@@ -444,23 +470,6 @@ async function _gitDiff() {
      }
 }
 
-async function _gitSaveChanges() {
-     try {
-
-          let isRepo = await git(_mdirname).checkIsRepo();
-          if (!isRepo) {
-               app.dialogs.showErrorDialog(constant.init_repo_first);
-               return;
-          }
-          let result = await git(_mdirname).add('./*');
-          console.log("save changes", result);
-          app.dialogs.showInfoDialog(constant.changes_saved);
-     } catch (error) {
-          console.error(error.message);
-          app.dialogs.showErrorDialog(error.message);
-     }
-}
-
 function _getDirectory() {
      return _mdirname;
 }
@@ -468,7 +477,6 @@ module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
 module.exports.getCommit = _gitCommit;
 module.exports.getAddConfig = _gitAddConfig;
-module.exports.getSaveChanges = _gitSaveChanges;
 module.exports.getConfigList = _gitConfigList;
 module.exports.getPush = _gitPush;
 module.exports.getPull = _gitPull;

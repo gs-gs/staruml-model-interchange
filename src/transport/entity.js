@@ -2,7 +2,12 @@ var fields = require('./fields');
 var utils = require('./utils');
 var forEach = require('async-foreach').forEach;
 var datatype = require('./datatype');
-
+/**
+ * @function addEntityFields
+ * @description Bind basic entity fields in entityObj
+ * @param {Object} entityObj
+ * @param {UMLClass} entity
+ */
 function addEntityFields(entityObj, entity) {
     entityObj[fields.type] = utils.getElementType(entity);
     entityObj[fields.name] = entity.name;
@@ -11,7 +16,12 @@ function addEntityFields(entityObj, entity) {
     entityObj[fields.version] = '';
     entityObj[fields.status] = '';
 }
-
+/**
+ * @function addEntityRequired
+ * @description Bind required array field in entityObj
+ * @param {Object} entityObj
+ * @param {UMLClass} entity
+ */
 function addEntityRequired(entityObj, entity) {
     let requiredArr = [];
     entityObj[fields.Required] = requiredArr;
@@ -22,7 +32,12 @@ function addEntityRequired(entityObj, entity) {
         }
     });
 }
-
+/**
+ * @function addEntityProperty 
+ * @description Bind property array field in entityObj
+ * @param {Object} entityObj
+ * @param {UMLClass} entity
+ */
 function addEntityProperty(entityObj, entity) {
     let propertyArr = [];
     entityObj[fields.Property] = propertyArr;
@@ -52,7 +67,12 @@ function addEntityProperty(entityObj, entity) {
         propertyArr.push(propertyObj);
     });
 }
-
+/**
+ * @function addEntityRelationship
+ * @description Bind relationship array field in entityObj
+ * @param {*} entityObj
+ * @param {*} entity
+ */
 function addEntityRelationship(entityObj, entity) {
     let Relationship = [];
     entityObj[fields.Relationship] = Relationship;
@@ -126,14 +146,15 @@ function addEntityRelationship(entityObj, entity) {
             objRelationship[fields.association] = objAssociation;
 
             /* adding relationship type 'aggregation', 'composition', 'interface' */
-            if(element.associationSide !=null){ /* check if diagram not exist and abstract class will not available */
+            if (element.associationSide != null) {
+                /* check if diagram not exist and abstract class will not available */
 
                 let end1 = element.associationSide.end1;
                 let end2 = element.associationSide.end2;
                 objAssociation[fields.name] = element.associationSide.name;
                 objAssociation[fields.description] = element.associationSide.documentation;
                 objAssociation[fields.type] = utils.getRelationshipType(end1, end2);
-                
+
                 /* adding 'source' object */
                 let objSource = {};
                 let source = end1.reference;
@@ -142,7 +163,7 @@ function addEntityRelationship(entityObj, entity) {
                 objSource[fields.type] = utils.getElementType(source);
                 objSource[fields.cardinality] = end1.multiplicity;
                 objSource[fields.navigable] = end1.navigable;
-                
+
                 /* adding 'target' object */
                 let objTarget = {};
                 let target = end2.reference;
@@ -151,7 +172,7 @@ function addEntityRelationship(entityObj, entity) {
                 objTarget[fields.type] = utils.getElementType(target);
                 objTarget[fields.cardinality] = end2.multiplicity;
                 objTarget[fields.navigable] = end2.navigable;
-                
+
             }
             /* class side association binding */
             let objClass = {};
@@ -183,7 +204,12 @@ function addEntityRelationship(entityObj, entity) {
         Relationship.push(objRelationship);
     });
 }
-
+/**
+ * @function bindEntityToExport
+ * @description Bind entity field, required array, property array and relationship array in jsonProcess
+ * @param {UMLPackage} mPackage
+ * @param {Object} jsonProcess
+ */
 function bindEntityToExport(mPackage, jsonProcess) {
     let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
     forEach(allEntities, function (entity) {
@@ -205,7 +231,12 @@ function bindEntityToExport(mPackage, jsonProcess) {
 
     });
 }
-
+/**
+ * @function bindAbstractEntityToExport
+ * @description Bind abstract entity field, required array, property array and relationship in jsonProcess
+ * @param {UMLPackage} mPackage
+ * @param {Object} jsonProcess
+ */
 function bindAbstractEntityToExport(mPackage, jsonProcess) {
     //let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
     forEach(mPackage.ownedElements /* allEntities */ , function (entity) {
@@ -231,7 +262,12 @@ function bindAbstractEntityToExport(mPackage, jsonProcess) {
         }
     });
 }
-
+/**
+ * @function bindEntityToExport
+ * @description Bind entity fields from mSubObject in entityObject to parse UMLClass
+ * @param {Object} entityObject
+ * @param {Object} mSubObject
+ */
 function bindEntityToImport(entityObject, mSubObject) {
     /* UMLClass fields */
     entityObject._type = 'UMLClass';

@@ -28,7 +28,6 @@ function init() {
      app.commands.register('tool.git:addremote', git.getAddRemote);
      app.commands.register('tool.git:commit', git.getCommit);
      app.commands.register('tool.git:addconfig', git.getAddConfig);
-     app.commands.register('tool.git:savechanges', git.getSaveChanges);
      app.commands.register('tool.git:configlist', git.getConfigList);
      app.commands.register('tool.git:push', git.getPush);
      app.commands.register('tool.git:pull', git.getPull);
@@ -43,9 +42,9 @@ function init() {
 
 
      app.project.on('projectSaved', _projectSaved);
-    /*  app.modelExplorer._events('dropOnDiagram',function(){
+     /*  app.modelExplorer._events('dropOnDiagram',function(){
 
-     }); */
+      }); */
 
 }
 

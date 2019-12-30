@@ -2,7 +2,12 @@ var forEach = require('async-foreach').forEach;
 var fields = require('./fields');
 var utils = require('./utils');
 var constant = require('../constant');
-
+/**
+ * @function addAggregationToImport
+ * @description Bind aggregation (UMLAssociation) relationship to entity (UMLClass or UMLInterface) 
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ */
 function addAggregationToImport(entity, attr) {
     let objRelationship = {};
     /* UMLAssociation (aggregation) */
@@ -66,7 +71,14 @@ function addAggregationToImport(entity, attr) {
     }
     return objRelationship;
 }
-
+/**
+ * @function updateAggregationToImport
+ * @description Update bounded aggregation (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLAssociation}
+ */
 function updateAggregationToImport(entity, attr, _id) {
     /* UMLAssociation (aggregation) */
     let UMLAssociation = app.repository.get(_id);
@@ -138,7 +150,13 @@ function updateAggregationToImport(entity, attr, _id) {
     }
     return UMLAssociation;
 }
-
+/**
+ * @function addCompositionToImport
+ * @description Bind composition (UMLAssociation) relationship to entity (UMLClass or UMLInterface) 
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @returns
+ */
 function addCompositionToImport(entity, attr) {
     let objRelationship = {};
     /* UMLAssociation (composition) */
@@ -203,7 +221,14 @@ function addCompositionToImport(entity, attr) {
 
     return objRelationship;
 }
-
+/**
+ * @function updateCompositionToImport
+ * @description Update bounded composition (UMLAssociation) relationship to entity (UMLClass or UMLInterface) 
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLAssociation}
+ */
 function updateCompositionToImport(entity, attr, _id) {
     /* UMLAssociation (composition) */
 
@@ -275,7 +300,14 @@ function updateCompositionToImport(entity, attr, _id) {
 
     return UMLAssociation;
 }
-
+/**
+ * @function addGeneralizationToImport
+ * @description Bind generalization (UMLGeneralization) relationship to entity (UMLClass or UMLInterface) 
+ * @param {Object} objRelationship
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @returns {objRelationship}
+ */
 function addGeneralizationToImport(objRelationship, entity, attr) {
     console.log("-----generalization", entity.name);
 
@@ -323,7 +355,14 @@ function addGeneralizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
-
+/**
+ * @function updateGeneralizationToImport
+ * @description Update bounded generalization (UMLGeneralization) relationship to entity (UMLClass or UMLInterface)  
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLGeneralization}
+ */
 function updateGeneralizationToImport(entity, attr, _id) {
     console.log("-----generalization", entity.name);
     let UMLGeneralization = app.repository.get(_id);
@@ -379,7 +418,14 @@ function updateGeneralizationToImport(entity, attr, _id) {
 
     return UMLGeneralization;
 }
-
+/**
+ * @function addInterfaceRealizationToImport
+ * @description Bind interface realization (UMLInterfaceRealization) relationship to entity (UMLClass or UMLInterface)  
+ * @param {Object} objRelationship
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @returns {objRelationship}
+ */
 function addInterfaceRealizationToImport(objRelationship, entity, attr) {
     console.log("-----interfaceRealization", entity.name);
     objRelationship._type = 'UMLInterfaceRealization';
@@ -422,7 +468,14 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
-
+/**
+ * @function updateInterfaceRealizationToImport
+ * @description Update bounded interface realization (UMLInterfaceRealization) relationship to entity (UMLClass or UMLInterface)  
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLInterfaceRealization}
+ */
 function updateInterfaceRealizationToImport(entity, attr, _id) {
     console.log("-----generalization", entity.name);
     let UMLInterfaceRealization = app.repository.get(_id);
@@ -478,7 +531,14 @@ function updateInterfaceRealizationToImport(entity, attr, _id) {
 
     return UMLInterfaceRealization;
 }
-
+/**
+ * @function addAssociationClassLink
+ * @description Bind association classlink (UMLAssociationClassLink) relationship to entity (UMLClass or UMLInterface)  
+ * @param {Object} objRelationship
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @returns {objRelationship}
+ */
 function addAssociationClassLink(objRelationship, entity, attr) {
     console.log("-----interface", entity.name);
 
@@ -510,7 +570,14 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     }
     return objRelationship;
 }
-
+/**
+ * @function updateAssociationClassLink
+ * @description Update bounded association classlink (UMLAssociationClassLink) relationship to entity (UMLClass or UMLInterface)  
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLAssociationClassLink}
+ */
 function updateAssociationClassLink(entity, attr, _id) {
     console.log("-----interface", entity.name);
 
@@ -545,7 +612,14 @@ function updateAssociationClassLink(entity, attr, _id) {
     app.engine.setProperty(UMLAssociationClassLink, 'classSide', classSide);
     return UMLAssociationClassLink;
 }
-
+/**
+ * @function addInterfaceToImport
+ * @description Bind interface (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
+ * @param {Object} objRelationship
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @returns {objRelationship}
+ */
 function addInterfaceToImport(objRelationship, entity, attr) {
 
     console.log("-----interface", entity.name);
@@ -608,7 +682,14 @@ function addInterfaceToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
-
+/**
+ * @function updateInterfaceToImport
+ * @description Update bounded interface (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {string} _id
+ * @returns {UMLAssociation}
+ */
 function updateInterfaceToImport(entity, attr, _id) {
     let UMLAssociation = app.repository.get(_id);
     // objRelationship._type = 'UMLAssociation';
@@ -686,7 +767,14 @@ function updateInterfaceToImport(entity, attr, _id) {
     }
     return UMLAssociation;
 }
-
+/**
+ * @function bindRelationshipToImport
+ * @description Bind relationship (UMLAssociation, UMLGeneralization, UMLAssociationClassLink, UMLInterfaceRealization) in entity (UMLClass or UMLInterface)
+ * @param {UMLClass} entity
+ * @param {Object} attr
+ * @param {boolean} isACL
+ * @returns {*}
+ */
 function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink */ ) {
 
     if (attr.type == fields.aggregation) {
@@ -785,7 +873,12 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
         }
     }
 }
-
+/**
+ * @function setRelationship
+ * @description Add relationship in ownedElements array
+ * @param {Array} ownedElements
+ * @param {Object} XMIData
+ */
 function setRelationship(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
