@@ -48,9 +48,7 @@ function addEntityProperty(entityObj, entity) {
 
         propertyObj[fields.description] = attr.documentation;
 
-        // if (attr.isID) {
         propertyObj[fields.isID] = attr.isID;
-        // }
 
         propertyObj[fields.status] = '';
 
@@ -276,6 +274,65 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject.documentation = mSubObject.description;
 
 }
+
+function addNewEntity(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLClass */
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+
+            let entityObject = {};
+            /* Binding Entity fields and attribute */
+            bindEntityToImport(entityObject, mSubObject);
+
+            let searchedEntity = app.repository.search(mSname);
+            let searchedEntityRes = searchedEntity.filter(function (item) {
+                return (item instanceof type.UMLClass && item.name == mSname);
+            });
+            if (searchedEntityRes.length == 0) {
+                let newAdded = app.repository.readObject(entityObject);
+                console.log("New Entity Added-1: ", newAdded);
+                newAdded._parent = result;
+                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                console.log("New Entity Added-2", mResult);
+                utils.addNewAddedElement(newAdded);
+            }
+        }
+    });
+}
+
+function updateEntity(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLClass */
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+
+            let entityObject = {};
+            /* Binding Entity fields and attribute */
+            bindEntityToImport(entityObject, mSubObject);
+
+            let searchedEntity = app.repository.search(mSname);
+            let searchedEntityRes = searchedEntity.filter(function (item) {
+                return (item instanceof type.UMLClass && item.name == mSname);
+            });
+            if (searchedEntityRes.length > 0) {
+                forEach(searchedEntityRes, function (ety) {
+
+                    if (ety instanceof type.UMLClass) {
+                        console.time("Updated : Entity");
+                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                        console.log("Updated : Entity : ", ety.name);
+                        console.timeEnd();
+                    }
+                });
+            }
+        }
+    });
+}
 module.exports.addEntityFields = addEntityFields;
 module.exports.addEntityRequired = addEntityRequired;
 module.exports.addEntityProperty = addEntityProperty;
@@ -283,3 +340,5 @@ module.exports.addEntityRelationship = addEntityRelationship;
 module.exports.bindEntityToExport = bindEntityToExport;
 module.exports.bindEntityToImport = bindEntityToImport;
 module.exports.bindAbstractEntityToExport = bindAbstractEntityToExport;
+module.exports.addNewEntity = addNewEntity;
+module.exports.updateEntity = updateEntity;

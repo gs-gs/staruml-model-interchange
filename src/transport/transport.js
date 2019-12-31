@@ -10,7 +10,6 @@ const CircularJSON = require('circular-json');
 const git = require('../git/git');
 var path = require('path');
 var mRelationship = require('./relationship');
-// app.diagrams.getEditor().canvasElement.height
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
@@ -24,7 +23,7 @@ const JSON_FILE_FILTERS = [{
 function getAbstractClass(umlPackage) {
     let uniqueAbstractArr = [];
     let abstractClassList = [];
-    // let umlPackage=app.project.getProject().ownedElements[0].ownedElements[2];
+
     forEach(umlPackage.ownedElements, (element) => {
         if (element instanceof type.UMLClass) {
             let generalization = app.repository.select(umlPackage.name + "::" + element.name + "::@UMLGeneralization");
@@ -38,7 +37,6 @@ function getAbstractClass(umlPackage) {
     });
     forEach(umlPackage.ownedElements, (element) => {
         if (element instanceof type.UMLClass) {
-            // let associations = getPackageWiseUMLAssociation(umlPackage);
             let associations = getClasswiseAssociations(element);
             forEach(associations, (itemGen) => {
                 if (itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
@@ -86,8 +84,7 @@ function importDataToModel(XMIData) {
     mUtils.resetNewAddedElement();
 
     if (XMIData.type == fields.package) {
-        // let mPackage=XMIData[key];
-        let mProject = app.project.getProject();
+
         let searchedPackage = app.repository.select(Package.name);
         let result = null;
         /* Updating Enumeration, Entity and Event Elements */
@@ -100,91 +97,18 @@ function importDataToModel(XMIData) {
 
                     /* Step - 1 : Add all elements first */
                     /* Add New Enumeration */
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
-                            /* UMLEnumeration */
-                            let enumObject = {};
-
-                            /* Binding Enum fields, attribute, literals */
-                            mEnum.bindEnumToImport(enumObject, mSubObject);
-
-                            let searchedEnum = app.repository.search(mSname);
-                            let searchedEnumRes = searchedEnum.filter(function (item) {
-                                return (item instanceof type.UMLEnumeration && item.name == mSname);
-                            });
-
-                            if (searchedEnumRes.length == 0) {
-                                let newAdded = app.repository.readObject(enumObject);
-                                console.log("New Enum Added-1: ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Enum Added-2", mResult);
-                                // newElements.push(newAdded);
-                                mUtils.addNewAddedElement(newAdded);
-                            }
-                        }
-                    });
+                    mEnum.addNewEnumeration(XMIData);
+                    
 
                     /* Add New Entity */
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        /* UMLClass */
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
-
-                            let entityObject = {};
-                            /* Binding Entity fields and attribute */
-                            mEntity.bindEntityToImport(entityObject, mSubObject);
-
-                            // let selectedEntity = app.repository.select(mSname);
-
-                            let searchedEntity = app.repository.search(mSname);
-                            let searchedEntityRes = searchedEntity.filter(function (item) {
-                                return (item instanceof type.UMLClass && item.name == mSname);
-                            });
-                            if (searchedEntityRes.length == 0) {
-                                let newAdded = app.repository.readObject(entityObject);
-                                console.log("New Entity Added-1: ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Entity Added-2", mResult);
-                                // newElements.push(newAdded);
-                                mUtils.addNewAddedElement(newAdded);
-                            }
-                        }
-                    });
+                    mEntity.addNewEntity(XMIData);
+                    
 
                     /* Add New Event */
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        /* UMLClass */
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+                    mEvent.addNewEvent(XMIData);
+                    
 
-                            let interfaceObject = {};
-                            /* Binding Event fields, attribute, operation & parameters*/
-                            mEvent.bindEventToImport(interfaceObject, mSubObject);
-                            let searchedEvent = app.repository.search(mSname);
-                            let searchedEventRes = searchedEvent.filter(function (item) {
-                                return (item instanceof type.UMLInterface && item.name == mSname);
-                            });
-                            if (searchedEventRes.length == 0) {
-                                let newAdded = app.repository.readObject(interfaceObject);
-                                console.log("New Event Added-1 : ", newAdded);
-                                newAdded._parent = result;
-                                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                                console.log("New Event Added-2", mResult);
-                                // newElements.push(newAdded);
-                                mUtils.addNewAddedElement(newAdded);
-
-                            }
-                        }
-                    });
-
-
-                    /* Create view of all new added class, interface, enumeration */
+                    /* Step - 2 : Create view of all new added class, interface, enumeration */
                     let newElements = mUtils.getNewAddedElement();
                     let isFirstView = true;
                     forEach(newElements, function (newEle) {
@@ -195,106 +119,21 @@ function importDataToModel(XMIData) {
                         }
                     });
 
-                    /* Reset new added class, interface, enumeration */
+                    /* Step - 3 : Reset new added class, interface, enumeration */
                     mUtils.resetNewAddedElement();
 
-                    /* Step - 2 : Update all existing elements */
+                    /* Step - 4 : Update all existing elements */
                     /* Update Enumeration*/
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        /* UMLClass */
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
-
-                            /* UMLEnumeration */
-                            let enumObject = {};
-
-                            /* Binding Enum fields, attribute, literals */
-                            // enumObject[fields._parent] = result;
-                            mEnum.bindEnumToImport(enumObject, mSubObject);
-                            let searchedEnum = app.repository.search(mSname);
-                            let searchedEnumRes = searchedEnum.filter(function (item) {
-                                return (item instanceof type.UMLEnumeration && item.name == mSname);
-                            });
-
-                            if (searchedEnumRes.length > 0) {
-                                forEach(searchedEnumRes, function (ety) {
-
-                                    if (ety instanceof type.UMLEnumeration) {
-                                        console.time("Updated : Enum : ");
-                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
-                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.timeEnd();
-                                        console.log("Updated : Enum : ", ety.name);
-                                    }
-                                });
-                            }
-                        }
-                    });
+                    mEnum.updateEnumeration(XMIData);
+                    
 
                     /* Update Entity */
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        /* UMLClass */
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
-
-                            let entityObject = {};
-                            /* Binding Entity fields and attribute */
-                            mEntity.bindEntityToImport(entityObject, mSubObject);
-
-                            // let selectedEntity = app.repository.select(mSname);
-
-                            let searchedEntity = app.repository.search(mSname);
-                            let searchedEntityRes = searchedEntity.filter(function (item) {
-                                return (item instanceof type.UMLClass && item.name == mSname);
-                            });
-                            if (searchedEntityRes.length > 0) {
-                                forEach(searchedEntityRes, function (ety) {
-
-                                    if (ety instanceof type.UMLClass) {
-                                        console.time("Updated : Entity");
-                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
-                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.log("Updated : Entity : ", ety.name);
-                                        console.timeEnd();
-                                    }
-                                });
-                            }
-                        }
-                    });
+                    mEntity.updateEntity(XMIData);
+                   
 
                     /* Update Event */
-                    Object.keys(XMIData).forEach(function eachKey(key) {
-                        let mSubObject = XMIData[key];
-                        /* UMLClass */
-                        let mSname = key;
-                        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
-
-                            let interfaceObject = {};
-                            /* Binding Event fields, attribute, operation & parameters*/
-                            mEvent.bindEventToImport(interfaceObject, mSubObject);
-                            let searchedEvent = app.repository.search(mSname);
-                            let searchedEventRes = searchedEvent.filter(function (item) {
-                                return (item instanceof type.UMLInterface && item.name == mSname);
-                            });
-                            if (searchedEventRes.length > 0) {
-                                forEach(searchedEventRes, function (ety) {
-
-                                    if (ety instanceof type.UMLInterface) {
-                                        console.time("Enum");
-                                        app.engine.setProperty(ety, fields.name, mSubObject.name);
-                                        //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
-                                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                                        console.log("Updated : Event : ", ety.name);
-                                        console.timeEnd("Enum");
-                                    }
-                                });
-                            }
-                        }
-                    });
+                    mEvent.updateEvent(XMIData);
+                    
 
                 }
             });
@@ -303,91 +142,97 @@ function importDataToModel(XMIData) {
         /* Adding Enumeration, Entity & Interface*/
         else {
 
-            /* Bind referenct of parent element (UMLPackage) */
-            let objParent = app.repository.readObject(Package);
-            let _parent = {};
-            _parent['$ref'] = objParent._id;
-
-
-            /* Process Enumeration */
-            Object.keys(XMIData).forEach(function eachKey(key) {
-                let mSubObject = XMIData[key];
-                /* UMLEnumeration */
-                if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
-                    /* UMLEnumeration */
-                    let enumObject = {};
-
-                    /* Binding Enum fields, attribute, literals */
-                    enumObject[fields._parent] = _parent;
-                    mEnum.bindEnumToImport(enumObject, mSubObject);
-                    mainOwnedElements.push(enumObject);
-                }
-            });
-
-            /* Process Entity */
-            Object.keys(XMIData).forEach(function eachKey(key) {
-                let mSubObject = XMIData[key];
-                if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
-                    /* UMLClass */
-                    let entityObject = {};
-
-                    /* Binding Entity fields and attribute */
-                    entityObject[fields._parent] = _parent;
-                    mEntity.bindEntityToImport(entityObject, mSubObject);
-                    mainOwnedElements.push(entityObject);
-
-                }
-            });
-
-            /* Process Event */
-            Object.keys(XMIData).forEach(function eachKey(key) {
-                let mSubObject = XMIData[key];
-                if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
-
-                    let interfaceObject = {};
-
-                    /* Binding Event fields, attribute, operation & parameters*/
-                    interfaceObject[fields._parent] = _parent;
-                    mEvent.bindEventToImport(interfaceObject, mSubObject);
-                    mainOwnedElements.push(interfaceObject);
-                }
-            });
-
-
-            /* Import Enumeration, Entity & Event to our model */
-            result = app.project.importFromJson(mProject, Package);
-            console.log("result", result);
-
+            result = addNewPackageInExplorer(Package, XMIData, mainOwnedElements);
 
         }
 
-        console.log("steps----------4");
-        /* Setting Property to Entity, Event, Enum */
+        /* Step - 5 : Setting Property to Entity, Event, Enum */
         mUtils.setProperty(result.ownedElements, XMIData);
-        console.log("steps----------5");
-        /* Setting Literals for Enum */
+        /* Step - 6 : Setting Literals for Enum */
         mUtils.setLiterals(result.ownedElements, XMIData);
-        console.log("steps----------6");
-        /* Setting  Operation & params to Event */
+        /* Step - 7 : Setting  Operation & params to Event */
         mUtils.setOperation(result.ownedElements, XMIData);
-        console.log("steps----------7");
-        /* Setting Relationship to Entity, Event*/
+        /* Step - 8 : Setting Relationship to Entity, Event */
         mRelationship.setRelationship(result.ownedElements, XMIData);
 
 
-        /* Create view of newaly added element */
+        /* Step - 9 : Create view of newaly added element */
         console.log("Total new added elements", mUtils.getNewAddedElement());
         let newElements = mUtils.getNewAddedElement();
         forEach(newElements, function (newEle) {
             mUtils.createViewOfElement(newEle);
         });
-
         app.diagrams.repaint();;
 
 
 
 
     }
+}
+/**
+ * @function addnNewPackageInExplorer
+ * @description add new package and element in model explorer and returns UMLPackage
+ * @param {Object} Package
+ * @param {Object} XMIData
+ * @param {Array} mainOwnedElements
+ * @returns {UMLPackage}
+ */
+function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
+    /* Bind referenct of parent element (UMLPackage) */
+    let objParent = app.repository.readObject(Package);
+    let _parent = {};
+    _parent['$ref'] = objParent._id;
+
+
+
+    /* Process Enumeration */
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLEnumeration */
+        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+            /* UMLEnumeration */
+            let enumObject = {};
+
+            /* Binding Enum fields, attribute, literals */
+            enumObject[fields._parent] = _parent;
+            mEnum.bindEnumToImport(enumObject, mSubObject);
+            mainOwnedElements.push(enumObject);
+        }
+    });
+
+    /* Process Entity */
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        if (mSubObject instanceof Object && mSubObject.type == fields.Entity) {
+            /* UMLClass */
+            let entityObject = {};
+
+            /* Binding Entity fields and attribute */
+            entityObject[fields._parent] = _parent;
+            mEntity.bindEntityToImport(entityObject, mSubObject);
+            mainOwnedElements.push(entityObject);
+
+        }
+    });
+
+    /* Process Event */
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+
+            let interfaceObject = {};
+
+            /* Binding Event fields, attribute, operation & parameters*/
+            interfaceObject[fields._parent] = _parent;
+            mEvent.bindEventToImport(interfaceObject, mSubObject);
+            mainOwnedElements.push(interfaceObject);
+        }
+    });
+
+    let mProject = app.project.getProject();
+    /* Import Enumeration, Entity & Event to our model */
+    result = app.project.importFromJson(mProject, Package);
+    return result;
 }
 
 /**
@@ -404,7 +249,6 @@ async function importModel(file) {
 
         var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
         if (mFiles && mFiles.length > 0) {
-            // try {
             /* Main XMIData */
             finalPath = mFiles[0];
         }
@@ -439,33 +283,29 @@ async function importModel(file) {
  */
 function processImport(MainXMIData) {
     return new Promise((resolve, reject) => {
-        // try {
 
         var i = 1;
-        // Import Abstract package first
+        /*  Import Abstract package first */
         if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
             let absFiles = MainXMIData.dependent;
             if (absFiles.length > 0) {
                 forEach(absFiles, function (AbstractXMIData) {
-                    console.log("steps----" + (i++) + "---Abstract---" + AbstractXMIData.name);
 
                     /* Abstract file XMIData */
                     importDataToModel(AbstractXMIData);
+                    
                 });
             }
         }
-        console.log("steps----" + (i++) + "---Main---" + MainXMIData.name);
-        // Import main package second
+
+        /*  Import main package second */
         importDataToModel(MainXMIData);
 
         resolve({
             success: true,
             result: []
         });
-        // } catch (error) {
-        //     console.error("processImport", error.message);
-        //     reject(error.message);
-        // };
+        
     });
 }
 /**
@@ -514,7 +354,6 @@ function exportModel() {
 
                     var _filename = filename;
                     var fName = git.getDirectory() + path.sep + _filename + '.json';
-                    // var fName = app.dialogs.showSaveDialog('Export Project As JSON', _filename + '.json', JSON_FILE_FILTERS);
 
                     forEach(absClass, function (item) {
                         if (item._parent instanceof type.UMLPackage) {
@@ -555,11 +394,9 @@ function exportModel() {
 
                         /* Entity binding--- */
                         mEntity.bindEntityToExport(mPackage, abstractJsonProcess);
-                        // mEntity.bindAbstractEntityToExport(mPackage, abstractJsonProcess);
 
                         /* Event binding */
                         mEvent.bindEventToExport(mPackage, abstractJsonProcess);
-                        // mEvent.bindAbstractEventToExport(mPackage, abstractJsonProcess);
 
                         console.log('Json Processed', abstractJsonProcess);
 

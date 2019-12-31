@@ -29,9 +29,7 @@ function addEnumProperty(enumObj, enume) {
 
         propertyObj[fields.description] = attr.documentation;
 
-        // if (attr.isID) {
         propertyObj[fields.isID] = attr.isID;
-        // }
 
         propertyObj[fields.cardinality] = attr.multiplicity;
 
@@ -139,8 +137,72 @@ function bindEnumAttributesToImport(enumeObject, mSubObject) {
     });
 
 }
+
+function addNewEnumeration(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+            /* UMLEnumeration */
+            let enumObject = {};
+
+            /* Binding Enum fields, attribute, literals */
+            bindEnumToImport(enumObject, mSubObject);
+
+            let searchedEnum = app.repository.search(mSname);
+            let searchedEnumRes = searchedEnum.filter(function (item) {
+                return (item instanceof type.UMLEnumeration && item.name == mSname);
+            });
+
+            if (searchedEnumRes.length == 0) {
+                let newAdded = app.repository.readObject(enumObject);
+                console.log("New Enum Added-1: ", newAdded);
+                newAdded._parent = result;
+                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                console.log("New Enum Added-2", mResult);
+                utils.addNewAddedElement(newAdded);
+            }
+        }
+    });
+}
+
+function updateEnumeration(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLClass */
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Enum) {
+
+            /* UMLEnumeration */
+            let enumObject = {};
+
+            /* Binding Enum fields, attribute, literals */
+            bindEnumToImport(enumObject, mSubObject);
+            let searchedEnum = app.repository.search(mSname);
+            let searchedEnumRes = searchedEnum.filter(function (item) {
+                return (item instanceof type.UMLEnumeration && item.name == mSname);
+            });
+
+            if (searchedEnumRes.length > 0) {
+                forEach(searchedEnumRes, function (ety) {
+
+                    if (ety instanceof type.UMLEnumeration) {
+                        console.time("Updated : Enum : ");
+                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                        app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                        console.timeEnd();
+                        console.log("Updated : Enum : ", ety.name);
+                    }
+                });
+            }
+        }
+    });
+}
 module.exports.addEnumFields = addEnumFields;
 module.exports.addEnumProperty = addEnumProperty;
 module.exports.addEnumLiterals = addEnumLiterals;
 module.exports.bindEnumToExport = bindEnumToExport;
 module.exports.bindEnumToImport = bindEnumToImport;
+module.exports.addNewEnumeration = addNewEnumeration;
+module.exports.updateEnumeration = updateEnumeration;

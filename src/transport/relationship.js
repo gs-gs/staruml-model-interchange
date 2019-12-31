@@ -13,7 +13,6 @@ function addAggregationToImport(entity, attr) {
     /* UMLAssociation (aggregation) */
     console.log("-----aggregation", entity.name);
 
-    // objRelationship._id="";
     objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
@@ -583,17 +582,17 @@ function updateAssociationClassLink(entity, attr, _id) {
 
     let UMLAssociationClassLink = app.repository.get(_id);
 
-    // objRelationship._type = 'UMLAssociationClassLink';
-    // objRelationship.name = attr.name;
-    // objRelationship.documentation = attr.description;
+    /* objRelationship._type = 'UMLAssociationClassLink';
+    objRelationship.name = attr.name;
+    objRelationship.documentation = attr.description; */
     app.engine.setProperty(UMLAssociationClassLink, 'name', attr.name);
     app.engine.setProperty(UMLAssociationClassLink, 'documentation', attr.description);
 
     /* associationSide */
-    // let associationSide = {};
+    /*  let associationSide = {}; */
     let associationSide = bindRelationshipToImport(entity, attr.association, true);
-    // let associationSide = bindRelationshipToImport(entity, attr.association, true);
-    //let associationSide=app.repository.writeObject(bindAssos);
+    /*  let associationSide = bindRelationshipToImport(entity, attr.association, true); */
+    /* let associationSide=app.repository.writeObject(bindAssos); */
     /* if (bindAssos && bindAssos.hasOwnProperty('_id')) {
         associationSide['$ref'] = bindAssos._id;
     } */
@@ -692,9 +691,9 @@ function addInterfaceToImport(objRelationship, entity, attr) {
  */
 function updateInterfaceToImport(entity, attr, _id) {
     let UMLAssociation = app.repository.get(_id);
-    // objRelationship._type = 'UMLAssociation';
-    // objRelationship.name = attr.name;
-    // objRelationship.documentation = attr.description;
+    /* objRelationship._type = 'UMLAssociation';
+    objRelationship.name = attr.name;
+    objRelationship.documentation = attr.description; */
     app.engine.setProperty(UMLAssociation, 'name', attr.name);
     app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
     /* Source */
@@ -705,7 +704,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     objEnd1._parent = {
         '$ref': UMLAssociation._id
     };
-    // objRelationship.end1 = objEnd1;
+    /*  objRelationship.end1 = objEnd1; */
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'none';
 
@@ -734,7 +733,7 @@ function updateInterfaceToImport(entity, attr, _id) {
         '$ref': UMLAssociation._id
     };
     objEnd2._type = 'UMLAssociationEnd';
-    // objRelationship.end2 = objEnd2;
+    /*  objRelationship.end2 = objEnd2; */
     objEnd2.aggregation = 'none';
 
     let target = attr.target;

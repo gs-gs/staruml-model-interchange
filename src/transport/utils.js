@@ -155,9 +155,7 @@ function setProperty(ownedElements, XMIData) {
                         return item.name == fItem.name
                     });
                     if (atbts.length == 0) {
-                        // forEach(atbts, function (mItem) {
                         newProps.push(item);
-                        // });
                     } else if (atbts.length == 1) {
                         existProps.push(atbts[0]);
                     }
@@ -214,8 +212,8 @@ function setLiterals(ownedElements, XMIData) {
                 }
             });
             let resRel = app.engine.setProperty(entity, 'literals', literals);
-            //let resRel=app.engine.setProperty(entity,'literals',literals);
-            // app.modelExplorer.update(entity)
+            /* let resRel=app.engine.setProperty(entity,'literals',literals); */
+            /*  app.modelExplorer.update(entity) */
             console.log("setLiterals", resRel);
         }
     });
@@ -246,8 +244,8 @@ function setOperation(ownedElements, XMIData) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
                     console.log("rel", rel);
-                    // let mResult = app.engine.addItem(entity, 'operations', rel);
-                    // console.log("mResult", mResult);
+                    /*  let mResult = app.engine.addItem(entity, 'operations', rel); */
+                    /*  console.log("mResult", mResult); */
                     operations.push(rel);
                 }
             });
@@ -318,7 +316,7 @@ function bindOperation(attr) {
         objParam.name = param.name;
         //TODO : Remove below comment and resolve issue
         let dType = getDatatype(param.DataType); //attr.DataType.type;
-        // objAttr.type = dType;
+        /* objAttr.type = dType; */
         objParam.type = dType //param.DataType.type;
         objParam.isID = param.isID;
         objParam.multiplicity = param.cardinality;
@@ -466,6 +464,9 @@ function calculateXY() {
             maxLeft = item;
         }
     });
+    if(maxLeft==null){
+        return null;
+    }
     lastMaxView = maxLeft;
     pX = lastMaxView.left + lastMaxView.width + (incrementValue / 2);
     pY = lastMaxView.top;
@@ -859,7 +860,7 @@ function setInterfaceViewAttributes(UMLInterfaceView) {
     app.engine.setProperty(UMLInterfaceView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLInterfaceView, viewfields.selectable, 1);
-    // app.engine.setProperty(UMLInterfaceView, viewfields.selected, true);
+    /* app.engine.setProperty(UMLInterfaceView, viewfields.selected, true); */
     app.engine.setProperty(UMLInterfaceView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLInterfaceView, viewfields.showNamespace, false);
     app.engine.setProperty(UMLInterfaceView, viewfields.showOperationSignature, true);
@@ -895,7 +896,7 @@ function setEnumerationViewAttributes(UMLEnumerationView) {
     app.engine.setProperty(UMLEnumerationView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLEnumerationView, viewfields.selectable, 1);
-    // app.engine.setProperty(UMLEnumerationView, viewfields.selected, true);
+    /* app.engine.setProperty(UMLEnumerationView, viewfields.selected, true); */
     app.engine.setProperty(UMLEnumerationView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLEnumerationView, viewfields.showNamespace, false);
     app.engine.setProperty(UMLEnumerationView, viewfields.showOperationSignature, true);
@@ -932,7 +933,7 @@ function setClassViewAttributes(UMLClassView) {
     app.engine.setProperty(UMLClassView, viewfields.parentStyle, false);
     app.engine.setProperty(UMLClassView, viewfields.selectZIndex, 0);
     app.engine.setProperty(UMLClassView, viewfields.selectable, 1);
-    // app.engine.setProperty(UMLClassView, viewfields.selected, true);
+    /* app.engine.setProperty(UMLClassView, viewfields.selected, true); */
     app.engine.setProperty(UMLClassView, viewfields.showMultiplicity, true);
     app.engine.setProperty(UMLClassView, viewfields.showNamespace, true);
     app.engine.setProperty(UMLClassView, viewfields.showOperationSignature, true);

@@ -49,9 +49,8 @@ function addEventProperty(eventObj, event) {
 
         propertyObj[fields.description] = attr.documentation;
 
-        // if (attr.isID) {
         propertyObj[fields.isID] = attr.isID;
-        // }
+
         propertyObj[fields.cardinality] = attr.multiplicity;
 
         propertyObj[fields.defaultValue] = attr.defaultValue
@@ -293,6 +292,64 @@ function bindEventToImport(interfaceObject, mSubObject) {
     interfaceObject.documentation = mSubObject.description;
 
 }
+
+function addNewEvent(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLClass */
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+
+            let interfaceObject = {};
+            /* Binding Event fields, attribute, operation & parameters*/
+            bindEventToImport(interfaceObject, mSubObject);
+            let searchedEvent = app.repository.search(mSname);
+            let searchedEventRes = searchedEvent.filter(function (item) {
+                return (item instanceof type.UMLInterface && item.name == mSname);
+            });
+            if (searchedEventRes.length == 0) {
+                let newAdded = app.repository.readObject(interfaceObject);
+                console.log("New Event Added-1 : ", newAdded);
+                newAdded._parent = result;
+                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                console.log("New Event Added-2", mResult);
+                utils.addNewAddedElement(newAdded);
+
+            }
+        }
+    });
+}
+
+function updateEvent(XMIData) {
+    Object.keys(XMIData).forEach(function eachKey(key) {
+        let mSubObject = XMIData[key];
+        /* UMLClass */
+        let mSname = key;
+        if (mSubObject instanceof Object && mSubObject.type == fields.Event) {
+
+            let interfaceObject = {};
+            /* Binding Event fields, attribute, operation & parameters*/
+            mEvent.bindEventToImport(interfaceObject, mSubObject);
+            let searchedEvent = app.repository.search(mSname);
+            let searchedEventRes = searchedEvent.filter(function (item) {
+                return (item instanceof type.UMLInterface && item.name == mSname);
+            });
+            if (searchedEventRes.length > 0) {
+                forEach(searchedEventRes, function (ety) {
+
+                    if (ety instanceof type.UMLInterface) {
+                        console.time("Enum");
+                        app.engine.setProperty(ety, fields.name, mSubObject.name);
+                        //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
+                        app.engine.setProperty(ety, fields.documentation, mSubObject.description);
+                        console.log("Updated : Event : ", ety.name);
+                        console.timeEnd("Enum");
+                    }
+                });
+            }
+        }
+    });
+}
 module.exports.addEventFields = addEventFields;
 module.exports.addEventRequired = addEventRequired;
 module.exports.addEventProperty = addEventProperty;
@@ -301,3 +358,5 @@ module.exports.addEventOperation = addEventOperation;
 module.exports.bindEventToExport = bindEventToExport;
 module.exports.bindEventToImport = bindEventToImport;
 module.exports.bindAbstractEventToExport = bindAbstractEventToExport;
+module.exports.addNewEvent = addNewEvent;
+module.exports.updateEvent = updateEvent;
