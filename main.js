@@ -1,6 +1,5 @@
 const git = require('./src/git/git');
 const transport = require('./src/transport/transport');
-const forEach = require('async-foreach');
 
 function _projectSaved() {
      console.log("project saved");

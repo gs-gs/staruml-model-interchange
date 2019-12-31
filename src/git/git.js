@@ -28,8 +28,8 @@ function _projectLoaded() {
                });
           }
           /* else{
-                         const git;
-                    } */
+               const git;
+          } */
 
      }
 
@@ -249,10 +249,8 @@ async function _gitPush() {
                               app.dialogs.showInfoDialog("Push Successfull");
                          });
 
-                         // console.log('repo successfully push');
                     }, (error) => {
                          vDialog.close();
-                         // console.log('repo push failed');
                          let eMsg = 'Push Failed' + '\n' + error.message;
                          app.dialogs.showErrorDialog(eMsg);
                          console.error(error.message);
@@ -293,10 +291,10 @@ async function _gitPull() {
 
                vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
                let options = {
-                    // '--rebase': 'true'
-                    // '--no-rebase': null
+                    /*  '--rebase': 'true' */
+                    /*  '--no-rebase': null */
                     '--allow-unrelated-histories': null
-                    // '-a':null,
+                    /*  '-a':null, */
                };
                let resPull = await git(_mdirname).pull(pushURL, 'master', options);
                console.log("Pull result", resPull);
