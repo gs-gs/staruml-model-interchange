@@ -32,6 +32,8 @@ const constant = {
     source: "Source",
     target: "Target",
     ref_not_found: '\' \'$ref\' not found',
+    summary_not_available: 'summary not available',
+    diff_not_available: 'no difference found',
 
 }
 /**
