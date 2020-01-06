@@ -329,7 +329,7 @@ function updateEvent(XMIData) {
 
             let interfaceObject = {};
             /* Binding Event fields, attribute, operation & parameters*/
-            mEvent.bindEventToImport(interfaceObject, mSubObject);
+            bindEventToImport(interfaceObject, mSubObject);
             let searchedEvent = app.repository.search(mSname);
             let searchedEventRes = searchedEvent.filter(function (item) {
                 return (item instanceof type.UMLInterface && item.name == mSname);
