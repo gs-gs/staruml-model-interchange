@@ -70,7 +70,6 @@ async function _gitAddRemote() {
           return;
      }
 
-     // await git(_mdirname).addRemote('origin', 'https://github.com/mayurm-virtueinfo/mi-git');
      let resAddRemote = await app.dialogs.showInputDialog(constant.enter_remote_url);
      if (resAddRemote.buttonId == 'ok') {
           if (resAddRemote.returnValue) {
@@ -150,10 +149,6 @@ async function _gitAddConfig() {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
-
-         /*  git(_mdirname).addConfig('user.name', 'mayurm-virtueinfo');
-          git(_mdirname).addConfig('user.email', 'mayurm.virtueinfo@gmail.com');
-          return */
 
           let _username = null,
                _email = null;
@@ -276,51 +271,66 @@ async function _gitPush() {
  */
 async function _gitPull() {
 
-     let vDialog = null;
+
      try {
+
           let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
+     } catch (error) {
+          app.dialogs.showErrorDialog(error.message);
+     }
 
+     try {
           let StatusSummary = await git(_mdirname).status();
           console.log("StatusSummary", StatusSummary);
           if (StatusSummary.files.length == 1) {
                app.dialogs.showInfoDialog(constant.commit_changes);
                return;
           }
+     } catch (error) {
+          app.dialogs.showErrorDialog(error.message);
+     }
+     
+     let res = await git(_mdirname).getRemotes(true);
+     if (res.length == 1) {
+          let remote = res[0];
+          let pushURL = remote.refs.fetch;
 
-          let res = await git(_mdirname).getRemotes(true);
-          if (res.length == 1) {
-               let remote = res[0];
-               let pushURL = remote.refs.fetch;
-
+          let vDialog = null;
+          try {
+             
                vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
-               let options = {
-                    /*  '--rebase': 'true' */
-                    /*  '--no-rebase': null */
-                    '--allow-unrelated-histories': null
-                    /*  '-a':null, */
-               };
-               let resPull = await git(_mdirname).pull(pushURL, 'master', options);
-               console.log("Pull result", resPull);
+               let resFetch = await git(_mdirname).fetch();
+               console.log("fetch", resFetch);
+
+
+               let mReset = await git(_mdirname).raw(
+                    [
+                         'reset',
+                         '--hard',
+                         'origin/master'
+                    ]);
+
+
+               console.log("mReset", mReset);
                vDialog.close();
-               if (resPull == null) {
+               if (mReset == null) {
                     return;
                }
                app.toast.info("Pull Successfull");
-               readPullDirectory(_mdirname)
+                 readPullDirectory(_mdirname);
+          } catch (error) {
+               console.error(error.message);
+               if (vDialog != null) {
+                    vDialog.close()
+               }
+               setTimeout(function () {
+                    app.dialogs.showErrorDialog(error.message);
+               });
           }
-
-     } catch (error) {
-          console.error(error.message);
-          if (vDialog != null) {
-               vDialog.close()
-          }
-          setTimeout(function () {
-               app.dialogs.showErrorDialog(error.message);
-          })
      }
 }
 
