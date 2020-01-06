@@ -439,22 +439,8 @@ async function _gitDiff() {
                     app.dialogs.showModalDialog("", constant.title_import_mi_commit_diff, strDiff, [], true);
                }
 
-               /* let modifiedFiles = '------------------------------<br><b>Modefied files</b><br>------------------------------';
-
-
-               let modified = statusSummery.modified;
-               modified.forEach(modified => {
-                    modifiedFiles += '<br>' + modified;
-               });
-
-               let stagedFiles = '------------------------------<br><b>Staged files</b><br>------------------------------';
-
-               let staged = statusSummery.staged;
-               staged.forEach(staged => {
-                    stagedFiles += '<br>' + staged;
-               });
-               let finalStatus=modifiedFiles + '<br><br>' + stagedFiles+'<br><br>';
-               app.dialogs.showModalDialog("", constant.title_import_mi_commit_history, finalStatus, [], true); */
+          }else{
+               app.dialogs.showErrorDialog(constant.diff_not_available);
           }
 
      } catch (error) {
@@ -464,7 +450,7 @@ async function _gitDiff() {
           }
           setTimeout(function () {
                app.dialogs.showErrorDialog(error.message);
-          })
+          });
      }
 }
 
