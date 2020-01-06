@@ -49,8 +49,6 @@ async function _gitInit() {
           let isRepo = await git(_mdirname).checkIsRepo();
           if (!isRepo) {
                await git(_mdirname).init();
-               /* Getting fatal error : pathspec'./*' did not match any files
-               await git(_mdirname).add('./*'); */
                app.dialogs.showInfoDialog(constant.repo_initialized);
           } else {
                app.dialogs.showInfoDialog(constant.repo_already_initialized);
@@ -71,6 +69,8 @@ async function _gitAddRemote() {
           app.dialogs.showErrorDialog(constant.init_repo_first);
           return;
      }
+
+     // await git(_mdirname).addRemote('origin', 'https://github.com/mayurm-virtueinfo/mi-git');
      let resAddRemote = await app.dialogs.showInputDialog(constant.enter_remote_url);
      if (resAddRemote.buttonId == 'ok') {
           if (resAddRemote.returnValue) {
@@ -119,6 +119,9 @@ async function _gitCommit() {
           app.dialogs.showInfoDialog(constant.add_credential);
           return;
      }
+     /* let result = await git(_mdirname).add('./*');
+     let commit = await git(_mdirname).commit('1st');
+     return; */
 
      let resCommit = await app.dialogs.showTextDialog(constant.enter_commit_msg, "");
      if (resCommit.buttonId == "ok") {
@@ -147,6 +150,10 @@ async function _gitAddConfig() {
                app.dialogs.showErrorDialog(constant.init_repo_first);
                return;
           }
+
+         /*  git(_mdirname).addConfig('user.name', 'mayurm-virtueinfo');
+          git(_mdirname).addConfig('user.email', 'mayurm.virtueinfo@gmail.com');
+          return */
 
           let _username = null,
                _email = null;
@@ -303,21 +310,7 @@ async function _gitPull() {
                     return;
                }
                app.toast.info("Pull Successfull");
-               fs.readdir(_mdirname, function (err, files) {
-                    if (files && files.length > 0) {
-                         files.filter(junk.not);
-                         let filesList = files.filter(function (e) {
-                              return path.extname(e).toLowerCase() === '.json'
-                         });
-                         if (filesList.length == 1) {
-                              let mFile = filesList[0];
-                              let finalPath = _mdirname + path.sep + mFile;
-                              transport.importModel(finalPath);
-                         }
-                    } else if (err) {
-                         app.toast.error(err.message);
-                    }
-               });
+               readPullDirectory(_mdirname)
           }
 
      } catch (error) {
@@ -329,6 +322,24 @@ async function _gitPull() {
                app.dialogs.showErrorDialog(error.message);
           })
      }
+}
+
+function readPullDirectory(_mdirname) {
+     fs.readdir(_mdirname, function (err, files) {
+          if (files && files.length > 0) {
+               files.filter(junk.not);
+               let filesList = files.filter(function (e) {
+                    return path.extname(e).toLowerCase() === '.json'
+               });
+               if (filesList.length == 1) {
+                    let mFile = filesList[0];
+                    let finalPath = _mdirname + path.sep + mFile;
+                    transport.importModel(finalPath);
+               }
+          } else if (err) {
+               app.toast.error(err.message);
+          }
+     });
 }
 /**
  * @function _gitLog
