@@ -16,14 +16,14 @@
                          "command": "tool.git:addremote"
           
                     },{
-                         "label": "commit",
-                         "id": "tool.git.commit",
-                         "command": "tool.git:commit"
-          
-                    },{
                          "label": "credential",
                          "id": "tool.git.addconfig",
                          "command": "tool.git:addconfig"
+          
+                    },{
+                         "label": "commit",
+                         "id": "tool.git.commit",
+                         "command": "tool.git:commit"
           
                     },{
                          "label": "config",
