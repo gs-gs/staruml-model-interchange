@@ -384,9 +384,21 @@ async function _gitStatus() {
           }
 
           let statusSummery = await git(_mdirname).status();
-          if (statusSummery != null) {
-               let strCommit = '';
+          if (statusSummery == null || statusSummery =='') {
+               app.dialogs.showErrorDialog(constant.summary_not_available);
+               return;
+          }
+          if (statusSummery != null || statusSummery !='') {
                console.log('statusSummery', statusSummery);
+
+               let not_addedFiled = '------------------------------<br><b>Not added files</b><br>------------------------------';
+
+
+               let not_added = statusSummery.not_added;
+               not_added.forEach(nadded => {
+                    not_addedFiled += '<br>' + nadded;
+               });
+
 
                let modifiedFiles = '------------------------------<br><b>Modefied files</b><br>------------------------------';
 
@@ -402,7 +414,25 @@ async function _gitStatus() {
                staged.forEach(staged => {
                     stagedFiles += '<br>' + staged;
                });
-               let finalStatus = modifiedFiles + '<br><br>' + stagedFiles + '<br><br>';
+
+               let finalStatus = '';
+               if (not_added != null && not_added.length > 0) {
+                    finalStatus += not_addedFiled + '<br><br>';
+               }
+
+               if (modified != null && modified.length > 0) {
+                    finalStatus += modifiedFiles + '<br><br>';
+               }
+
+               if (staged != null && staged.length > 0) {
+                    finalStatus += stagedFiles + '<br><br>';
+               }
+
+               if(not_added.length==0 && modified.length==0 && staged.length==0){
+                    app.dialogs.showErrorDialog(constant.summary_not_available);
+                    return;
+               }
+               // let finalStatus = modifiedFiles + '<br><br>' + stagedFiles + '<br><br>';
                app.dialogs.showModalDialog("", constant.title_import_mi_commit_status, finalStatus, [], true);
           }
 
