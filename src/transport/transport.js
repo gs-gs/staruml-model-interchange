@@ -38,7 +38,7 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
     // setTimeout(function(){
         console.log("",pElement);
         if (pElement !=null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
-            let strMsg = 'Class \''+className+' in \''+pElement.name+'\' Package';
+            let strMsg = 'Class \''+className+'\' in \''+pElement.name+'\' Package';
             //pElement.name + "/" + className;
             let result = showAlertForAbstract.filter(function (item) {
                 return item == strMsg;
@@ -93,6 +93,7 @@ function getAbstractClass(umlPackage) {
         }
     });
 
+    let result={};
     if (showAlertForAbstract.length > 0) {
         let strCls='class';
         if(showAlertForAbstract.length>1){
@@ -102,10 +103,18 @@ function getAbstractClass(umlPackage) {
         forEach(showAlertForAbstract, function (item) {
             msgStr += item + '\n';
         });
-
-        app.dialogs.showInfoDialog(msgStr);
+        result.success=false;
+        result.message=msgStr;
+        result.abstractClasses=[];
+        return result;
+        
     }
-    return uniqueAbstractArr;
+    result.success=true;
+    result.message="Abstract class available";
+    result.abstractClassis=uniqueAbstractArr;
+    
+    // return uniqueAbstractArr;
+    return result;
 }
 /**
  * @function getClasswiseAssociations
@@ -400,7 +409,13 @@ function exportModel() {
                     }
 
                     /* Finds and return abstrack class from the selected package */
-                    let absClass = getAbstractClass(umlPackage);
+                    let absResult = getAbstractClass(umlPackage);
+                    if(!absResult.success)
+                    {
+                        app.dialogs.showAlertDialog(absResult.message);
+                        return;
+                    }
+                    let absClass=absResult.abstractClasses;
                     console.log("Abstrack Class", absClass);
 
                     var _filename = filename;
