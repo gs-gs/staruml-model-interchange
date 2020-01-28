@@ -14,6 +14,41 @@ const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
 }]
+function findPackage(element){
+    let elem=element._parent;
+    if(elem != null && elem instanceof type.UMLPackage){
+        return elem;
+    }else{
+        findPackage(elem._parent);
+    }
+    return elem;
+}
+function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) {
+    // let pkgName = '';
+    let parentElement;
+    let className = '';
+    if (itemGen instanceof type.UMLGeneralization) {
+        className = itemGen.target.name;
+        parentElement = itemGen.target;
+    } else if (itemGen instanceof type.UMLAssociation) {
+        className = itemGen.end2.reference.name;
+        parentElement = itemGen.end2.reference;
+    }
+    let pElement=findPackage(parentElement);
+    // setTimeout(function(){
+        console.log("",pElement);
+        if (pElement !=null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
+            let strMsg = 'Class \''+className+' in \''+pElement.name+'\' Package';
+            //pElement.name + "/" + className;
+            let result = showAlertForAbstract.filter(function (item) {
+                return item == strMsg;
+            });
+            if (result.length == 0 && (!parentElement.isAbstract)) {
+                showAlertForAbstract.push(strMsg);
+            }
+        }
+    // },5);
+}
 /**
  * @function getAbstractClass
  * @description Find abstract class reference and return abstract class array
@@ -24,10 +59,13 @@ function getAbstractClass(umlPackage) {
     let uniqueAbstractArr = [];
     let abstractClassList = [];
 
+    let showAlertForAbstract = [];
+
     forEach(umlPackage.ownedElements, (element) => {
         if (element instanceof type.UMLClass) {
             let generalization = app.repository.select(umlPackage.name + "::" + element.name + "::@UMLGeneralization");
             forEach(generalization, (itemGen) => {
+                checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract);
                 if (itemGen.target.isAbstract) {
                     abstractClassList.push(itemGen.target);
                 }
@@ -39,6 +77,7 @@ function getAbstractClass(umlPackage) {
         if (element instanceof type.UMLClass) {
             let associations = getClasswiseAssociations(element);
             forEach(associations, (itemGen) => {
+                checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract);
                 if (itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
                     abstractClassList.push(itemGen.end2.reference);
                 }
@@ -54,6 +93,18 @@ function getAbstractClass(umlPackage) {
         }
     });
 
+    if (showAlertForAbstract.length > 0) {
+        let strCls='class';
+        if(showAlertForAbstract.length>1){
+            strCls='classes'
+        }
+        let msgStr = 'Please make \'isAbstract\' attribute \'true\' in following '+strCls+' to export \n\n';
+        forEach(showAlertForAbstract, function (item) {
+            msgStr += item + '\n';
+        });
+
+        app.dialogs.showInfoDialog(msgStr);
+    }
     return uniqueAbstractArr;
 }
 /**
@@ -98,15 +149,15 @@ function importDataToModel(XMIData) {
                     /* Step - 1 : Add all elements first */
                     /* Add New Enumeration */
                     mEnum.addNewEnumeration(XMIData);
-                    
+
 
                     /* Add New Entity */
                     mEntity.addNewEntity(XMIData);
-                    
+
 
                     /* Add New Event */
                     mEvent.addNewEvent(XMIData);
-                    
+
 
                     /* Step - 2 : Create view of all new added class, interface, enumeration */
                     let newElements = mUtils.getNewAddedElement();
@@ -125,15 +176,15 @@ function importDataToModel(XMIData) {
                     /* Step - 4 : Update all existing elements */
                     /* Update Enumeration*/
                     mEnum.updateEnumeration(XMIData);
-                    
+
 
                     /* Update Entity */
                     mEntity.updateEntity(XMIData);
-                   
+
 
                     /* Update Event */
                     mEvent.updateEvent(XMIData);
-                    
+
 
                 }
             });
@@ -293,7 +344,7 @@ function processImport(MainXMIData) {
 
                     /* Abstract file XMIData */
                     importDataToModel(AbstractXMIData);
-                    
+
                 });
             }
         }
@@ -305,7 +356,7 @@ function processImport(MainXMIData) {
             success: true,
             result: []
         });
-        
+
     });
 }
 /**
