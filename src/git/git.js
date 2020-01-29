@@ -14,6 +14,9 @@ var junk = require('junk');
 function _projectLoaded() {
 
      _fname = app.project.getFilename();
+     if(_fname==null){
+          _fname=app.project.getProject().name;
+     }
      let basefile = path.basename(_fname);
      let basefileName = path.parse(basefile).name;
      if (_fname) {
@@ -29,7 +32,7 @@ function _projectLoaded() {
           }
           /* else{
                const git;
-          } */
+          }*/
 
      }
 
