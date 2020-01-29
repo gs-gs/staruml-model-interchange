@@ -293,7 +293,7 @@ function bindEventToImport(interfaceObject, mSubObject) {
 
 }
 
-function addNewEvent(XMIData) {
+function addNewEvent(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         /* UMLClass */

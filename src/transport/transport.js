@@ -111,7 +111,7 @@ function getAbstractClass(umlPackage) {
     }
     result.success=true;
     result.message="Abstract class available";
-    result.abstractClassis=uniqueAbstractArr;
+    result.abstractClasses=uniqueAbstractArr;
     
     // return uniqueAbstractArr;
     return result;
@@ -146,6 +146,13 @@ function importDataToModel(XMIData) {
     if (XMIData.type == fields.package) {
 
         let searchedPackage = app.repository.select(Package.name);
+        let nPkg=[];
+        forEach(searchedPackage,function(pkg){
+            if(pkg instanceof type.UMLPackage){
+                nPkg.push(pkg);
+            }
+        });
+        searchedPackage=nPkg;
         let result = null;
         /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
@@ -157,15 +164,15 @@ function importDataToModel(XMIData) {
 
                     /* Step - 1 : Add all elements first */
                     /* Add New Enumeration */
-                    mEnum.addNewEnumeration(XMIData);
+                    mEnum.addNewEnumeration(XMIData,result);
 
 
                     /* Add New Entity */
-                    mEntity.addNewEntity(XMIData);
+                    mEntity.addNewEntity(XMIData,result);
 
 
                     /* Add New Event */
-                    mEvent.addNewEvent(XMIData);
+                    mEvent.addNewEvent(XMIData,result);
 
 
                     /* Step - 2 : Create view of all new added class, interface, enumeration */
@@ -300,6 +307,29 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
  * @description Read file from file path and parse it to JSONObject
  * @param {string} file
  */
+async function importModelABC(file) {
+
+    let finalPath = null;
+    if (file) {
+        finalPath = file;
+    } else {
+
+        var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
+        if (mFiles && mFiles.length > 0) {
+            /* Main XMIData */
+            finalPath = mFiles[0];
+        }
+    }
+
+    let filePath = finalPath;
+    var contentStr = fs.readFileSync(filePath, 'utf8');
+    var data = JSON.parse(contentStr);
+    data=data.ownedElements[0];
+    let mProject = app.project.getProject();
+    result = app.project.importFromJson(mProject, data);
+    return result;
+
+}
 async function importModel(file) {
 
     let finalPath = null;

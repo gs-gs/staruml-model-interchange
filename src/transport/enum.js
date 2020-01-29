@@ -138,7 +138,7 @@ function bindEnumAttributesToImport(enumeObject, mSubObject) {
 
 }
 
-function addNewEnumeration(XMIData) {
+function addNewEnumeration(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         let mSname = key;

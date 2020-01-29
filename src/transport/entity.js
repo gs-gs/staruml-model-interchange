@@ -275,7 +275,7 @@ function bindEntityToImport(entityObject, mSubObject) {
 
 }
 
-function addNewEntity(XMIData) {
+function addNewEntity(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         /* UMLClass */
