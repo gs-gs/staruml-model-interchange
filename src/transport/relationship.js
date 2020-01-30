@@ -175,12 +175,18 @@ function addCompositionToImport(entity, attr) {
     objRelationship._parent = {
         '$ref': entity._id
     };
+
+    let nAssoc = app.repository.readObject(objRelationship);
+    objRelationship = JSON.parse(app.repository.writeObject(nAssoc));
+
     /* Source */
     let objEnd1 = {};
     objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'composite';
-
+    objEnd1._parent = {
+        '$ref': objRelationship._id
+    };
     /* Reference to UMLClass or UMLInterface */
 
     let source = attr.source;
@@ -202,7 +208,9 @@ function addCompositionToImport(entity, attr) {
     objEnd2._type = 'UMLAssociationEnd';
     objRelationship.end2 = objEnd2;
     objEnd2.aggregation = 'none';
-
+    objEnd2._parent = {
+        '$ref': objRelationship._id
+    };
     let target = attr.target;
     objEnd2.multiplicity = target.cardinality;
     objEnd2.navigable = target.navigable;
