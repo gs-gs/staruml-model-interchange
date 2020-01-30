@@ -488,6 +488,7 @@ function getXY() {
         pY: pY
     }
 }
+let XOIR=10, YOIR=10;
 /**
  * @function getInterfaceRealizationView
  * @description returns UMLInterfaceRealizationView 
@@ -508,10 +509,10 @@ function getInterfaceRealizationView(model, diagram, options) {
         app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!targetView) {
-            app.factory.createViewAndRelationships(editor, x, y, model.target)
+            app.factory.createViewAndRelationships(editor, XOIR, YOIR, model.target)
         }
         if (!sourceView) {
-            app.factory.createViewAndRelationships(editor, x, y + 100, model.source)
+            app.factory.createViewAndRelationships(editor, XOIR, YOIR + 100, model.source)
         }
         if (targetView && sourceView) {
             let typeName = null;
@@ -543,6 +544,7 @@ function getInterfaceRealizationView(model, diagram, options) {
     }
     return directedView;
 }
+let XOG=10,YOG=10;
 /**
  * @function getGeneralizationView
  * @description returns UMLGeneralizationView
@@ -563,10 +565,10 @@ function getGeneralizationView(model, diagram, options) {
         app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!targetView) {
-            app.factory.createViewAndRelationships(editor, x, y, model.target)
+            app.factory.createViewAndRelationships(editor, XOG, YOG, model.target)
         }
         if (!sourceView) {
-            app.factory.createViewAndRelationships(editor, x, y + 100, model.source)
+            app.factory.createViewAndRelationships(editor, XOG, YOG + 100, model.source)
         }
         if (targetView && sourceView) {
             let typeName = null;
@@ -606,11 +608,13 @@ function getGeneralizationView(model, diagram, options) {
  * @param {Object} options
  * @returns {UMLAssociationView}
  */
+let XOA=10,YOA=10;
 function getAssociationView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var undirectedView = diagram.getViewOf(model)
     var end1View = diagram.getViewOf(model.end1.reference)
     var end2View = diagram.getViewOf(model.end2.reference)
+    
     if (undirectedView) {
         editor.selectView(undirectedView)
         editor.selectAdditionalView(end1View)
@@ -618,10 +622,10 @@ function getAssociationView(model, diagram, options) {
         app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!end2View) {
-            app.factory.createViewAndRelationships(editor, x, y, model.end2.reference)
+            app.factory.createViewAndRelationships(editor, XOA, YOA, model.end2.reference)
         }
         if (!end1View) {
-            app.factory.createViewAndRelationships(editor, x, y + 100, model.end1.reference)
+            app.factory.createViewAndRelationships(editor, XOA, YOA + 100, model.end1.reference)
         }
         if (end1View && end2View) {
             let typeName = null;
@@ -649,6 +653,7 @@ function getAssociationView(model, diagram, options) {
         return undirectedView
     }
 }
+let XOACL=10,YOACL=10;
 /**
  * @function getAssociationClasslinkView
  * @description returns UMLAssociationClasslinkView
@@ -676,7 +681,7 @@ function getAssociationClasslinkView(model, diagram, options) {
                 x = classView.left;
                 y = classView.top;
             }
-            app.factory.createViewAndRelationships(editor, x, y, model.associationSide)
+            app.factory.createViewAndRelationships(editor, XOACL, YOACL, model.associationSide)
         }
         if (!sourceView) {
             let x = 10,
@@ -686,7 +691,7 @@ function getAssociationClasslinkView(model, diagram, options) {
                 x = assoView.left;
                 y = assoView.top;
             }
-            app.factory.createViewAndRelationships(editor, x, y + 100, model.classSide)
+            app.factory.createViewAndRelationships(editor, XOACL, YOACL + 100, model.classSide)
         }
         if (targetView && sourceView) {
             let typeName = null;
