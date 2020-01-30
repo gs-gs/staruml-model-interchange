@@ -644,12 +644,19 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     objRelationship._parent = {
         '$ref': entity._id
     };
+
+    let nAssoc = app.repository.readObject(objRelationship);
+    objRelationship = JSON.parse(app.repository.writeObject(nAssoc));
+
+
     /* Source */
     let objEnd1 = {};
     objRelationship.end1 = objEnd1;
     objEnd1._type = 'UMLAssociationEnd';
     objEnd1.aggregation = 'none';
-
+    objEnd1._parent = {
+        '$ref': objRelationship._id
+    };
     /* Reference to UMLClass or UMLInterface */
 
     let source = attr.source;
@@ -671,7 +678,9 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     objEnd2._type = 'UMLAssociationEnd';
     objRelationship.end2 = objEnd2;
     objEnd2.aggregation = 'none';
-
+    objEnd2._parent = {
+        '$ref': objRelationship._id
+    };
     let target = attr.target;
     objEnd2.multiplicity = target.cardinality;
     objEnd2.navigable = target.navigable;
@@ -898,9 +907,12 @@ function setRelationship(ownedElements, XMIData) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             console.log("class name " + mSubObject.name);
+            if (mSubObject.name == "TransportEvent") {
+                console.log("yes");
+            }
             console.log("class name--------Relationship----Start");
             let oldOwnedElements = entity.ownedElements;
-            
+
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
                     if (
@@ -912,7 +924,7 @@ function setRelationship(ownedElements, XMIData) {
                         relationship.type == fields.associationClassLink
                     ) {
                         let rel = bindRelationshipToImport(entity, relationship);
-                        let mIndex=oldOwnedElements.findIndex(function (ele) {
+                        let mIndex = oldOwnedElements.findIndex(function (ele) {
                             return ele._id == rel._id;
                         });
                         if (mIndex == -1) {
@@ -921,7 +933,7 @@ function setRelationship(ownedElements, XMIData) {
                             oldOwnedElements.push(rel);
                         } else {
                             /* Existing relationship */
-                            oldOwnedElements[mIndex]=rel;
+                            oldOwnedElements[mIndex] = rel;
                             console.log(" Existing relationship : " + mIndex);
                         }
                         app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
