@@ -14,15 +14,17 @@ const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
 }]
-function findPackage(element){
-    let elem=element._parent;
-    if(elem != null && elem instanceof type.UMLPackage){
+
+function findPackage(element) {
+    let elem = element._parent;
+    if (elem != null && elem instanceof type.UMLPackage) {
         return elem;
-    }else{
+    } else {
         findPackage(elem._parent);
     }
     return elem;
 }
+
 function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) {
     // let pkgName = '';
     let parentElement;
@@ -34,19 +36,19 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
         className = itemGen.end2.reference.name;
         parentElement = itemGen.end2.reference;
     }
-    let pElement=findPackage(parentElement);
+    let pElement = findPackage(parentElement);
     // setTimeout(function(){
-        console.log("",pElement);
-        if (pElement !=null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
-            let strMsg = 'Class \''+className+'\' in \''+pElement.name+'\' Package';
-            //pElement.name + "/" + className;
-            let result = showAlertForAbstract.filter(function (item) {
-                return item == strMsg;
-            });
-            if (result.length == 0 && (!parentElement.isAbstract)) {
-                showAlertForAbstract.push(strMsg);
-            }
+    console.log("", pElement);
+    if (pElement != null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
+        let strMsg = 'Class \'' + className + '\' in \'' + pElement.name + '\' Package';
+        //pElement.name + "/" + className;
+        let result = showAlertForAbstract.filter(function (item) {
+            return item == strMsg;
+        });
+        if (result.length == 0 && (!parentElement.isAbstract)) {
+            showAlertForAbstract.push(strMsg);
         }
+    }
     // },5);
 }
 /**
@@ -93,26 +95,26 @@ function getAbstractClass(umlPackage) {
         }
     });
 
-    let result={};
+    let result = {};
     if (showAlertForAbstract.length > 0) {
-        let strCls='class';
-        if(showAlertForAbstract.length>1){
-            strCls='classes'
+        let strCls = 'class';
+        if (showAlertForAbstract.length > 1) {
+            strCls = 'classes'
         }
-        let msgStr = 'Please make \'isAbstract\' attribute \'true\' in following '+strCls+' to export \n\n';
+        let msgStr = 'Please make \'isAbstract\' attribute \'true\' in following ' + strCls + ' to export \n\n';
         forEach(showAlertForAbstract, function (item) {
             msgStr += item + '\n';
         });
-        result.success=false;
-        result.message=msgStr;
-        result.abstractClasses=[];
+        result.success = false;
+        result.message = msgStr;
+        result.abstractClasses = [];
         return result;
-        
+
     }
-    result.success=true;
-    result.message="Abstract class available";
-    result.abstractClasses=uniqueAbstractArr;
-    
+    result.success = true;
+    result.message = "Abstract class available";
+    result.abstractClasses = uniqueAbstractArr;
+
     // return uniqueAbstractArr;
     return result;
 }
@@ -146,13 +148,13 @@ function importDataToModel(XMIData) {
     if (XMIData.type == fields.package) {
 
         let searchedPackage = app.repository.select(Package.name);
-        let nPkg=[];
-        forEach(searchedPackage,function(pkg){
-            if(pkg instanceof type.UMLPackage){
+        let nPkg = [];
+        forEach(searchedPackage, function (pkg) {
+            if (pkg instanceof type.UMLPackage) {
                 nPkg.push(pkg);
             }
         });
-        searchedPackage=nPkg;
+        searchedPackage = nPkg;
         let result = null;
         /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
@@ -164,15 +166,15 @@ function importDataToModel(XMIData) {
 
                     /* Step - 1 : Add all elements first */
                     /* Add New Enumeration */
-                    mEnum.addNewEnumeration(XMIData,result);
+                    mEnum.addNewEnumeration(XMIData, result);
 
 
                     /* Add New Entity */
-                    mEntity.addNewEntity(XMIData,result);
+                    mEntity.addNewEntity(XMIData, result);
 
 
                     /* Add New Event */
-                    mEvent.addNewEvent(XMIData,result);
+                    mEvent.addNewEvent(XMIData, result);
 
 
                     /* Step - 2 : Create view of all new added class, interface, enumeration */
@@ -226,7 +228,16 @@ function importDataToModel(XMIData) {
         /* Step - 9 : Create view of newaly added element */
         console.log("Total new added elements", mUtils.getNewAddedElement());
         let newElements = mUtils.getNewAddedElement();
+        let uniqueNewElements=[];
         forEach(newElements, function (newEle) {
+            let res=uniqueNewElements.filter(function(relationship){
+                return relationship._id==newEle._id
+            });
+            if(res.length==0){
+                uniqueNewElements.push(newEle);
+            }
+        });
+        forEach(uniqueNewElements, function (newEle) {
             mUtils.createViewOfElement(newEle);
         });
         app.diagrams.repaint();;
@@ -324,7 +335,7 @@ async function importModelABC(file) {
     let filePath = finalPath;
     var contentStr = fs.readFileSync(filePath, 'utf8');
     var data = JSON.parse(contentStr);
-    data=data.ownedElements[0];
+    data = data.ownedElements[0];
     let mProject = app.project.getProject();
     result = app.project.importFromJson(mProject, data);
     return result;
@@ -420,7 +431,6 @@ function exportModel() {
                     /* Export main package */
                     let jsonProcess = {};
                     if (filename) {
-                        console.log("Filename : ", filename);
                         jsonProcess[fields.type] = fields.package;
                         jsonProcess[fields.name] = umlPackage.name;
 
@@ -440,12 +450,11 @@ function exportModel() {
 
                     /* Finds and return abstrack class from the selected package */
                     let absResult = getAbstractClass(umlPackage);
-                    if(!absResult.success)
-                    {
+                    if (!absResult.success) {
                         app.dialogs.showAlertDialog(absResult.message);
                         return;
                     }
-                    let absClass=absResult.abstractClasses;
+                    let absClass = absResult.abstractClasses;
                     console.log("Abstrack Class", absClass);
 
                     var _filename = filename;
@@ -463,16 +472,7 @@ function exportModel() {
 
 
                     console.log("library packages", expPackages);
-                    /* let absClassView=getAbstractClassView(umlPackage,absClass);
-                    console.log("Abstrack View",absClassView); */
-
-
-
-                    /* forEach(umlPackage.ownedElements,(ele)=>{
-                         if(ele instanceof type.umlClassDiagram){
-                         }
-
-                    }); */
+                   
                     /* Export Abstract Packages */
                     let dependent = [];
                     jsonProcess[fields.dependent] = dependent

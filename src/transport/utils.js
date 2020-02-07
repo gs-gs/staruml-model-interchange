@@ -503,10 +503,10 @@ function getInterfaceRealizationView(model, diagram, options) {
     var sourceView = diagram.getViewOf(model.source)
     var targetView = diagram.getViewOf(model.target)
     if (directedView) {
+        /* Relationship View is already existed in this Diagram. */
         editor.selectView(directedView)
         editor.selectAdditionalView(sourceView)
         editor.selectAdditionalView(targetView)
-        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!targetView) {
             app.factory.createViewAndRelationships(editor, XOIR, YOIR, model.target)
@@ -559,10 +559,10 @@ function getGeneralizationView(model, diagram, options) {
     var sourceView = diagram.getViewOf(model.source)
     var targetView = diagram.getViewOf(model.target)
     if (directedView) {
+        /* Relationship View is already existed in this Diagram. */
         editor.selectView(directedView)
-        editor.selectAdditionalView(sourceView)
-        editor.selectAdditionalView(targetView)
-        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
+        editor.selectAdditionalView(sourceView);
+        editor.selectAdditionalView(targetView);
     } else {
         if (!targetView) {
             app.factory.createViewAndRelationships(editor, XOG, YOG, model.target)
@@ -616,10 +616,10 @@ function getAssociationView(model, diagram, options) {
     var end2View = diagram.getViewOf(model.end2.reference)
     
     if (undirectedView) {
+        /* Relationship View is already existed in this Diagram. */
         editor.selectView(undirectedView)
         editor.selectAdditionalView(end1View)
         editor.selectAdditionalView(end2View)
-        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!end2View) {
             app.factory.createViewAndRelationships(editor, XOA, YOA, model.end2.reference)
@@ -668,10 +668,10 @@ function getAssociationClasslinkView(model, diagram, options) {
     var sourceView = diagram.getViewOf(model.classSide)
     var targetView = diagram.getViewOf(model.associationSide)
     if (directedView) {
+        /* Relationship View is already existed in this Diagram. */
         editor.selectView(directedView)
         editor.selectAdditionalView(sourceView)
         editor.selectAdditionalView(targetView)
-        app.dialogs.showAlertDialog('Relationship View is already existed in this Diagram.')
     } else {
         if (!targetView) {
             let x = 10,
@@ -680,6 +680,9 @@ function getAssociationClasslinkView(model, diagram, options) {
             if (classView != null) {
                 x = classView.left;
                 y = classView.top;
+                XOACL=x;
+                YOACL=y;
+
             }
             app.factory.createViewAndRelationships(editor, XOACL, YOACL, model.associationSide)
         }
@@ -690,6 +693,8 @@ function getAssociationClasslinkView(model, diagram, options) {
             if (assoView != null) {
                 x = assoView.left;
                 y = assoView.top;
+                XOACL=x;
+                YOACL=y;
             }
             app.factory.createViewAndRelationships(editor, XOACL, YOACL + 100, model.classSide)
         }
