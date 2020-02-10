@@ -313,34 +313,7 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
     return result;
 }
 
-/**
- * @function importModel
- * @description Read file from file path and parse it to JSONObject
- * @param {string} file
- */
-async function importModelABC(file) {
 
-    let finalPath = null;
-    if (file) {
-        finalPath = file;
-    } else {
-
-        var mFiles = app.dialogs.showOpenDialog('Import package As JSON (.json)', null, JSON_FILE_FILTERS)
-        if (mFiles && mFiles.length > 0) {
-            /* Main XMIData */
-            finalPath = mFiles[0];
-        }
-    }
-
-    let filePath = finalPath;
-    var contentStr = fs.readFileSync(filePath, 'utf8');
-    var data = JSON.parse(contentStr);
-    data = data.ownedElements[0];
-    let mProject = app.project.getProject();
-    result = app.project.importFromJson(mProject, data);
-    return result;
-
-}
 async function importModel(file) {
 
     let finalPath = null;
