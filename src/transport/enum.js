@@ -138,6 +138,12 @@ function bindEnumAttributesToImport(enumeObject, mSubObject) {
 
 }
 
+/**
+ * @function addNewEnumeration
+ * @description Add new UMLEnumeration in model 
+ * @param {Object} XMIData
+ * @param {UMLEnumeration} result
+ */
 function addNewEnumeration(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
@@ -166,6 +172,11 @@ function addNewEnumeration(XMIData,result) {
     });
 }
 
+/**
+ * @function updateEnumeration
+ * @description update existing UMLEnumeration in model 
+ * @param {Object} XMIData
+ */
 function updateEnumeration(XMIData) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];

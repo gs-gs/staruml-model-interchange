@@ -274,7 +274,6 @@ async function _gitPush() {
  */
 async function _gitPull() {
 
-
      try {
 
           let isRepo = await git(_mdirname).checkIsRepo();
@@ -336,7 +335,10 @@ async function _gitPull() {
           }
      }
 }
-
+/**
+ * @function readPullDirectory
+ * @description read model-interchange json file from git directory and import that file
+ */
 function readPullDirectory(_mdirname) {
      fs.readdir(_mdirname, function (err, files) {
           if (files && files.length > 0) {
@@ -508,6 +510,11 @@ async function _gitDiff() {
      }
 }
 
+/**
+ * @function _getDirectory
+ * @description returns git directory path whence model file is loaded
+ * @returns {string}  
+ */
 function _getDirectory() {
      return _mdirname;
 }

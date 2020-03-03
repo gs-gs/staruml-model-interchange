@@ -15,6 +15,12 @@ const JSON_FILE_FILTERS = [{
     extensions: ['json']
 }]
 
+/**
+ * @function findPackage
+ * @description Find package recursively for dependent package which is abstract class reference and return that package
+ * @param {*} element
+ * @returns {*}
+ */
 function findPackage(element) {
     let elem = element._parent;
     if (elem != null && elem instanceof type.UMLPackage) {
@@ -25,6 +31,13 @@ function findPackage(element) {
     return elem;
 }
 
+/**
+ * @function checkToShowAlertForAbstract
+ * @description show alert to user that class is dependent but not marked as abstract
+ * @param {UMLGeneralization} itemGen
+ * @param {UMLPackage} umlPackage
+ * @param {Array} showAlertForAbstract
+ */
 function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) {
     // let pkgName = '';
     let parentElement;
@@ -51,6 +64,7 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
     }
     // },5);
 }
+
 /**
  * @function getAbstractClass
  * @description Find abstract class reference and return abstract class array
@@ -118,6 +132,7 @@ function getAbstractClass(umlPackage) {
     // return uniqueAbstractArr;
     return result;
 }
+
 /**
  * @function getClasswiseAssociations
  * @description Return array of association (UMLAssociation) from element (UMLClass)
@@ -130,6 +145,7 @@ function getClasswiseAssociations(element) {
     });
     return association;
 }
+
 /**
  * @function importDataToModel
  * @description Import package from XMIData data. If package name not exist in StarUML, create new package. If package name exist in StarUML, Update or Create all existing elements like UMLClass, UMLInterface, UMLAttribute, UMLOperations, UMLParameter, UMLEnumeration, UMLEmumerationLiterals, UMLAssociation, UMLAssociationClassLink, UMLInterfaceRealization, UMLGeneralization based on its availibity in StarUML
@@ -247,6 +263,7 @@ function importDataToModel(XMIData) {
 
     }
 }
+
 /**
  * @function addnNewPackageInExplorer
  * @description add new package and element in model explorer and returns UMLPackage
@@ -313,7 +330,11 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
     return result;
 }
 
-
+/**
+ * @function importModel
+ * @description if file is available, import json file into model. If file is not available, open file picker dialog for selecting model-interchange json file to import into model
+ * @param {file} string
+ */
 async function importModel(file) {
 
     let finalPath = null;

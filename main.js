@@ -1,15 +1,19 @@
 const git = require('./src/git/git');
 const transport = require('./src/transport/transport');
 
+/**
+ * @function _projectSaved
+ * @description this method calls when user save changes in model file
+ */
 function _projectSaved() {
      console.log("project saved");
      git.projectLoaded();
 }
 
-function _projectCreated() {
-     console.log("project created");
-}
-
+/**
+ * @function _projectClosed
+ * @description this method calls when user close model file
+ */
 function _projectClosed() {
      console.log("project closed");
 }
@@ -20,9 +24,7 @@ function _projectClosed() {
  */
 function init() {
      app.commands.register('tool.transport:import', transport.importModel);
-
      app.commands.register('tool.transport:export', transport.exportModel);
-
      app.commands.register('tool.git:init', git.getInit);
      app.commands.register('tool.git:addremote', git.getAddRemote);
      app.commands.register('tool.git:commit', git.getCommit);
@@ -33,18 +35,11 @@ function init() {
      app.commands.register('tool.git:log', git.getLog);
      app.commands.register('tool.git:status', git.getStatus);
      app.commands.register('tool.git:diff', git.getDiff);
-
      app.project.on('projectLoaded', git.projectLoaded);
      app.project.on('projectClosed', _projectClosed);
      app.project.on('projectCreated', _projectCreated);
      app.project.on('projectSaved', _projectSaved);
-
-
      app.project.on('projectSaved', _projectSaved);
-     /*  app.modelExplorer._events('dropOnDiagram',function(){
-
-      }); */
-
 }
 
 exports.init = init

@@ -274,7 +274,12 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject.documentation = mSubObject.description;
 
 }
-
+/**
+ * @function addNewEntity
+ * @description Add new UMLClass in model 
+ * @param {Object} XMIData
+ * @param {UMLClass} result
+ */
 function addNewEntity(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
@@ -302,6 +307,11 @@ function addNewEntity(XMIData,result) {
     });
 }
 
+/**
+ * @function updateEntity
+ * @description update existing UMLClass in model 
+ * @param {Object} XMIData
+ */
 function updateEntity(XMIData) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];

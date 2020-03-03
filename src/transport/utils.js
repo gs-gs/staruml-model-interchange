@@ -56,6 +56,12 @@ function isString(s) {
     return typeof (s) === 'string' || s instanceof String;
 }
 
+/**
+ * @function addDatatype
+ * @description add datatype object in property object
+ * @param {Object} propertyObj
+ * @param {UMLAttribute} attr
+ */
 function addDatatype(propertyObj, attr) {
     let dType = {};
     if (isString(attr.type)) {

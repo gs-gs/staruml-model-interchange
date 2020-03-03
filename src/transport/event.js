@@ -292,7 +292,12 @@ function bindEventToImport(interfaceObject, mSubObject) {
     interfaceObject.documentation = mSubObject.description;
 
 }
-
+/**
+ * @function addNewEvent
+ * @description Add new UMLInterface in model 
+ * @param {Object} XMIData
+ * @param {UMLInterface} result
+ */
 function addNewEvent(XMIData,result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
@@ -320,6 +325,12 @@ function addNewEvent(XMIData,result) {
     });
 }
 
+/**
+ * @function addNewEnumeration
+ * @description Add new UMLInterface in model 
+ * @param {Object} XMIData
+ * @param {UMLInterface} result
+ */
 function updateEvent(XMIData) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
