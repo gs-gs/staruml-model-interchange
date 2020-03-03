@@ -162,10 +162,8 @@ function addNewEnumeration(XMIData,result) {
 
             if (searchedEnumRes.length == 0) {
                 let newAdded = app.repository.readObject(enumObject);
-                console.log("New Enum Added-1: ", newAdded);
                 newAdded._parent = result;
                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                console.log("New Enum Added-2", mResult);
                 utils.addNewAddedElement(newAdded);
             }
         }
@@ -198,12 +196,9 @@ function updateEnumeration(XMIData) {
                 forEach(searchedEnumRes, function (ety) {
 
                     if (ety instanceof type.UMLEnumeration) {
-                        console.time("Updated : Enum : ");
                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                        console.timeEnd();
-                        console.log("Updated : Enum : ", ety.name);
                     }
                 });
             }

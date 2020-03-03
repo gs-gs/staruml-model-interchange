@@ -181,12 +181,10 @@ function setProperty(ownedElements, XMIData) {
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = element
-                    console.log("rel", rel);
                     attributes.push(rel);
                 }
             });
             let resRel = app.engine.setProperty(element, 'attributes', attributes);
-            console.log("setProperty", resRel);
         }
     });
 }
@@ -213,14 +211,10 @@ function setLiterals(ownedElements, XMIData) {
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
-                    console.log("rel", rel);
                     literals.push(rel);
                 }
             });
             let resRel = app.engine.setProperty(entity, 'literals', literals);
-            /* let resRel=app.engine.setProperty(entity,'literals',literals); */
-            /*  app.modelExplorer.update(entity) */
-            console.log("setLiterals", resRel);
         }
     });
 }
@@ -249,14 +243,10 @@ function setOperation(ownedElements, XMIData) {
                 if (objProp != null) {
                     let rel = app.repository.readObject(objProp);
                     rel._parent = entity;
-                    console.log("rel", rel);
-                    /*  let mResult = app.engine.addItem(entity, 'operations', rel); */
-                    /*  console.log("mResult", mResult); */
                     operations.push(rel);
                 }
             });
             let resRel = app.engine.setProperty(entity, 'operations', operations);
-            console.log("setOperation", resRel);
         }
     });
 }
@@ -777,9 +767,6 @@ function createViewOfElement(newAdded) {
             } else if (returnedView instanceof type.UMLClassView) {
                 setClassViewAttributes(returnedView);
             }
-
-            console.log("ReturnedView", returnedView);
-
 
             let width = 0,
                 minWidth = 0;

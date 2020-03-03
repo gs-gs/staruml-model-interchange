@@ -88,14 +88,6 @@ function addEntityRelationship(entityObj, entity) {
 
             let relationType = utils.getRelationshipType(end1, end2);
             objRelationship[fields.type] = relationType;
-            /* if(relationType == fields.composition){
-                if (end1.aggregation == 'none' && end2.aggregation == 'composite') {
-                    end1=element.end2;
-                    end2=element.end1;
-                }
-            } */
-
-
 
             /* adding 'source' object */
             let objSource = {};
@@ -297,10 +289,8 @@ function addNewEntity(XMIData,result) {
             });
             if (searchedEntityRes.length == 0) {
                 let newAdded = app.repository.readObject(entityObject);
-                console.log("New Entity Added-1: ", newAdded);
                 newAdded._parent = result;
                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                console.log("New Entity Added-2", mResult);
                 utils.addNewAddedElement(newAdded);
             }
         }
@@ -331,12 +321,9 @@ function updateEntity(XMIData) {
                 forEach(searchedEntityRes, function (ety) {
 
                     if (ety instanceof type.UMLClass) {
-                        console.time("Updated : Entity");
                         app.engine.setProperty(ety, fields.name, mSubObject.name);
                         app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                        console.log("Updated : Entity : ", ety.name);
-                        console.timeEnd();
                     }
                 });
             }

@@ -288,7 +288,6 @@ function bindEventToImport(interfaceObject, mSubObject) {
     /* UMLInterface fields */
     interfaceObject._type = 'UMLInterface';
     interfaceObject.name = mSubObject.name;
-    console.log("Event", mSubObject.name);
     interfaceObject.documentation = mSubObject.description;
 
 }
@@ -314,10 +313,8 @@ function addNewEvent(XMIData,result) {
             });
             if (searchedEventRes.length == 0) {
                 let newAdded = app.repository.readObject(interfaceObject);
-                console.log("New Event Added-1 : ", newAdded);
                 newAdded._parent = result;
                 let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
-                console.log("New Event Added-2", mResult);
                 utils.addNewAddedElement(newAdded);
 
             }
@@ -349,12 +346,8 @@ function updateEvent(XMIData) {
                 forEach(searchedEventRes, function (ety) {
 
                     if (ety instanceof type.UMLInterface) {
-                        console.time("Enum");
                         app.engine.setProperty(ety, fields.name, mSubObject.name);
-                        //app.engine.setProperty(ety, fields.isAbstract, mSubObject.isAbstract);
                         app.engine.setProperty(ety, fields.documentation, mSubObject.description);
-                        console.log("Updated : Event : ", ety.name);
-                        console.timeEnd("Enum");
                     }
                 });
             }

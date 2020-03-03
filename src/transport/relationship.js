@@ -11,7 +11,6 @@ var constant = require('../constant');
 function addAggregationToImport(entity, attr) {
     let objRelationship = {};
     /* UMLAssociation (aggregation) */
-    console.log("-----aggregation", entity.name);
 
     objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
@@ -166,7 +165,6 @@ function updateAggregationToImport(entity, attr, _id) {
 function addCompositionToImport(entity, attr) {
     let objRelationship = {};
     /* UMLAssociation (composition) */
-    console.log("-----composition", entity.name);
 
 
     objRelationship._type = 'UMLAssociation';
@@ -323,7 +321,6 @@ function updateCompositionToImport(entity, attr, _id) {
  * @returns {objRelationship}
  */
 function addGeneralizationToImport(objRelationship, entity, attr) {
-    console.log("-----generalization", entity.name);
 
 
     objRelationship._type = 'UMLGeneralization';
@@ -378,7 +375,6 @@ function addGeneralizationToImport(objRelationship, entity, attr) {
  * @returns {UMLGeneralization}
  */
 function updateGeneralizationToImport(entity, attr, _id) {
-    console.log("-----generalization", entity.name);
     let UMLGeneralization = app.repository.get(_id);
 
     app.engine.setProperty(UMLGeneralization, 'name', attr.name);
@@ -441,7 +437,6 @@ function updateGeneralizationToImport(entity, attr, _id) {
  * @returns {objRelationship}
  */
 function addInterfaceRealizationToImport(objRelationship, entity, attr) {
-    console.log("-----interfaceRealization", entity.name);
     objRelationship._type = 'UMLInterfaceRealization';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description;
@@ -491,7 +486,6 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
  * @returns {UMLInterfaceRealization}
  */
 function updateInterfaceRealizationToImport(entity, attr, _id) {
-    console.log("-----generalization", entity.name);
     let UMLInterfaceRealization = app.repository.get(_id);
 
     app.engine.setProperty(UMLInterfaceRealization, 'name', attr.name);
@@ -554,7 +548,6 @@ function updateInterfaceRealizationToImport(entity, attr, _id) {
  * @returns {objRelationship}
  */
 function addAssociationClassLink(objRelationship, entity, attr) {
-    console.log("-----interface", entity.name);
 
     objRelationship._type = 'UMLAssociationClassLink';
     objRelationship.name = attr.name;
@@ -593,7 +586,6 @@ function addAssociationClassLink(objRelationship, entity, attr) {
  * @returns {UMLAssociationClassLink}
  */
 function updateAssociationClassLink(entity, attr, _id) {
-    console.log("-----interface", entity.name);
 
     let UMLAssociationClassLink = app.repository.get(_id);
 
@@ -636,7 +628,6 @@ function updateAssociationClassLink(entity, attr, _id) {
  */
 function addInterfaceToImport(objRelationship, entity, attr) {
 
-    console.log("-----interface", entity.name);
 
     objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
@@ -828,7 +819,6 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
             let objRelationship = addCompositionToImport(entity, attr);
             if (objRelationship != null || Object.keys(objRelationship).length == 0) {
                 let rel = app.repository.readObject(objRelationship);
-                console.log("rel", rel);
                 utils.addNewAddedElement(rel);
                 return rel;
             }
@@ -906,11 +896,6 @@ function setRelationship(ownedElements, XMIData) {
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
-            console.log("class name " + mSubObject.name);
-            if (mSubObject.name == "TransportEvent") {
-                console.log("yes");
-            }
-            console.log("class name--------Relationship----Start");
             let oldOwnedElements = entity.ownedElements;
 
             forEach(mSubObject.Relationship, function (relationship) {
@@ -929,12 +914,10 @@ function setRelationship(ownedElements, XMIData) {
                         });
                         if (mIndex == -1) {
                             /* New relationship */
-                            console.log(" New relationship ");
                             oldOwnedElements.push(rel);
                         } else {
                             /* Existing relationship */
                             oldOwnedElements[mIndex] = rel;
-                            console.log(" Existing relationship : " + mIndex);
                         }
                         app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
                     }

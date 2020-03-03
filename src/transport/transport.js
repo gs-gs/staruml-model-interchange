@@ -51,7 +51,6 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
     }
     let pElement = findPackage(parentElement);
     // setTimeout(function(){
-    console.log("", pElement);
     if (pElement != null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
         let strMsg = 'Class \'' + className + '\' in \'' + pElement.name + '\' Package';
         //pElement.name + "/" + className;
@@ -242,7 +241,6 @@ function importDataToModel(XMIData) {
 
 
         /* Step - 9 : Create view of newaly added element */
-        console.log("Total new added elements", mUtils.getNewAddedElement());
         let newElements = mUtils.getNewAddedElement();
         let uniqueNewElements=[];
         forEach(newElements, function (newEle) {
@@ -353,7 +351,6 @@ async function importModel(file) {
     var contentStr = fs.readFileSync(filePath, 'utf8');
     var content = JSON.parse(contentStr);
     var MainXMIData = content;
-    console.log("Main XMIData", MainXMIData);
 
     let dm = app.dialogs;
     let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
@@ -449,7 +446,6 @@ function exportModel() {
                         return;
                     }
                     let absClass = absResult.abstractClasses;
-                    console.log("Abstrack Class", absClass);
 
                     var _filename = filename;
                     var fName = git.getDirectory() + path.sep + _filename + '.json';
@@ -465,8 +461,6 @@ function exportModel() {
 
 
 
-                    console.log("library packages", expPackages);
-                   
                     /* Export Abstract Packages */
                     let dependent = [];
                     jsonProcess[fields.dependent] = dependent
@@ -487,8 +481,6 @@ function exportModel() {
 
                         /* Event binding */
                         mEvent.bindEventToExport(mPackage, abstractJsonProcess);
-
-                        console.log('Json Processed', abstractJsonProcess);
 
                         dependent.push(abstractJsonProcess);
 
