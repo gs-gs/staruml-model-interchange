@@ -106,6 +106,8 @@ function getDatatype(attr) {
         let item = app.repository.select("@UMLClass[name=" + attr.name + "]");
         if (item[0] === undefined) {
             console.error("Class for " + attr.name + " not found.")
+            attr.type = attr.name;
+            return attr.type
         } else {
             dType['$ref'] = item[0]._id;
         }
@@ -115,6 +117,8 @@ function getDatatype(attr) {
         let item = app.repository.select("@UMLInterface[name=" + attr.name + "]");
         if (item[0] === undefined) {
             console.error("Class for " + attr.name + " not found.")
+            attr.type = attr.name;
+            return attr.type
         } else {
             dType['$ref'] = item[0]._id;
         }
@@ -124,6 +128,8 @@ function getDatatype(attr) {
         let item = app.repository.select("@UMLEnumeration[name=" + attr.name + "]");
         if (item[0] === undefined) {
             console.error("Class for " + attr.name + " not found.")
+            attr.type = attr.name;
+            return attr.type
         } else {
             dType['$ref'] = item[0]._id;
         }
@@ -460,7 +466,7 @@ function calculateXY() {
             maxLeft = item;
         }
     });
-    if(maxLeft==null){
+    if (maxLeft == null) {
         return null;
     }
     lastMaxView = maxLeft;
@@ -484,7 +490,8 @@ function getXY() {
         pY: pY
     }
 }
-let XOIR=10, YOIR=10;
+let XOIR = 10,
+    YOIR = 10;
 /**
  * @function getInterfaceRealizationView
  * @description returns UMLInterfaceRealizationView 
@@ -540,7 +547,8 @@ function getInterfaceRealizationView(model, diagram, options) {
     }
     return directedView;
 }
-let XOG=10,YOG=10;
+let XOG = 10,
+    YOG = 10;
 /**
  * @function getGeneralizationView
  * @description returns UMLGeneralizationView
@@ -604,13 +612,15 @@ function getGeneralizationView(model, diagram, options) {
  * @param {Object} options
  * @returns {UMLAssociationView}
  */
-let XOA=10,YOA=10;
+let XOA = 10,
+    YOA = 10;
+
 function getAssociationView(model, diagram, options) {
     let editor = app.diagrams.getEditor();
     var undirectedView = diagram.getViewOf(model)
     var end1View = diagram.getViewOf(model.end1.reference)
     var end2View = diagram.getViewOf(model.end2.reference)
-    
+
     if (undirectedView) {
         /* Relationship View is already existed in this Diagram. */
         editor.selectView(undirectedView)
@@ -649,7 +659,8 @@ function getAssociationView(model, diagram, options) {
         return undirectedView
     }
 }
-let XOACL=10,YOACL=10;
+let XOACL = 10,
+    YOACL = 10;
 /**
  * @function getAssociationClasslinkView
  * @description returns UMLAssociationClasslinkView
@@ -676,8 +687,8 @@ function getAssociationClasslinkView(model, diagram, options) {
             if (classView != null) {
                 x = classView.left;
                 y = classView.top;
-                XOACL=x;
-                YOACL=y;
+                XOACL = x;
+                YOACL = y;
 
             }
             app.factory.createViewAndRelationships(editor, XOACL, YOACL, model.associationSide)
@@ -689,8 +700,8 @@ function getAssociationClasslinkView(model, diagram, options) {
             if (assoView != null) {
                 x = assoView.left;
                 y = assoView.top;
-                XOACL=x;
-                YOACL=y;
+                XOACL = x;
+                YOACL = y;
             }
             app.factory.createViewAndRelationships(editor, XOACL, YOACL + 100, model.classSide)
         }
@@ -1021,10 +1032,11 @@ function getTagsToImport(attr) {
     }
     return arrTags;
 }
-function createViewOfElements(newElements){
+
+function createViewOfElements(newElements) {
     forEach(newElements, function (newEle) {
         createViewOfElement(newEle);
-    }); 
+    });
 }
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
