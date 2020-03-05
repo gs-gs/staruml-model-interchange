@@ -93,7 +93,13 @@ function bindEnumToImport(enumeObject, mSubObject) {
     enumeObject._type = 'UMLEnumeration';
     enumeObject.name = mSubObject.name;
     enumeObject[fields.isAbstract] = mSubObject.isAbstract;
-    enumeObject.documentation = mSubObject.description;
+    /* #12 Type check for the properties  */
+    if(utils.isString(mSubObject.description)){
+        entityObject.documentation = mSubObject.description;
+    }
+    else{
+        entityObject.documentation = "";
+    }
 
 }
 /**

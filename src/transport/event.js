@@ -288,7 +288,13 @@ function bindEventToImport(interfaceObject, mSubObject) {
     /* UMLInterface fields */
     interfaceObject._type = 'UMLInterface';
     interfaceObject.name = mSubObject.name;
-    interfaceObject.documentation = mSubObject.description;
+    /* #12 Type check for the properties  */
+    if(utils.isString(mSubObject.description)){
+        entityObject.documentation = mSubObject.description;
+    }
+    else{
+        entityObject.documentation = "";
+    }
 
 }
 /**

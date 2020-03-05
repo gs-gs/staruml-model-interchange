@@ -263,7 +263,13 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject._type = 'UMLClass';
     entityObject.name = mSubObject.name;
     entityObject[fields.isAbstract] = mSubObject.isAbstract;
-    entityObject.documentation = mSubObject.description;
+    /* #12 Type check for the properties  */
+    if(utils.isString(mSubObject.description)){
+        entityObject.documentation = mSubObject.description;
+    }
+    else{
+        entityObject.documentation = "";
+    }
 
 }
 /**
