@@ -290,10 +290,10 @@ function bindEventToImport(interfaceObject, mSubObject) {
     interfaceObject.name = mSubObject.name;
     /* #12 Type check for the properties  */
     if(utils.isString(mSubObject.description)){
-        entityObject.documentation = mSubObject.description;
+        interfaceObject.documentation = mSubObject.description;
     }
     else{
-        entityObject.documentation = "";
+        interfaceObject.documentation = "";
     }
 
 }

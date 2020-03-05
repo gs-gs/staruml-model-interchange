@@ -95,10 +95,10 @@ function bindEnumToImport(enumeObject, mSubObject) {
     enumeObject[fields.isAbstract] = mSubObject.isAbstract;
     /* #12 Type check for the properties  */
     if(utils.isString(mSubObject.description)){
-        entityObject.documentation = mSubObject.description;
+        enumeObject.documentation = mSubObject.description;
     }
     else{
-        entityObject.documentation = "";
+        enumeObject.documentation = "";
     }
 
 }
