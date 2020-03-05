@@ -1021,6 +1021,11 @@ function getTagsToImport(attr) {
     }
     return arrTags;
 }
+function createViewOfElements(newElements){
+    forEach(newElements, function (newEle) {
+        createViewOfElement(newEle);
+    }); 
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -1037,6 +1042,7 @@ module.exports.isGeneralizationExist = isGeneralizationExist;
 module.exports.isInterfaceRealizationExist = isInterfaceRealizationExist;
 module.exports.isAssociationClassLinkExist = isAssociationClassLinkExist;
 module.exports.createViewOfElement = createViewOfElement;
+module.exports.createViewOfElements = createViewOfElements;
 module.exports.calculateXY = calculateXY;
 module.exports.addNewAddedElement = addNewAddedElement;
 module.exports.getNewAddedElement = getNewAddedElement;

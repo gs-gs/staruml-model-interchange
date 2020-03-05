@@ -171,6 +171,7 @@ function importDataToModel(XMIData) {
         });
         searchedPackage = nPkg;
         let result = null;
+        let newClassesAdded=[];
         /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
             forEach(searchedPackage, function (selPkg) {
@@ -192,16 +193,22 @@ function importDataToModel(XMIData) {
                     mEvent.addNewEvent(XMIData, result);
 
 
-                    /* Step - 2 : Create view of all new added class, interface, enumeration */
+                    /* Step - 2 : Create views of all new added class, interface, enumeration */
                     let newElements = mUtils.getNewAddedElement();
-                    let isFirstView = true;
+                    console.log("new added elements - 1",newElements);
+                    newClassesAdded = newElements.filter(function(item){
+                        return item instanceof type.UMLClass
+                    });
+                    
+                    /* let isFirstView = true;
                     forEach(newElements, function (newEle) {
                         mUtils.createViewOfElement(newEle);
                         if (isFirstView) {
                             app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
                             isFirstView = false;
                         }
-                    });
+                    }); */
+                    mUtils.createViewOfElements(newElements);
 
                     /* Step - 3 : Reset new added class, interface, enumeration */
                     mUtils.resetNewAddedElement();
@@ -227,8 +234,12 @@ function importDataToModel(XMIData) {
         else {
 
             result = addNewPackageInExplorer(Package, XMIData, mainOwnedElements);
-
+            /* Step - 3 : Create view of all new added class, interface, enumeration */
+            newClassesAdded = app.repository.select(result.name+'::@UMLClass');
+            
+            
         }
+        
 
         /* Step - 5 : Setting Property to Entity, Event, Enum */
         mUtils.setProperty(result.ownedElements, XMIData);
@@ -251,10 +262,15 @@ function importDataToModel(XMIData) {
                 uniqueNewElements.push(newEle);
             }
         });
-        forEach(uniqueNewElements, function (newEle) {
-            mUtils.createViewOfElement(newEle);
-        });
-        app.diagrams.repaint();;
+        /* #13 : The default class diagram shoudn't be generated for big projects  */
+        let classDiagram = app.repository.select('@UMLClassDiagram');
+        if(classDiagram.length > 0 && newClassesAdded.length <= 10){
+            
+            console.log("newClasses",newClassesAdded.length);
+            mUtils.createViewOfElements(newElements);
+            app.diagrams.repaint();;
+
+        }
 
 
 
