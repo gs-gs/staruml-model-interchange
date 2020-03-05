@@ -171,75 +171,27 @@ function importDataToModel(XMIData) {
         });
         searchedPackage = nPkg;
         let result = null;
-        let newClassesAdded=[];
+        let newClassesAdded = [];
         /* Updating Enumeration, Entity and Event Elements */
         if (searchedPackage.length > 0) {
-            forEach(searchedPackage, function (selPkg) {
-                if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
 
-                    result = selPkg;
-                    mUtils.calculateXY();
-
-                    /* Step - 1 : Add all elements first */
-                    /* Add New Enumeration */
-                    mEnum.addNewEnumeration(XMIData, result);
-
-
-                    /* Add New Entity */
-                    mEntity.addNewEntity(XMIData, result);
-
-
-                    /* Add New Event */
-                    mEvent.addNewEvent(XMIData, result);
-
-
-                    /* Step - 2 : Create views of all new added class, interface, enumeration */
-                    let newElements = mUtils.getNewAddedElement();
-                    console.log("new added elements - 1",newElements);
-                    newClassesAdded = newElements.filter(function(item){
-                        return item instanceof type.UMLClass
-                    });
-                    
-                    /* let isFirstView = true;
-                    forEach(newElements, function (newEle) {
-                        mUtils.createViewOfElement(newEle);
-                        if (isFirstView) {
-                            app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
-                            isFirstView = false;
-                        }
-                    }); */
-                    mUtils.createViewOfElements(newElements);
-
-                    /* Step - 3 : Reset new added class, interface, enumeration */
-                    mUtils.resetNewAddedElement();
-
-                    /* Step - 4 : Update all existing elements */
-                    /* Update Enumeration*/
-                    mEnum.updateEnumeration(XMIData);
-
-
-                    /* Update Entity */
-                    mEntity.updateEntity(XMIData);
-
-
-                    /* Update Event */
-                    mEvent.updateEvent(XMIData);
-
-
-                }
-            });
+            result = updatePackageInExplorer(result, searchedPackage, newClassesAdded, Package, XMIData);
 
         }
         /* Adding Enumeration, Entity & Interface*/
         else {
 
+            let mProject = app.project.getProject();
+            Package['_parent'] = {
+                '$ref': mProject._id
+            }
             result = addNewPackageInExplorer(Package, XMIData, mainOwnedElements);
             /* Step - 3 : Create view of all new added class, interface, enumeration */
-            newClassesAdded = app.repository.select(result.name+'::@UMLClass');
-            
-            
+            newClassesAdded = app.repository.select(result.name + '::@UMLClass');
+
+
         }
-        
+
 
         /* Step - 5 : Setting Property to Entity, Event, Enum */
         mUtils.setProperty(result.ownedElements, XMIData);
@@ -253,20 +205,20 @@ function importDataToModel(XMIData) {
 
         /* Step - 9 : Create view of newaly added element */
         let newElements = mUtils.getNewAddedElement();
-        let uniqueNewElements=[];
+        let uniqueNewElements = [];
         forEach(newElements, function (newEle) {
-            let res=uniqueNewElements.filter(function(relationship){
-                return relationship._id==newEle._id
+            let res = uniqueNewElements.filter(function (relationship) {
+                return relationship._id == newEle._id
             });
-            if(res.length==0){
+            if (res.length == 0) {
                 uniqueNewElements.push(newEle);
             }
         });
         /* #13 : The default class diagram shoudn't be generated for big projects  */
         let classDiagram = app.repository.select('@UMLClassDiagram');
-        if(classDiagram.length > 0 && newClassesAdded.length <= 10){
-            
-            console.log("newClasses",newClassesAdded.length);
+        if (classDiagram.length > 0 && newClassesAdded.length <= 10) {
+
+            console.log("newClasses", newClassesAdded.length);
             mUtils.createViewOfElements(newElements);
             app.diagrams.repaint();;
 
@@ -276,6 +228,64 @@ function importDataToModel(XMIData) {
 
 
     }
+}
+
+function updatePackageInExplorer(result, searchedPackage, newClassesAdded, Package, XMIData) {
+    forEach(searchedPackage, function (selPkg) {
+        if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
+
+            result = selPkg;
+            mUtils.calculateXY();
+
+            /* Step - 1 : Add all elements first */
+            /* Add New Enumeration */
+            mEnum.addNewEnumeration(XMIData, result);
+
+
+            /* Add New Entity */
+            mEntity.addNewEntity(XMIData, result);
+
+
+            /* Add New Event */
+            mEvent.addNewEvent(XMIData, result);
+
+
+            /* Step - 2 : Create views of all new added class, interface, enumeration */
+            let newElements = mUtils.getNewAddedElement();
+            console.log("new added elements - 1", newElements);
+            newClassesAdded = newElements.filter(function (item) {
+                return item instanceof type.UMLClass
+            });
+
+            /* let isFirstView = true;
+            forEach(newElements, function (newEle) {
+                mUtils.createViewOfElement(newEle);
+                if (isFirstView) {
+                    app.diagrams.scrollTo(mUtils.getXY().pX, mUtils.getXY().pY);
+                    isFirstView = false;
+                }
+            }); */
+            mUtils.createViewOfElements(newElements);
+
+            /* Step - 3 : Reset new added class, interface, enumeration */
+            mUtils.resetNewAddedElement();
+
+            /* Step - 4 : Update all existing elements */
+            /* Update Enumeration*/
+            mEnum.updateEnumeration(XMIData);
+
+
+            /* Update Entity */
+            mEntity.updateEntity(XMIData);
+
+
+            /* Update Event */
+            mEvent.updateEvent(XMIData);
+
+
+        }
+    });
+    return result;
 }
 
 /**
@@ -289,6 +299,7 @@ function importDataToModel(XMIData) {
 function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
     /* Bind referenct of parent element (UMLPackage) */
     let objParent = app.repository.readObject(Package);
+    Package._id = objParent._id;
     let _parent = {};
     _parent['$ref'] = objParent._id;
 
@@ -340,6 +351,7 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
 
     let mProject = app.project.getProject();
     /* Import Enumeration, Entity & Event to our model */
+
     result = app.project.importFromJson(mProject, Package);
     return result;
 }
