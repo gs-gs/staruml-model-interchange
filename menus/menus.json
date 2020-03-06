@@ -1,81 +1,33 @@
 {
      "menu": [{
           "id": "tools",
-          "submenu": [
-          {
+          "submenu": [{
                "label": "Git",
                "id": "tool.git",
-               "submenu": [
-                    {
-                         "label": "init",
-                         "id": "tool.git.init",
-                         "command": "tool.git:init"
-                    },{
-                         "label": "remote",
-                         "id": "tool.git.addremote",
-                         "command": "tool.git:addremote"
-          
-                    },{
-                         "label": "credential",
-                         "id": "tool.git.addconfig",
-                         "command": "tool.git:addconfig"
-          
-                    },{
-                         "label": "commit",
-                         "id": "tool.git.commit",
-                         "command": "tool.git:commit"
-          
-                    },{
-                         "label": "config",
-                         "id": "tool.git.configlist",
-                         "command": "tool.git:configlist"
-          
-                    },{
-                         "label": "push",
-                         "id": "tool.git.push",
-                         "command": "tool.git:push"
-          
-                    },{
-                         "label": "pull",
-                         "id": "tool.git.pull",
-                         "command": "tool.git:pull"
-          
-                    },{
-                         "label": "log",
-                         "id": "tool.git.log",
-                         "command": "tool.git:log"
-          
-                    },{
-                         "label": "status",
-                         "id": "tool.git.status",
-                         "command": "tool.git:status"
-          
-                    },{
-                         "label": "diff",
-                         "id": "tool.git.diff",
-                         "command": "tool.git:diff"
-          
-                    },{
-                         "label": "clone",
-                         "id": "tool.git.clone",
-                         "command": "tool.git:clone"
-          
-                    }]
+               "submenu": [{
+                    "label": "Init/Clone",
+                    "id": "tool.git.initclone",
+                    "command": "tool.git:initclone"
+               }, {
+                    "label": "Sync",
+                    "id": "tool.git.sync",
+                    "command": "tool.git:sync"
 
-          },{
+               }]
+
+          }, {
                "label": "model interchange",
                "id": "tool.transport",
-               "submenu": [
-                    {
-                         "label": "import",
-                         "id": "tool.transport.import",
-                         "command": "tool.transport:import"
-                    },{
-                         "label": "export",
-                         "id": "tool.transport.export",
-                         "command": "tool.transport:export"
-          
-                    }]
+               "submenu": [{
+                    "label": "import",
+                    "id": "tool.transport.import",
+                    "command": "tool.transport:import"
+               }, {
+                    "label": "export",
+                    "id": "tool.transport.export",
+                    "command": "tool.transport:export"
+
+               }]
           }]
      }]
 }

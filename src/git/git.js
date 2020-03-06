@@ -1,4 +1,6 @@
 const transport = require('../transport/transport');
+const nodeUtils = require('util');
+const dataStore = require('../preference/datastore');
 var url = require('url');
 var path = require('path');
 const fs = require('fs');
@@ -12,8 +14,9 @@ var junk = require('junk');
  * @description setup directory structure for git directory when project loaded
  */
 function _projectLoaded() {
-
-     _fname = app.project.getFilename();
+     _mdirname = dataStore.get('repoPath');
+     console.log("_mdirname",_mdirname);
+     /* _fname = app.project.getFilename();
      if (_fname == null) {
           _fname = app.project.getProject().name;
      }
@@ -27,7 +30,9 @@ function _projectLoaded() {
                fs.mkdirSync(_mdirname);
                fs.readdir(_mdirname, function (err, files) {});
           }
-     }
+     } */
+
+
 
 }
 /**
@@ -535,53 +540,111 @@ function _getDirectory() {
 }
 
 async function _gitClone() {
-     // let statusSummery = await git(_mdirname).status();
-     // const remote = `https://${USER}:${PASS}@${REPO}`;
-
-     // const mGit = git(_mdirname);
-     // /* check for repository is exist or not */
-     // let isRepo = await mGit.checkIsRepo();
-
-     // if (!isRepo) {
-     //      app.dialogs.showErrorDialog(constant.init_repo_first);
-     //      return;
-     // }
-
 
      /* get local remote url  */
      let repoResult = await app.dialogs.showInputDialog(constant.enter_remote_url);
      let repoURL = repoResult.returnValue;
-     if (repoURL != null) {
 
-          /* alert user to enter username  */
-          let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
-
-          /* alert user to enter username  */
-          let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-
-          let USER = resUSER.returnValue;
-          let PASS = resPASS.returnValue;
-
-
-          const REPO = repoURL;
-          let URL = url.parse(REPO)
-
-          const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
-
-          git(_mdirname).silent(true)
-               .clone(cloneURL)
-               .then(() => {
-                    console.log('finished')
-                    app.dialogs.showInfoDialog(constant.clone_successfull);
-               })
-               .catch((error) => {
-                    app.dialogs.showErrorDialog(error.message);
-               });
-
-     } else {
-          app.dialogs.showInfoDialog(constant.add_remote);
+     if (repoURL == '') {
+          return;
      }
 
+     /* alert user to enter username  */
+     let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+     resUSER = resUSER.returnValue;
+     if (resUSER == '') {
+          return;
+     }
+
+     /* alert user to enter username  */
+     let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+     resPASS = resPASS.returnValue;
+     if (resPASS == '') {
+          return;
+     }
+
+     let USER = resUSER;
+     let PASS = resPASS;
+
+
+     const REPO = repoURL;
+     let URL = url.parse(REPO)
+
+     const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+     let cloneFolderName = path.basename(cloneURL);
+     const basePath = app.dialogs.showSaveDialog(constant.msg_clone_repository, null, null);
+     if (basePath == null) {
+          return;
+     }
+     // console.log(basePath);
+     // Returns an array of paths of selected files
+
+     if (!fs.existsSync(basePath)) {
+          fs.mkdirSync(basePath);
+     }
+
+     
+     let dm = app.dialogs;
+     let mDialog = dm.showModalDialog("", constant.title_model_interchange, constant.clone_progress_msg, [], true);
+     setTimeout(async function(){
+          git(basePath).silent(true)
+               .clone(cloneURL)
+               .then(() => {
+                    mDialog.close();
+                    setTimeout(function(){
+
+                         console.log('finished')
+                         let clonePath = basePath + path.sep + cloneFolderName;
+                         dataStore.set('repoPath',clonePath);
+                         _mdirname = clonePath;
+                         let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath);
+                         app.dialogs.showInfoDialog(cloneMsg);
+
+                    },10);
+               })
+               .catch((error) => {
+                    mDialog.close();
+                    setTimeout(function(){
+                         app.dialogs.showErrorDialog(error.message);
+                    },10);
+               });
+     },0);
+
+
+}
+async function initClone() {
+     console.log("initClone");
+     // let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone);
+     app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone).then(function ({
+          buttonId,
+          returnValue
+     }) {
+          console.log("returnValue", returnValue);
+          if (buttonId === 'ok') {
+
+               if (returnValue === constant.CREATE_REPO) {
+                    console.log("create repo");
+               } else if (returnValue === constant.CLONE_REPO) {
+                    _gitClone();
+               } else if (returnValue === constant.ADD_REPO) {
+                    console.log("add repo");
+               }
+
+          } else {
+               console.log("User canceled")
+          }
+     });
+}
+async function sync() {
+     let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_sync, constant.options_sync);
+     if (res != null && res.buttonId == 'ok') {
+          if (res.returnValue == constant.FETCH_REPO) {
+               console.log("fetch repo");
+          } else if (res.returnValue == constant.PUSH_REPO) {
+               console.log("push repo");
+          }
+     }
 }
 module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
@@ -596,3 +659,5 @@ module.exports.getDiff = _gitDiff;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
 module.exports.gitClone = _gitClone;
+module.exports.initClone = initClone;
+module.exports.sync = sync;

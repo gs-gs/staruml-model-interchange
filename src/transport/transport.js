@@ -441,6 +441,7 @@ function exportModel() {
             returnValue
         }) {
             if (buttonId === "ok") {
+                
                 let varSel = returnValue.getClassName();
                 let valPackagename = type.UMLPackage.name;
                 if (varSel == valPackagename) {
