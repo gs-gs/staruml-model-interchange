@@ -35,10 +35,9 @@ function init() {
      app.commands.register('tool.git:log', git.getLog);
      app.commands.register('tool.git:status', git.getStatus);
      app.commands.register('tool.git:diff', git.getDiff);
+     app.commands.register('tool.git:clone', git.gitClone);
      app.project.on('projectLoaded', git.projectLoaded);
      app.project.on('projectClosed', _projectClosed);
-     app.project.on('projectCreated', _projectCreated);
-     app.project.on('projectSaved', _projectSaved);
      app.project.on('projectSaved', _projectSaved);
 }
 

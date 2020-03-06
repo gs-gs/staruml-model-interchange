@@ -34,6 +34,7 @@ const constant = {
     ref_not_found: '\' \'$ref\' not found',
     summary_not_available: 'summary not available',
     diff_not_available: 'no difference found',
+    clone_successfull: 'Clone successfull',
 
 }
 /**

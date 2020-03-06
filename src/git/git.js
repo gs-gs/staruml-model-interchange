@@ -14,8 +14,8 @@ var junk = require('junk');
 function _projectLoaded() {
 
      _fname = app.project.getFilename();
-     if(_fname==null){
-          _fname=app.project.getProject().name;
+     if (_fname == null) {
+          _fname = app.project.getProject().name;
      }
      let basefile = path.basename(_fname);
      let basefileName = path.parse(basefile).name;
@@ -25,8 +25,7 @@ function _projectLoaded() {
 
           if (!fs.existsSync(_mdirname)) {
                fs.mkdirSync(_mdirname);
-               fs.readdir(_mdirname, function (err, files) {
-               });
+               fs.readdir(_mdirname, function (err, files) {});
           }
      }
 
@@ -169,7 +168,7 @@ async function _gitAddConfig() {
                     if (resPassword.buttonId == 'ok') {
                          _email = resPassword.returnValue;
                          if (_email) {
-                              
+
                               /* add username into local git config */
                               git(_mdirname).addConfig('user.name', _username);
 
@@ -310,7 +309,7 @@ async function _gitPull() {
           console.error(error.message);
           app.dialogs.showErrorDialog(error.message);
      }
-     
+
      /* pull data from remote repository  */
      let res = await git(_mdirname).getRemotes(true);
      if (res.length == 1) {
@@ -319,7 +318,7 @@ async function _gitPull() {
 
           let vDialog = null;
           try {
-             
+
                vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
                let resFetch = await git(_mdirname).fetch();
 
@@ -428,11 +427,11 @@ async function _gitStatus() {
 
           /* get local file changes list  */
           let statusSummery = await git(_mdirname).status();
-          if (statusSummery == null || statusSummery =='') {
+          if (statusSummery == null || statusSummery == '') {
                app.dialogs.showErrorDialog(constant.summary_not_available);
                return;
           }
-          if (statusSummery != null || statusSummery !='') {
+          if (statusSummery != null || statusSummery != '') {
                let not_addedFiled = '------------------------------<br><b>Not added files</b><br>------------------------------';
 
 
@@ -470,7 +469,7 @@ async function _gitStatus() {
                     finalStatus += stagedFiles + '<br><br>';
                }
 
-               if(not_added.length==0 && modified.length==0 && staged.length==0){
+               if (not_added.length == 0 && modified.length == 0 && staged.length == 0) {
                     app.dialogs.showErrorDialog(constant.summary_not_available);
                     return;
                }
@@ -511,7 +510,7 @@ async function _gitDiff() {
                     app.dialogs.showModalDialog("", constant.title_import_mi_commit_diff, strDiff, [], true);
                }
 
-          }else{
+          } else {
                app.dialogs.showErrorDialog(constant.diff_not_available);
           }
 
@@ -534,6 +533,56 @@ async function _gitDiff() {
 function _getDirectory() {
      return _mdirname;
 }
+
+async function _gitClone() {
+     // let statusSummery = await git(_mdirname).status();
+     // const remote = `https://${USER}:${PASS}@${REPO}`;
+
+     // const mGit = git(_mdirname);
+     // /* check for repository is exist or not */
+     // let isRepo = await mGit.checkIsRepo();
+
+     // if (!isRepo) {
+     //      app.dialogs.showErrorDialog(constant.init_repo_first);
+     //      return;
+     // }
+
+
+     /* get local remote url  */
+     let repoResult = await app.dialogs.showInputDialog(constant.enter_remote_url);
+     let repoURL = repoResult.returnValue;
+     if (repoURL != null) {
+
+          /* alert user to enter username  */
+          let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+
+          /* alert user to enter username  */
+          let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+
+          let USER = resUSER.returnValue;
+          let PASS = resPASS.returnValue;
+
+
+          const REPO = repoURL;
+          let URL = url.parse(REPO)
+
+          const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+          git(_mdirname).silent(true)
+               .clone(cloneURL)
+               .then(() => {
+                    console.log('finished')
+                    app.dialogs.showInfoDialog(constant.clone_successfull);
+               })
+               .catch((error) => {
+                    app.dialogs.showErrorDialog(error.message);
+               });
+
+     } else {
+          app.dialogs.showInfoDialog(constant.add_remote);
+     }
+
+}
 module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
 module.exports.getCommit = _gitCommit;
@@ -546,3 +595,4 @@ module.exports.getStatus = _gitStatus;
 module.exports.getDiff = _gitDiff;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
+module.exports.gitClone = _gitClone;
