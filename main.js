@@ -26,7 +26,6 @@ function _projectClosed() {
 function init() {
      /* Register preference for repository url */
      app.preferences.register(prefs);
-     
      app.commands.register('tool.transport:import', transport.importModel);
      app.commands.register('tool.transport:export', transport.exportModel);
      app.commands.register('tool.git:initclone', git.initClone);

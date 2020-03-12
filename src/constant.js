@@ -3,6 +3,7 @@ const constant = {
     project_not_found: "Project not found. Please save your project before initialize repository.",
     repo_already_initialized: "Repository already initialized",
     repo_initialized: "Repository is initialized successfully, Please enter your git credential.",
+    msg_repo_not_detected: "The repository wasn't initialized or it just can't be detected. You must enter repository URL, username, password to clone",
     enter_remote_url: "Please enter your remote repository url",
     enter_username: "Enter username",
     enter_password: "Enter password",
@@ -15,6 +16,8 @@ const constant = {
     enter_commit_msg: "Enter commit message",
     invalid_commit_repo: "Invalid commit message.",
     enter_username: "Please enter username",
+    enter_repo_name: "Please enter repository name",
+    msg_repo_already_exist: "Repository already initialized or cloned",
     enter_email: "Please enter email",
     enter_valid_email: "Please enter valid email",
     enter_valid_username: "Please enter valid username",
@@ -35,17 +38,20 @@ const constant = {
     summary_not_available: 'summary not available',
     diff_not_available: 'no difference found',
     clone_successfull: 'Clone successfull at path : %s',
-    msg_clone_repository:'Select folder where you want to clone repository',
-    msg_option_init_clone: 'Select one of the following type.',
+    clone_successfull: 'Clone successfull at path : %s',
+    msg_sync_changes: 'Please go to tools -> Git -> Sync to sync changes',
+    msg_clone_repository: 'Select folder where you want to clone repository',
+    msg_create_repository: 'Select folder where you want to create repository',
+    msg_option_init_clone: 'Select one of the following options',
     CREATE_REPO: '0',
     CLONE_REPO: '1',
     ADD_REPO: '2',
     options_init_clone: [{
-            text: "Create new repository",
-            value: 0
-        }, {
             text: "Clone",
             value: 1
+        }, {
+            text: "Create new repository",
+            value: 0
         },
         {
             text: "Add local repository",
@@ -54,7 +60,7 @@ const constant = {
     ],
     FETCH_REPO: '0',
     PUSH_REPO: '1',
-    msg_option_sync: 'Select one of the following type.',
+    msg_option_sync: 'Select one of the following options',
     options_sync: [{
         text: "Fetch",
         value: 0
@@ -62,8 +68,8 @@ const constant = {
         text: "Push",
         value: 1
     }],
-    title_model_interchange:'Model Interchange',
-    clone_progress_msg:'Please wait until git cloning is being processed'
+    title_model_interchange: 'Model Interchange',
+    clone_progress_msg: 'Please wait until git cloning is being processed'
 }
 /**
  * @function configMessage

@@ -14,8 +14,9 @@ var junk = require('junk');
  * @description setup directory structure for git directory when project loaded
  */
 function _projectLoaded() {
-     _mdirname = dataStore.get('repoPath');
-     console.log("_mdirname",_mdirname);
+     dataStore.initialize();
+     _mdirname = dataStore.getStore().get('repoPath');
+     console.log("_mdirname", _mdirname);
      /* _fname = app.project.getFilename();
      if (_fname == null) {
           _fname = app.project.getProject().name;
@@ -41,10 +42,10 @@ function _projectLoaded() {
  */
 async function _gitInit() {
 
-     if (!_fname && !_mdirname) {
+     /* if (!_fname && !_mdirname) {
           app.dialogs.showInfoDialog(constant.project_not_found);
           return;
-     }
+     } */
      try {
           /* check for repository is exist or not */
           let isRepo = await git(_mdirname).checkIsRepo();
@@ -584,57 +585,77 @@ async function _gitClone() {
           fs.mkdirSync(basePath);
      }
 
-     
+
      let dm = app.dialogs;
      let mDialog = dm.showModalDialog("", constant.title_model_interchange, constant.clone_progress_msg, [], true);
-     setTimeout(async function(){
+     setTimeout(async function () {
           git(basePath).silent(true)
                .clone(cloneURL)
                .then(() => {
                     mDialog.close();
-                    setTimeout(function(){
+                    setTimeout(function () {
 
                          console.log('finished')
                          let clonePath = basePath + path.sep + cloneFolderName;
-                         dataStore.set('repoPath',clonePath);
+                         dataStore.getStore().set('repoPath', clonePath);
                          _mdirname = clonePath;
-                         let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath);
+                         let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
                          app.dialogs.showInfoDialog(cloneMsg);
 
-                    },10);
+                    }, 10);
                })
                .catch((error) => {
                     mDialog.close();
-                    setTimeout(function(){
+                    setTimeout(function () {
                          app.dialogs.showErrorDialog(error.message);
-                    },10);
+                    }, 10);
                });
-     },0);
+     }, 0);
 
 
 }
 async function initClone() {
      console.log("initClone");
-     // let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone);
-     app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone).then(function ({
-          buttonId,
-          returnValue
-     }) {
-          console.log("returnValue", returnValue);
-          if (buttonId === 'ok') {
+     _mdirname = dataStore.getStore().get('repoPath');
 
-               if (returnValue === constant.CREATE_REPO) {
-                    console.log("create repo");
-               } else if (returnValue === constant.CLONE_REPO) {
-                    _gitClone();
-               } else if (returnValue === constant.ADD_REPO) {
-                    console.log("add repo");
+     let isDir = false;
+     if (_mdirname != null && !fs.existsSync(_mdirname)) {
+          fs.mkdirSync(_mdirname, {
+               recursive: true
+          });
+     }
+
+     let isRepo = await git(_mdirname).checkIsRepo();
+     if (!isRepo) {
+          let resultDialog = app.dialogs.showAlertDialog(constant.msg_repo_not_detected);
+          console.log(resultDialog);
+          _gitClone();
+
+          /* app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone).then(function ({
+               buttonId,
+               returnValue
+          }) {
+               console.log("returnValue", returnValue);
+               if (buttonId === 'ok') {
+
+                    if (returnValue === constant.CREATE_REPO) {
+                         console.log("create repo");
+                         _gitCreateNewRepo();
+                    } else if (returnValue === constant.CLONE_REPO) {
+                         _gitClone();
+                    } else if (returnValue === constant.ADD_REPO) {
+                         console.log("add repo");
+                    }
+
+               } else {
+                    console.log("User canceled")
                }
+          }); */
+     } else {
+          app.dialogs.showInfoDialog(constant.msg_repo_already_exist);
+     }
 
-          } else {
-               console.log("User canceled")
-          }
-     });
+
 }
 async function sync() {
      let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_sync, constant.options_sync);
@@ -645,6 +666,34 @@ async function sync() {
                console.log("push repo");
           }
      }
+}
+async function _gitCreateNewRepo() {
+
+
+     /* alert user to enter repository name  */
+     let resRepoName = await app.dialogs.showInputDialog(constant.enter_repo_name);
+     resRepoName = resRepoName.returnValue;
+     if (resRepoName == '') {
+          return;
+     }
+
+     /* select repository path where you want to create new repository */
+     const basePath = app.dialogs.showSaveDialog(constant.msg_create_repository, null, null);
+     if (basePath == null) {
+          return;
+     }
+
+     let createNewDirecoty = basePath + path.sep + resRepoName;
+     /* create repository directory if not exist */
+     if (!fs.existsSync(createNewDirecoty)) {
+          fs.mkdirSync(createNewDirecoty, {
+               recursive: true
+          });
+     }
+
+     _mdirname = createNewDirecoty;
+     _gitInit();
+
 }
 module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
@@ -661,3 +710,4 @@ module.exports.getDirectory = _getDirectory;
 module.exports.gitClone = _gitClone;
 module.exports.initClone = initClone;
 module.exports.sync = sync;
+module.exports.gitCreateNewRepo = _gitCreateNewRepo;
