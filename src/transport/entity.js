@@ -97,6 +97,7 @@ function addEntityRelationship(entityObj, entity) {
             objSource[fields.type] = utils.getElementType(source);
             objSource[fields.cardinality] = end1.multiplicity;
             objSource[fields.navigable] = end1.navigable;
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -106,6 +107,7 @@ function addEntityRelationship(entityObj, entity) {
             objTarget[fields.type] = utils.getElementType(target);
             objTarget[fields.cardinality] = end2.multiplicity;
             objTarget[fields.navigable] = end2.navigable;
+            objTarget[fields.package] = end2.reference._parent.name;
 
         } else if (element instanceof type.UMLGeneralization) {
 

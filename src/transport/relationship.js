@@ -38,7 +38,7 @@ function addAggregationToImport(entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {};
@@ -58,7 +58,7 @@ function addAggregationToImport(entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
 
     let eleType = utils.getElementType(entity);
@@ -110,7 +110,7 @@ function updateAggregationToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -133,7 +133,7 @@ function updateAggregationToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
 
     let eleType = utils.getElementType(entity);
@@ -193,7 +193,7 @@ function addCompositionToImport(entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -216,7 +216,7 @@ function addCompositionToImport(entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -268,7 +268,7 @@ function updateCompositionToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -290,7 +290,7 @@ function updateCompositionToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -656,7 +656,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -679,7 +679,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -731,7 +731,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -758,7 +758,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {

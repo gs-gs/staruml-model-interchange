@@ -93,7 +93,12 @@ function getAbstractClass(umlPackage) {
             let associations = getClasswiseAssociations(element);
             forEach(associations, (itemGen) => {
                 checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract);
-                if (itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                /* Adding abstract class from Aggregation, Composition, Association */
+                if (itemGen.end1.aggregation == 'shared' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                    abstractClassList.push(itemGen.end2.reference);
+                } else if (itemGen.end1.aggregation == 'composite' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                    abstractClassList.push(itemGen.end2.reference);
+                } else if (itemGen.end1.aggregation == 'none' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
                     abstractClassList.push(itemGen.end2.reference);
                 }
             });
@@ -101,7 +106,7 @@ function getAbstractClass(umlPackage) {
     });
     forEach(abstractClassList, function (item, index) {
         let filter = uniqueAbstractArr.filter(subItem => {
-            return item.name == subItem.name;
+            return item._id == subItem._id;
         });
         if (filter.length == 0) {
             uniqueAbstractArr.push(item);
