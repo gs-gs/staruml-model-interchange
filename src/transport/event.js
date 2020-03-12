@@ -99,6 +99,7 @@ function addEventRelationship(eventObj, event) {
             objSource[fields.type] = utils.getElementType(source);
             objSource[fields.cardinality] = end1.multiplicity;
             objSource[fields.navigable] = end1.navigable;
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -108,6 +109,7 @@ function addEventRelationship(eventObj, event) {
             objTarget[fields.type] = utils.getElementType(target);
             objTarget[fields.cardinality] = end2.multiplicity;
             objTarget[fields.navigable] = end2.navigable;
+            objTarget[fields.package] = end2.reference._parent.name;
 
         } else if (element instanceof type.UMLGeneralization) {
 
@@ -148,6 +150,7 @@ function addEventRelationship(eventObj, event) {
             objAssociation[fields.source] = objSource;
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -155,6 +158,7 @@ function addEventRelationship(eventObj, event) {
             objAssociation[fields.target] = objTarget;
             objTarget[fields.name] = target.name;
             objTarget[fields.type] = utils.getElementType(target);
+            objTarget[fields.package] = end2.reference._parent.name;
 
             /* class side association binding */
             let objClass = {};

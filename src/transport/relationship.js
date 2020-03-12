@@ -897,7 +897,10 @@ function setRelationship(ownedElements, XMIData) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
+            if(entity.name == 'TransportMovementParty'){
 
+                console.log(entity.name);
+            }
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
                     if (
