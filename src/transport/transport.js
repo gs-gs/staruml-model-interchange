@@ -228,10 +228,6 @@ function importDataToModel(XMIData) {
             app.diagrams.repaint();;
 
         }
-
-
-
-
     }
 }
 
@@ -361,13 +357,15 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
     return result;
 }
 
+
+
 /**
  * @function importModel
  * @description if file is available, import json file into model. If file is not available, open file picker dialog for selecting model-interchange json file to import into model
  * @param {file} string
  */
 async function importModel(file) {
-
+    mRelationship.resetUnRefData();
     let finalPath = null;
     if (file) {
         finalPath = file;
@@ -426,6 +424,16 @@ function processImport(MainXMIData) {
         /*  Import main package second */
         importDataToModel(MainXMIData);
 
+        let unRefData = mRelationship.getUnRefData();
+        console.log("UnReference Data", unRefData);
+        /* forEach(unRefData,function(refData){
+            try{
+
+                mRelationship.bindRelationshipToImport(refData.entity,refData.relationship);
+            }catch(error){
+                console.error("New Error",error.message);
+            }
+        }); */
         resolve({
             success: true,
             result: []

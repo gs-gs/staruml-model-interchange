@@ -691,6 +691,40 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     } else if (fRefEnd1.length == 0) {
         throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
     } else if (fRefEnd2.length == 0) {
+
+        //TODO Do not remove this code. It will be used in future as required
+        /* let foundPackage = app.repository.search(target.package);
+        let mainOwnedElements = [];
+        if (foundPackage.length == 0) {
+            let nPackage = {
+                '_type': 'UMLPackage',
+                'name': target.package,
+                'ownedElements': mainOwnedElements
+            };
+            let pkg = app.repository.readObject(nPackage);
+            let mClass = {
+                '_type': 'UMLClass',
+                'name': target.name
+            }
+            let cls = app.repository.readObject(mClass);
+            app.engine.addItem(pkg, 'ownedElements', cls);
+            objReferenceEnd2['$ref'] = cls._id;
+            objEnd2.reference = objReferenceEnd2;
+        }
+        else {
+            forEach(foundPackage,function(pkg){
+                if(pkg instanceof type.UMLPackage){
+                    let mClass = {
+                        '_type': 'UMLClass',
+                        'name': target.name
+                    }
+                    let cls = app.repository.readObject(mClass);
+                    app.engine.addItem(pkg, 'ownedElements', cls);
+                    objReferenceEnd2['$ref'] = cls._id;
+                    objEnd2.reference = objReferenceEnd2;
+                }
+            });
+        } */
         throw new Error(constant.target + ' ' + eleType + ' \'' + target.name + constant.ref_not_found);
     }
 
@@ -893,14 +927,16 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
  * @param {Object} XMIData
  */
 function setRelationship(ownedElements, XMIData) {
+    console.log("--------------", XMIData.name + "--------------", );
+    console.log("--------------", XMIData.type + "--------------");
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
-            if(entity.name == 'TransportMovementParty'){
-
-                console.log(entity.name);
+            if (entity.name == 'AqisConcern') {
+                console.log("...");
             }
+            console.log("-----entity name-----", entity.name);
             forEach(mSubObject.Relationship, function (relationship) {
                 try {
                     if (
@@ -911,6 +947,7 @@ function setRelationship(ownedElements, XMIData) {
                         relationship.type == fields.interfaceRealization ||
                         relationship.type == fields.associationClassLink
                     ) {
+                        console.log("-----rel name-----", relationship.name);
                         let rel = bindRelationshipToImport(entity, relationship);
                         let mIndex = oldOwnedElements.findIndex(function (ele) {
                             return ele._id == rel._id;
@@ -926,11 +963,23 @@ function setRelationship(ownedElements, XMIData) {
                     }
                 } catch (error) {
                     console.error("Error : " + mSubObject.name, error.message);
-                    app.dialogs.showErrorDialog(error.message);
+                    let nUnRef = {
+                        'entity' : entity,
+                        'relationship' : relationship
+                    };
+                    unRefData.push(nUnRef);
+                    // app.dialogs.showErrorDialog(error.message);
                 }
             });
         }
     });
+}
+let unRefData = [];
+function resetUnRefData() {
+    unRefData = [];
+}
+function getUnRefData() {
+    return unRefData;
 }
 
 module.exports.addAggregationToImport = addAggregationToImport;
@@ -941,3 +990,5 @@ module.exports.addInterfaceToImport = addInterfaceToImport;
 module.exports.addAssociationClassLink = addAssociationClassLink;
 module.exports.bindRelationshipToImport = bindRelationshipToImport;
 module.exports.setRelationship = setRelationship;
+module.exports.resetUnRefData = resetUnRefData;
+module.exports.getUnRefData = getUnRefData;
