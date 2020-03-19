@@ -927,59 +927,48 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
  * @param {Object} XMIData
  */
 function setRelationship(ownedElements, XMIData) {
-    console.log("--------------", XMIData.name + "--------------", );
-    console.log("--------------", XMIData.type + "--------------");
+    // console.log("--------------", XMIData.name + "--------------", );
+    // console.log("--------------", XMIData.type + "--------------");
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
-            if (entity.name == 'AqisConcern') {
-                console.log("...");
-            }
-            console.log("-----entity name-----", entity.name);
-            forEach(mSubObject.Relationship, function (relationship) {
-                try {
-                    if (
-                        relationship.type == fields.aggregation ||
-                        relationship.type == fields.composition ||
-                        relationship.type == fields.generalization ||
-                        relationship.type == fields.interface ||
-                        relationship.type == fields.interfaceRealization ||
-                        relationship.type == fields.associationClassLink
-                    ) {
-                        console.log("-----rel name-----", relationship.name);
-                        let rel = bindRelationshipToImport(entity, relationship);
-                        let mIndex = oldOwnedElements.findIndex(function (ele) {
-                            return ele._id == rel._id;
-                        });
-                        if (mIndex == -1) {
-                            /* New relationship */
-                            oldOwnedElements.push(rel);
-                        } else {
-                            /* Existing relationship */
-                            oldOwnedElements[mIndex] = rel;
+            if (mSubObject !=null && mSubObject.Relationship.length>0) {
+                // console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship);
+
+
+                forEach(mSubObject.Relationship, function (relationship) {
+                    try {
+                        if (
+                            relationship.type == fields.aggregation ||
+                            relationship.type == fields.composition ||
+                            relationship.type == fields.generalization ||
+                            relationship.type == fields.interface ||
+                            relationship.type == fields.interfaceRealization ||
+                            relationship.type == fields.associationClassLink
+                        ) {
+                            // console.log("-----rel name-----", relationship.name);
+                            let rel = bindRelationshipToImport(entity, relationship);
+                            let mIndex = oldOwnedElements.findIndex(function (ele) {
+                                return ele._id == rel._id;
+                            });
+                            if (mIndex == -1) {
+                                /* New relationship */
+                                oldOwnedElements.push(rel);
+                            } else {
+                                /* Existing relationship */
+                                oldOwnedElements[mIndex] = rel;
+                            }
+                            app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
                         }
-                        app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
+                    } catch (error) {
+                        console.error("Error : " + mSubObject.name, error.message);
+                        app.dialogs.showErrorDialog(error.message);
                     }
-                } catch (error) {
-                    console.error("Error : " + mSubObject.name, error.message);
-                    let nUnRef = {
-                        'entity' : entity,
-                        'relationship' : relationship
-                    };
-                    unRefData.push(nUnRef);
-                    // app.dialogs.showErrorDialog(error.message);
-                }
-            });
+                });
+            }
         }
     });
-}
-let unRefData = [];
-function resetUnRefData() {
-    unRefData = [];
-}
-function getUnRefData() {
-    return unRefData;
 }
 
 module.exports.addAggregationToImport = addAggregationToImport;
@@ -990,5 +979,3 @@ module.exports.addInterfaceToImport = addInterfaceToImport;
 module.exports.addAssociationClassLink = addAssociationClassLink;
 module.exports.bindRelationshipToImport = bindRelationshipToImport;
 module.exports.setRelationship = setRelationship;
-module.exports.resetUnRefData = resetUnRefData;
-module.exports.getUnRefData = getUnRefData;

@@ -178,19 +178,22 @@ function setProperty(ownedElements, XMIData) {
             /* attribute ( Property ) */
             let attributes = [];
             entityJson.attributes = attributes;
-            forEach(mSubObject.Property, function (attr) {
-                /* let chkNew = newProps.filter(function (nItem) {
-                    return attr.name == nItem.name
-                }); */
+            if (mSubObject != null) {
 
-                let objProp = bindProperty(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = element
-                    attributes.push(rel);
-                }
-            });
-            let resRel = app.engine.setProperty(element, 'attributes', attributes);
+                forEach(mSubObject.Property, function (attr) {
+                    /* let chkNew = newProps.filter(function (nItem) {
+                        return attr.name == nItem.name
+                    }); */
+
+                    let objProp = bindProperty(attr);
+                    if (objProp != null) {
+                        let rel = app.repository.readObject(objProp);
+                        rel._parent = element
+                        attributes.push(rel);
+                    }
+                });
+                app.engine.setProperty(element, 'attributes', attributes);
+            }
         }
     });
 }
@@ -212,15 +215,18 @@ function setLiterals(ownedElements, XMIData) {
             let literals = [];
             entityJson.literals = literals;
 
-            forEach(mSubObject[fields.Enum], function (attr) {
-                let objProp = bindLiterals(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
-                    literals.push(rel);
-                }
-            });
-            let resRel = app.engine.setProperty(entity, 'literals', literals);
+            if (mSubObject != null) {
+
+                forEach(mSubObject[fields.Enum], function (attr) {
+                    let objProp = bindLiterals(attr);
+                    if (objProp != null) {
+                        let rel = app.repository.readObject(objProp);
+                        rel._parent = entity;
+                        literals.push(rel);
+                    }
+                });
+                app.engine.setProperty(entity, 'literals', literals);
+            }
         }
     });
 }
@@ -244,15 +250,18 @@ function setOperation(ownedElements, XMIData) {
             let operations = [];
             entityJson.operations = operations;
 
-            forEach(mSubObject.Operation, function (attr) {
-                let objProp = bindOperation(attr);
-                if (objProp != null) {
-                    let rel = app.repository.readObject(objProp);
-                    rel._parent = entity;
-                    operations.push(rel);
-                }
-            });
-            let resRel = app.engine.setProperty(entity, 'operations', operations);
+            if (mSubObject != null) {
+
+                forEach(mSubObject.Operation, function (attr) {
+                    let objProp = bindOperation(attr);
+                    if (objProp != null) {
+                        let rel = app.repository.readObject(objProp);
+                        rel._parent = entity;
+                        operations.push(rel);
+                    }
+                });
+                app.engine.setProperty(entity, 'operations', operations);
+            }
         }
     });
 }
@@ -1038,6 +1047,47 @@ function createViewOfElements(newElements) {
         createViewOfElement(newEle);
     });
 }
+let mOtherDependentClasses = [];
+
+function addOtherDependentClass(element) {
+    mOtherDependentClasses.push(element);
+}
+
+function getOtherDependentClass() {
+    return mOtherDependentClasses;
+}
+
+function resetOtherDependentClass() {
+    mOtherDependentClasses = [];
+}
+
+function findOtherElements(entity) {
+    let entityParent = entity._parent;
+    forEach(entity.ownedElements, function (oweEle) {
+        if (oweEle instanceof type.UMLAssociation
+            /* || 
+                       oweEle instanceof type.UMLGeneralization || 
+                           oweEle instanceof type.UMLInterfaceRealization */
+        ) {
+
+            // let end1Parent = oweEle.end1.reference._parent;
+            // let end2Parent = oweEle.end2.reference._parent;
+
+            // if (entityParent instanceof type.UMLPackage &&
+            //     end1Parent instanceof type.UMLPackage &&
+            //     entityParent.name != end1Parent.name) {
+            addOtherDependentClass(oweEle.end1.reference);
+            // }
+
+            // if (entityParent instanceof type.UMLPackage &&
+            //     end2Parent instanceof type.UMLPackage &&
+            //     entityParent.name != end2Parent.name) {
+            addOtherDependentClass(oweEle.end2.reference);
+            // }
+
+        }
+    });
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -1064,3 +1114,7 @@ module.exports.recreateView = recreateView;
 module.exports.recreateViewForRelationship = recreateViewForRelationship;
 module.exports.getTagsToExport = getTagsToExport;
 module.exports.getTagsToImport = getTagsToImport;
+module.exports.addOtherDependentClass = addOtherDependentClass;
+module.exports.getOtherDependentClass = getOtherDependentClass;
+module.exports.findOtherElements = findOtherElements;
+module.exports.resetOtherDependentClass = resetOtherDependentClass;
