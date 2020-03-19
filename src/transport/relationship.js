@@ -38,7 +38,7 @@ function addAggregationToImport(entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {};
@@ -58,7 +58,7 @@ function addAggregationToImport(entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
 
     let eleType = utils.getElementType(entity);
@@ -110,7 +110,7 @@ function updateAggregationToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -133,7 +133,7 @@ function updateAggregationToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
 
     let eleType = utils.getElementType(entity);
@@ -193,7 +193,7 @@ function addCompositionToImport(entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -216,7 +216,7 @@ function addCompositionToImport(entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -268,7 +268,7 @@ function updateCompositionToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -290,7 +290,7 @@ function updateCompositionToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -656,7 +656,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -679,7 +679,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -691,6 +691,40 @@ function addInterfaceToImport(objRelationship, entity, attr) {
     } else if (fRefEnd1.length == 0) {
         throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
     } else if (fRefEnd2.length == 0) {
+
+        //TODO Do not remove this code. It will be used in future as required
+        /* let foundPackage = app.repository.search(target.package);
+        let mainOwnedElements = [];
+        if (foundPackage.length == 0) {
+            let nPackage = {
+                '_type': 'UMLPackage',
+                'name': target.package,
+                'ownedElements': mainOwnedElements
+            };
+            let pkg = app.repository.readObject(nPackage);
+            let mClass = {
+                '_type': 'UMLClass',
+                'name': target.name
+            }
+            let cls = app.repository.readObject(mClass);
+            app.engine.addItem(pkg, 'ownedElements', cls);
+            objReferenceEnd2['$ref'] = cls._id;
+            objEnd2.reference = objReferenceEnd2;
+        }
+        else {
+            forEach(foundPackage,function(pkg){
+                if(pkg instanceof type.UMLPackage){
+                    let mClass = {
+                        '_type': 'UMLClass',
+                        'name': target.name
+                    }
+                    let cls = app.repository.readObject(mClass);
+                    app.engine.addItem(pkg, 'ownedElements', cls);
+                    objReferenceEnd2['$ref'] = cls._id;
+                    objEnd2.reference = objReferenceEnd2;
+                }
+            });
+        } */
         throw new Error(constant.target + ' ' + eleType + ' \'' + target.name + constant.ref_not_found);
     }
 
@@ -731,7 +765,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     let refEnd1 = app.repository.search(source.name);
 
     let fRefEnd1 = refEnd1.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == source.name && item._parent.name == source.package;
     });
 
     let objReferenceEnd1 = {}
@@ -758,7 +792,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     let refEnd2 = app.repository.search(target.name);
 
     let fRefEnd2 = refEnd2.filter(function (item) {
-        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name;
+        return (item instanceof type.UMLClass || item instanceof type.UMLInterface) && item.name == target.name && item._parent.name == target.package;
     });
     let eleType = utils.getElementType(entity);
     if (fRefEnd2.length > 0 && fRefEnd1.length > 0) {
@@ -893,39 +927,46 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
  * @param {Object} XMIData
  */
 function setRelationship(ownedElements, XMIData) {
+    // console.log("--------------", XMIData.name + "--------------", );
+    // console.log("--------------", XMIData.type + "--------------");
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
+            if (mSubObject !=null && mSubObject.Relationship.length>0) {
+                // console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship);
 
-            forEach(mSubObject.Relationship, function (relationship) {
-                try {
-                    if (
-                        relationship.type == fields.aggregation ||
-                        relationship.type == fields.composition ||
-                        relationship.type == fields.generalization ||
-                        relationship.type == fields.interface ||
-                        relationship.type == fields.interfaceRealization ||
-                        relationship.type == fields.associationClassLink
-                    ) {
-                        let rel = bindRelationshipToImport(entity, relationship);
-                        let mIndex = oldOwnedElements.findIndex(function (ele) {
-                            return ele._id == rel._id;
-                        });
-                        if (mIndex == -1) {
-                            /* New relationship */
-                            oldOwnedElements.push(rel);
-                        } else {
-                            /* Existing relationship */
-                            oldOwnedElements[mIndex] = rel;
+
+                forEach(mSubObject.Relationship, function (relationship) {
+                    try {
+                        if (
+                            relationship.type == fields.aggregation ||
+                            relationship.type == fields.composition ||
+                            relationship.type == fields.generalization ||
+                            relationship.type == fields.interface ||
+                            relationship.type == fields.interfaceRealization ||
+                            relationship.type == fields.associationClassLink
+                        ) {
+                            // console.log("-----rel name-----", relationship.name);
+                            let rel = bindRelationshipToImport(entity, relationship);
+                            let mIndex = oldOwnedElements.findIndex(function (ele) {
+                                return ele._id == rel._id;
+                            });
+                            if (mIndex == -1) {
+                                /* New relationship */
+                                oldOwnedElements.push(rel);
+                            } else {
+                                /* Existing relationship */
+                                oldOwnedElements[mIndex] = rel;
+                            }
+                            app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
                         }
-                        app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
+                    } catch (error) {
+                        console.error("Error : " + mSubObject.name, error.message);
+                        app.dialogs.showErrorDialog(error.message);
                     }
-                } catch (error) {
-                    console.error("Error : " + mSubObject.name, error.message);
-                    app.dialogs.showErrorDialog(error.message);
-                }
-            });
+                });
+            }
         }
     });
 }

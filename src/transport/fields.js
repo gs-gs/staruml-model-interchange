@@ -18,6 +18,7 @@ const fields = {
     '_parent': '_parent',
     'cardinality': 'cardinality',
     'navigable': 'navigable',
+    'package': 'package',
     'Enum': 'Enum',
     'Relationship': 'Relationship',
     'Operation': 'Operation',

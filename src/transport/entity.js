@@ -72,6 +72,9 @@ function addEntityProperty(entityObj, entity) {
  * @param {*} entity
  */
 function addEntityRelationship(entityObj, entity) {
+    
+    utils.findOtherElements(entity);
+
     let Relationship = [];
     entityObj[fields.Relationship] = Relationship;
     forEach(entity.ownedElements, function (element) {
@@ -97,6 +100,7 @@ function addEntityRelationship(entityObj, entity) {
             objSource[fields.type] = utils.getElementType(source);
             objSource[fields.cardinality] = end1.multiplicity;
             objSource[fields.navigable] = end1.navigable;
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -106,6 +110,7 @@ function addEntityRelationship(entityObj, entity) {
             objTarget[fields.type] = utils.getElementType(target);
             objTarget[fields.cardinality] = end2.multiplicity;
             objTarget[fields.navigable] = end2.navigable;
+            objTarget[fields.package] = end2.reference._parent.name;
 
         } else if (element instanceof type.UMLGeneralization) {
 
@@ -153,6 +158,7 @@ function addEntityRelationship(entityObj, entity) {
                 objSource[fields.type] = utils.getElementType(source);
                 objSource[fields.cardinality] = end1.multiplicity;
                 objSource[fields.navigable] = end1.navigable;
+                objSource[fields.package] = end1.reference._parent.name;
 
                 /* adding 'target' object */
                 let objTarget = {};
@@ -162,6 +168,7 @@ function addEntityRelationship(entityObj, entity) {
                 objTarget[fields.type] = utils.getElementType(target);
                 objTarget[fields.cardinality] = end2.multiplicity;
                 objTarget[fields.navigable] = end2.navigable;
+                objTarget[fields.package] = end2.reference._parent.name;
 
             }
             /* class side association binding */
@@ -200,25 +207,50 @@ function addEntityRelationship(entityObj, entity) {
  * @param {UMLPackage} mPackage
  * @param {Object} jsonProcess
  */
-function bindEntityToExport(mPackage, jsonProcess) {
+function bindEntityToExport(mPackage, jsonProcess, absClass) {
     let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
     forEach(allEntities, function (entity) {
 
-        let entityObj = {};
-        jsonProcess[entity.name] = entityObj;
+        if (absClass != null) {
 
-        /* Entity property fields binding */
-        addEntityFields(entityObj, entity)
+            let res = absClass.filter(function (mClass) {
+                return mClass._id == entity._id;
+            });
+            if (res.length != 0) {
+                let entityObj = {};
+                jsonProcess[entity.name] = entityObj;
 
-        /* Entity Required fields properties binding */
-        addEntityRequired(entityObj, entity);
+                /* Entity property fields binding */
+                addEntityFields(entityObj, entity)
 
-        /* Entity Properties array binding */
-        addEntityProperty(entityObj, entity);
+                /* Entity Required fields properties binding */
+                addEntityRequired(entityObj, entity);
 
-        /* Entity Relationship array binding */
-        addEntityRelationship(entityObj, entity);
+                /* Entity Properties array binding */
+                addEntityProperty(entityObj, entity);
 
+                /* Entity Relationship array binding */
+                addEntityRelationship(entityObj, entity);
+            }
+
+        } else {
+
+            let entityObj = {};
+            jsonProcess[entity.name] = entityObj;
+
+            /* Entity property fields binding */
+            addEntityFields(entityObj, entity)
+
+            /* Entity Required fields properties binding */
+            addEntityRequired(entityObj, entity);
+
+            /* Entity Properties array binding */
+            addEntityProperty(entityObj, entity);
+
+            /* Entity Relationship array binding */
+            addEntityRelationship(entityObj, entity);
+
+        }
     });
 }
 /**
@@ -264,10 +296,9 @@ function bindEntityToImport(entityObject, mSubObject) {
     entityObject.name = mSubObject.name;
     entityObject[fields.isAbstract] = mSubObject.isAbstract;
     /* #12 Type check for the properties  */
-    if(utils.isString(mSubObject.description)){
+    if (utils.isString(mSubObject.description)) {
         entityObject.documentation = mSubObject.description;
-    }
-    else{
+    } else {
         entityObject.documentation = "";
     }
 
@@ -278,7 +309,7 @@ function bindEntityToImport(entityObject, mSubObject) {
  * @param {Object} XMIData
  * @param {UMLClass} result
  */
-function addNewEntity(XMIData,result) {
+function addNewEntity(XMIData, result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         /* UMLClass */

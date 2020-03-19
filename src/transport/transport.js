@@ -10,6 +10,7 @@ const CircularJSON = require('circular-json');
 const git = require('../git/git');
 var path = require('path');
 var mRelationship = require('./relationship');
+var utils = require('./utils');
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
@@ -93,7 +94,12 @@ function getAbstractClass(umlPackage) {
             let associations = getClasswiseAssociations(element);
             forEach(associations, (itemGen) => {
                 checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract);
-                if (itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                /* Adding abstract class from Aggregation, Composition, Association */
+                if (itemGen.end1.aggregation == 'shared' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                    abstractClassList.push(itemGen.end2.reference);
+                } else if (itemGen.end1.aggregation == 'composite' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
+                    abstractClassList.push(itemGen.end2.reference);
+                } else if (itemGen.end1.aggregation == 'none' && itemGen.end2.aggregation == 'none' && itemGen.end2.reference.isAbstract == true) {
                     abstractClassList.push(itemGen.end2.reference);
                 }
             });
@@ -101,7 +107,7 @@ function getAbstractClass(umlPackage) {
     });
     forEach(abstractClassList, function (item, index) {
         let filter = uniqueAbstractArr.filter(subItem => {
-            return item.name == subItem.name;
+            return item._id == subItem._id;
         });
         if (filter.length == 0) {
             uniqueAbstractArr.push(item);
@@ -199,33 +205,54 @@ function importDataToModel(XMIData) {
         mUtils.setLiterals(result.ownedElements, XMIData);
         /* Step - 7 : Setting  Operation & params to Event */
         mUtils.setOperation(result.ownedElements, XMIData);
+
+        /* Map array with generated package, XMIData and new added class to add relationship at the last */
+        let relationshipData = {
+            result: result,
+            XMIData: XMIData,
+            newClassesAdded: newClassesAdded
+        }
+        forRelationshipArray.push(relationshipData);
+        
+    }
+}
+let forRelationshipArray = [];
+
+function mapAllRelationship() {
+
+    forEach(forRelationshipArray, function (data) {
+
+        let result = data.result;
+        let XMIData = data.XMIData;
+        let newClassesAdded = data.newClassesAdded;
         /* Step - 8 : Setting Relationship to Entity, Event */
         mRelationship.setRelationship(result.ownedElements, XMIData);
 
-
-        /* Step - 9 : Create view of newaly added element */
-        let newElements = mUtils.getNewAddedElement();
-        let uniqueNewElements = [];
-        forEach(newElements, function (newEle) {
-            let res = uniqueNewElements.filter(function (relationship) {
+        let newRelationshipAdded = mUtils.getNewAddedElement();
+        let uniqueNewRelationship = [];
+        forEach(newRelationshipAdded, function (newEle) {
+            let res = uniqueNewRelationship.filter(function (relationship) {
                 return relationship._id == newEle._id
             });
             if (res.length == 0) {
-                uniqueNewElements.push(newEle);
+                uniqueNewRelationship.push(newEle);
             }
         });
+        // console.log("-----newClassesAdded", newClassesAdded);
+        // console.log("-----uniqueNewRelationship", uniqueNewRelationship);
+        /* Step - 9 : Create view of newaly added element (class & relationship)*/
         /* #13 : The default class diagram shoudn't be generated for big projects  */
-        let classDiagram = app.repository.select('@UMLClassDiagram');
-        if (classDiagram.length > 0 && newClassesAdded.length <= 10) {
+        shouldDrawView(newClassesAdded);
+        shouldDrawView(uniqueNewRelationship);
+    });
+}
 
-            console.log("newClasses", newClassesAdded.length);
-            mUtils.createViewOfElements(newElements);
-            app.diagrams.repaint();;
-
-        }
-
-
-
+function shouldDrawView(elementsToDraw) {
+    let classDiagram = app.repository.select('@UMLClassDiagram');
+    if (classDiagram.length > 0 && elementsToDraw.length <= 10) {
+        // console.log("newClasses", elementsToDraw.length);
+        mUtils.createViewOfElements(elementsToDraw);
+        app.diagrams.repaint();;
 
     }
 }
@@ -356,13 +383,14 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
     return result;
 }
 
+
+
 /**
  * @function importModel
  * @description if file is available, import json file into model. If file is not available, open file picker dialog for selecting model-interchange json file to import into model
  * @param {file} string
  */
 async function importModel(file) {
-
     let finalPath = null;
     if (file) {
         finalPath = file;
@@ -384,11 +412,13 @@ async function importModel(file) {
     let vDialog = dm.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + MainXMIData.name + constant.title_import_mi_2, [], true);
     setTimeout(async function () {
 
+        console.log("Import started!");
         let res = await processImport(MainXMIData);
         if (res != null && res.success) {
             vDialog.close();
             app.modelExplorer.rebuild();
             setTimeout(function () {
+                console.log("Import success!");
                 app.dialogs.showInfoDialog(constant.mi_msg_success);
             });
         }
@@ -404,7 +434,7 @@ async function importModel(file) {
 function processImport(MainXMIData) {
     return new Promise((resolve, reject) => {
 
-        var i = 1;
+        forRelationshipArray = [];
         /*  Import Abstract package first */
         if (MainXMIData.hasOwnProperty(fields.dependent) && MainXMIData.dependent.length > 0) {
             let absFiles = MainXMIData.dependent;
@@ -421,6 +451,8 @@ function processImport(MainXMIData) {
         /*  Import main package second */
         importDataToModel(MainXMIData);
 
+        /* Step - 8 : Setting Relationship to Entity, Event */
+        mapAllRelationship();
         resolve({
             success: true,
             result: []
@@ -436,7 +468,7 @@ function exportModel() {
 
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */
-        .then(function ({
+        .then(async function ({
             buttonId,
             returnValue
         }) {
@@ -445,6 +477,9 @@ function exportModel() {
                 let varSel = returnValue.getClassName();
                 let valPackagename = type.UMLPackage.name;
                 if (varSel == valPackagename) {
+                    let finalOtherElement = [];
+                    utils.resetOtherDependentClass();
+
                     let umlPackage = returnValue;
                     let expPackages = [];
                     let filename = umlPackage.name;
@@ -479,43 +514,61 @@ function exportModel() {
                     var _filename = filename;
                     var fName = git.getDirectory() + path.sep + _filename + '.json';
 
-                    forEach(absClass, function (item) {
-                        if (item._parent instanceof type.UMLPackage) {
-                            expPackages.push({
-                                package: item._parent,
-                                [fields.isAbstract]: true
-                            });
+
+                    let mOtherDependent = mUtils.getOtherDependentClass();
+                    var newArray = []; //absClass.concat(mOtherDependent);
+                    newArray = absClass.concat(mOtherDependent);
+                    newArrived = getNewArrived(mOtherDependent, finalOtherElement);
+                    finalOtherElement.push(...newArrived);
+
+                    // let abc = await getOtherClassPromise(newArrived, finalOtherElement);
+                    let result = await getOtherClassPromise(newArrived, finalOtherElement);
+
+                    console.log("abc", result);
+                    console.log("finalOtherElement", finalOtherElement);
+
+
+                    let unqArray = [];
+                    forEach(finalOtherElement, function (temp) {
+
+                        let result1 = unqArray.filter(function (element) {
+                            return element._id == temp._id;
+                        });
+                        if (result1.length == 0) {
+                            unqArray.push(temp);
                         }
-                    });
-
-
-
-                    /* Export Abstract Packages */
-                    let dependent = [];
-                    jsonProcess[fields.dependent] = dependent
-                    forEach(expPackages, function (item) {
-
-                        let mPackage = item.package;
-
-                        let abstractJsonProcess = {};
-                        abstractJsonProcess[fields.type] = fields.package;
-                        abstractJsonProcess[fields.name] = mPackage.name;
-                        abstractJsonProcess[fields.isAbstract] = item.isAbstract;
-
-                        /* Enum binding--- */
-                        mEnum.bindEnumToExport(mPackage, abstractJsonProcess);
-
-                        /* Entity binding--- */
-                        mEntity.bindEntityToExport(mPackage, abstractJsonProcess);
-
-                        /* Event binding */
-                        mEvent.bindEventToExport(mPackage, abstractJsonProcess);
-
-                        dependent.push(abstractJsonProcess);
-
 
                     });
+                    finalOtherElement = unqArray;
+                    console.log("referenced classes", unqArray);
+                    console.log("referenced classes of association-------");
+                    /* let unqArray=[];
+                    forEach(finalOtherElement,function(temp){
+                        forEach(temp.ownedElements,function(asso){
+                            if(asso instanceof type.UMLAssociation){
 
+                                let result1 = unqArray.filter(function(name){
+                                    return name==asso.end1.reference.name;
+                                });
+                                if(result1.length==0){
+                                    unqArray.push(asso.end1.reference.name);
+                                }
+                                console.log(asso.end1.reference.name);
+
+                                let result2 = unqArray.filter(function(name){
+                                    return name==asso.end2.reference.name;
+                                });
+                                if(result2.length==0){
+                                    unqArray.push(asso.end2.reference.name);
+                                }
+                                console.log(asso.end2.reference.name);
+
+                            }
+                        });
+                    }); */
+                    // console.log("referenced classes of association-------",unqArray);
+
+                    exportDependentElements(finalOtherElement, expPackages, jsonProcess);
                     /* Export json file at path */
                     setTimeout(function () {
                         fs.writeFile(fName, CircularJSON.stringify(jsonProcess, null, 4), 'utf-8', function (err) {
@@ -529,11 +582,116 @@ function exportModel() {
                             }
                         });
                     }, 10);
+
                 } else {
                     app.dialogs.showErrorDialog("Please select a package");
                 }
             }
         });
+}
+
+function getNewArrived(mOtherDependent, finalOtherElement) {
+    let newArrived = [];
+    forEach(mOtherDependent, function (element) {
+        let fResult = finalOtherElement.filter(function (fElement) {
+            return fElement._id == element._id;
+        })
+        if (fResult.length == 0) {
+            newArrived.push(element);
+        }
+    });
+    return newArrived;
+}
+
+function getOtherClassPromise(newArray, finalOtherElement) {
+
+    return new Promise((resolve, reject) => {
+        try {
+            getOtherClassRecursively(newArray, finalOtherElement, resolve);
+        } catch (error) {
+            reject(error);
+        }
+
+    });
+}
+
+function getOtherClassRecursively(newArray, finalOtherElement, resolve) {
+    utils.resetOtherDependentClass();
+    forEach(newArray, function (mElement) {
+        utils.findOtherElements(mElement);
+    });
+    let mOtherDependent = mUtils.getOtherDependentClass();
+    let newArrived = getNewArrived(mOtherDependent, finalOtherElement);
+    if (newArrived.length > 0) {
+        finalOtherElement.push(...newArrived);
+        getOtherClassRecursively(newArrived, finalOtherElement, resolve);
+    } else {
+        resolve(finalOtherElement);
+    }
+}
+
+function exportDependentElements(absClass, expPackages, jsonProcess) {
+    console.log("absClass", absClass);
+
+    let unicPackage = [];
+
+    forEach(absClass, function (elem) {
+        if (elem._parent instanceof type.UMLPackage) {
+            let res = unicPackage.filter(function (pkg) {
+                return pkg._id == elem._parent._id;
+            });
+            if (res.length == 0) {
+                unicPackage.push(elem._parent);
+            }
+        }
+    })
+    console.log("Total Dependent Packages", unicPackage);
+
+    forEach(unicPackage, function (item) {
+        if (item._parent instanceof type.UMLPackage) {
+            expPackages.push({
+                package: item,
+                [fields.isAbstract]: true
+            });
+        }
+    });
+
+    /* forEach(absClass, function (item) {
+        if (item._parent instanceof type.UMLPackage) {
+            expPackages.push({
+                package: item._parent,
+                [fields.isAbstract]: true
+            });
+        }
+    }); */
+
+
+    console.log("expPackages", expPackages);
+    /* Export Abstract Packages */
+    let dependent = [];
+    jsonProcess[fields.dependent] = dependent
+    forEach(expPackages, function (item) {
+
+        let mPackage = item.package;
+
+        let abstractJsonProcess = {};
+        abstractJsonProcess[fields.type] = fields.package;
+        abstractJsonProcess[fields.name] = mPackage.name;
+        abstractJsonProcess[fields.isAbstract] = item.isAbstract;
+
+        /* Enum binding--- */
+        mEnum.bindEnumToExport(mPackage, abstractJsonProcess);
+
+        /* Entity binding--- */
+        mEntity.bindEntityToExport(mPackage, abstractJsonProcess, absClass);
+
+        /* Event binding */
+        mEvent.bindEventToExport(mPackage, abstractJsonProcess, absClass);
+
+        dependent.push(abstractJsonProcess);
+
+
+    });
 }
 
 

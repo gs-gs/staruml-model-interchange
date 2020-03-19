@@ -67,6 +67,8 @@ function addEventProperty(eventObj, event) {
  * @param {UMLInterface} event
  */
 function addEventRelationship(eventObj, event) {
+    utils.findOtherElements(event);
+    
     let Relationship = [];
     eventObj[fields.Relationship] = Relationship;
     forEach(event.ownedElements, function (element) {
@@ -99,6 +101,7 @@ function addEventRelationship(eventObj, event) {
             objSource[fields.type] = utils.getElementType(source);
             objSource[fields.cardinality] = end1.multiplicity;
             objSource[fields.navigable] = end1.navigable;
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -108,6 +111,7 @@ function addEventRelationship(eventObj, event) {
             objTarget[fields.type] = utils.getElementType(target);
             objTarget[fields.cardinality] = end2.multiplicity;
             objTarget[fields.navigable] = end2.navigable;
+            objTarget[fields.package] = end2.reference._parent.name;
 
         } else if (element instanceof type.UMLGeneralization) {
 
@@ -148,6 +152,7 @@ function addEventRelationship(eventObj, event) {
             objAssociation[fields.source] = objSource;
             objSource[fields.name] = source.name;
             objSource[fields.type] = utils.getElementType(source);
+            objSource[fields.package] = end1.reference._parent.name;
 
             /* adding 'target' object */
             let objTarget = {};
@@ -155,6 +160,7 @@ function addEventRelationship(eventObj, event) {
             objAssociation[fields.target] = objTarget;
             objTarget[fields.name] = target.name;
             objTarget[fields.type] = utils.getElementType(target);
+            objTarget[fields.package] = end2.reference._parent.name;
 
             /* class side association binding */
             let objClass = {};
@@ -222,27 +228,55 @@ function addEventOperation(eventObj, event) {
  * @param {UMLPackage} mPackage
  * @param {Object} jsonProcess
  */
-function bindEventToExport(mPackage, jsonProcess) {
+function bindEventToExport(mPackage, jsonProcess, absClass) {
     let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
     forEach(allEvents, function (event) {
 
-        let eventObj = {};
-        jsonProcess[event.name] = eventObj;
+        if (absClass != null) {
 
-        /* Event property fields binding */
-        addEventFields(eventObj, event)
+            let res = absClass.filter(function (mClass) {
+                return mClass._id == event._id;
+            });
+            if (res.length != 0) {
+                let eventObj = {};
+                jsonProcess[event.name] = eventObj;
 
-        /* Event Required fields properties binding */
-        addEventRequired(eventObj, event);
+                /* Event property fields binding */
+                addEventFields(eventObj, event)
 
-        /* Event Properties array binding */
-        addEventProperty(eventObj, event);
+                /* Event Required fields properties binding */
+                addEventRequired(eventObj, event);
 
-        /* Event Relationship array binding */
-        addEventRelationship(eventObj, event);
+                /* Event Properties array binding */
+                addEventProperty(eventObj, event);
 
-        /* Event Operation array binding */
-        addEventOperation(eventObj, event);
+                /* Event Relationship array binding */
+                addEventRelationship(eventObj, event);
+
+                /* Event Operation array binding */
+                addEventOperation(eventObj, event);
+            }
+
+        } else {
+
+            let eventObj = {};
+            jsonProcess[event.name] = eventObj;
+
+            /* Event property fields binding */
+            addEventFields(eventObj, event)
+
+            /* Event Required fields properties binding */
+            addEventRequired(eventObj, event);
+
+            /* Event Properties array binding */
+            addEventProperty(eventObj, event);
+
+            /* Event Relationship array binding */
+            addEventRelationship(eventObj, event);
+
+            /* Event Operation array binding */
+            addEventOperation(eventObj, event);
+        }
 
     });
 }
@@ -289,10 +323,9 @@ function bindEventToImport(interfaceObject, mSubObject) {
     interfaceObject._type = 'UMLInterface';
     interfaceObject.name = mSubObject.name;
     /* #12 Type check for the properties  */
-    if(utils.isString(mSubObject.description)){
+    if (utils.isString(mSubObject.description)) {
         interfaceObject.documentation = mSubObject.description;
-    }
-    else{
+    } else {
         interfaceObject.documentation = "";
     }
 
@@ -303,7 +336,7 @@ function bindEventToImport(interfaceObject, mSubObject) {
  * @param {Object} XMIData
  * @param {UMLInterface} result
  */
-function addNewEvent(XMIData,result) {
+function addNewEvent(XMIData, result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         /* UMLClass */
