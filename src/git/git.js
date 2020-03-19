@@ -286,6 +286,80 @@ async function _gitPush() {
           app.dialogs.showErrorDialog(error.message);
      }
 }
+
+function isChangesAvailable() {
+     return new Promise(async (resolve, reject) => {
+          let result = {};
+          try {
+               /* check for repository is exist or not */
+               let isRepo = await git(_mdirname).checkIsRepo();
+               if (!isRepo) {
+
+                    // app.dialogs.showErrorDialog(constant.init_repo_first);
+                    result.result = false;
+                    result.message = constant.init_repo_first;
+                    resolve(result);
+               }
+          } catch (error) {
+               console.error(error.message);
+               // app.dialogs.showErrorDialog(error.message);
+               result.result = false;
+               result.message = error.message;
+               resolve(result);
+          }
+
+          try {
+               /* check existing file changes before pull data from remote repository */
+               let StatusSummary = await git(_mdirname).status();
+               if (StatusSummary.files.length > 0) {
+                    // app.dialogs.showInfoDialog(constant.commit_changes);
+                    // return true;
+                    result.result = true;
+                    result.message = constant.commit_changes;
+                    resolve(result);
+               } else {
+                    result.result = false;
+                    result.message = "No changes available";
+                    resolve(result);
+               }
+          } catch (error) {
+               console.error(error.message);
+               // app.dialogs.showErrorDialog(error.message);
+               result.result = false;
+               result.message = error.message;
+               resolve(result);
+          }
+
+     });
+
+}
+
+// async function isChangesAvailable() {
+//      try {
+//           /* check for repository is exist or not */
+//           let isRepo = await git(_mdirname).checkIsRepo();
+//           if (!isRepo) {
+//                app.dialogs.showErrorDialog(constant.init_repo_first);
+//                return;
+//           }
+//      } catch (error) {
+//           console.error(error.message);
+//           app.dialogs.showErrorDialog(error.message);
+//      }
+
+//      try {
+//           /* check existing file changes before pull data from remote repository */
+//           let StatusSummary = await git(_mdirname).status();
+//           if (StatusSummary.files.length == 1) {
+//                // app.dialogs.showInfoDialog(constant.commit_changes);
+//                return true;
+//           }
+//      } catch (error) {
+//           console.error(error.message);
+//           app.dialogs.showErrorDialog(error.message);
+//      }
+//      return false;
+// }
 /**
  * @function _gitPull
  * @description Pull latest changes from remote master repository and override local content
@@ -601,6 +675,7 @@ async function _gitClone() {
                          _mdirname = clonePath;
                          let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
                          app.dialogs.showInfoDialog(cloneMsg);
+                         readPullDirectory(_mdirname);
 
                     }, 10);
                })
@@ -657,15 +732,142 @@ async function initClone() {
 
 
 }
-async function sync() {
-     let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_sync, constant.options_sync);
+async function _sync() {
+     const mGit = git(_mdirname);
+     try {
+          let isChanges = await isChangesAvailable();
+          
+          if (isChanges.result) {
+               console.log("push...!");
+               let res = await app.dialogs.showConfirmDialog("Would you like to push your changes?");
+               if (res == "ok") {
+                    /* check for username is available or not before commit  */
+                    let user = await mGit.raw([
+                         'config',
+                         'user.name'
+                    ]);
+
+                    /* check for email is available or not before commit  */
+                    let email = await mGit.raw([
+                         'config',
+                         'user.email'
+                    ]);
+
+                    /* if username and email is not available, it will alert accordingly */
+                    if (user == null) {
+                         /* alert user to enter username */
+                         let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
+                         if (resUsername.buttonId == 'ok') {
+                              user = resUsername.returnValue;
+
+                         } else {
+                              app.dialogs.showAlertDialog(constant.enter_username);
+                              return;
+                         }
+                    }
+
+                    if (email == null) {
+
+                         /* alert user to enter email */
+                         let resPassword = await app.dialogs.showInputDialog(constant.enter_email);
+                         if (resPassword.buttonId == 'ok') {
+                              email = resPassword.returnValue;
+
+                         } else {
+                              app.dialogs.showAlertDialog(constant.enter_email);
+                              return;
+                         }
+
+                    }
+
+                    user = user.trim();
+                    email = email.trim();
+
+                    if (user != null && email != null) {
+                         /* add username into local git config */
+                         mGit.addConfig('user.name', user);
+
+                         /* add email into local git config */
+                         mGit.addConfig('user.email', email);
+                    }
+
+                    /* alert user to enter commit message */
+                    let resCommit = await app.dialogs.showTextDialog(constant.enter_commit_msg, "");
+                    if (resCommit.buttonId == "ok") {
+                         if (resCommit.returnValue) {
+                              try {
+                                   /* stage all files before commit */
+                                   let result = await mGit.add('./*');
+
+                                   /* commit changes */
+                                   let commit = await mGit.commit(resCommit.returnValue);
+                              } catch (error) {
+                                   console.error(error.message);
+                                   app.dialogs.showErrorDialog(error.message);
+                              }
+                         } else {
+                              app.dialogs.showErrorDialog(constant.invalid_commit_msg);
+                         }
+                    }
+
+                    /* get local remote url  */
+                    let res = await mGit.getRemotes(true);
+                    if (res.length == 1) {
+                         let remote = res[0];
+                         let pushURL = remote.refs.push
+
+                         /* alert user to enter username  */
+                         let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+
+                         let USER = user
+                         let PASS = resPASS.returnValue;
+
+
+                         const REPO = pushURL;
+                         let URL = url.parse(REPO)
+
+                         const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+                         let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
+                         /* push all commits to remote master branch  */
+                         mGit.push(gitPushUrl, 'master')
+                              .then((success) => {
+                                   vDialog.close();
+
+                                   setTimeout(function () {
+                                        app.dialogs.showInfoDialog("Push Successfull");
+                                   });
+
+                              }, (error) => {
+                                   console.error(error.message);
+                                   vDialog.close();
+                                   let eMsg = 'Push Failed' + '\n' + error.message;
+                                   app.dialogs.showErrorDialog(eMsg);
+                              });
+                    } else {
+                         app.dialogs.showInfoDialog(constant.add_remote);
+                    }
+
+               }
+
+
+          } else {
+               console.log("pull...!");
+          }
+     } catch (error) {
+          console.log(error.message);
+          app.dialogs.showErrorDialog(error.message);
+     }
+
+
+     /* let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_sync, constant.options_sync);
      if (res != null && res.buttonId == 'ok') {
           if (res.returnValue == constant.FETCH_REPO) {
                console.log("fetch repo");
           } else if (res.returnValue == constant.PUSH_REPO) {
                console.log("push repo");
           }
-     }
+     } */
 }
 async function _gitCreateNewRepo() {
 
@@ -709,5 +911,5 @@ module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
 module.exports.gitClone = _gitClone;
 module.exports.initClone = initClone;
-module.exports.sync = sync;
+module.exports.sync = _sync;
 module.exports.gitCreateNewRepo = _gitCreateNewRepo;
