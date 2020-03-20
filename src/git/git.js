@@ -308,27 +308,46 @@ function isChangesAvailable() {
                resolve(result);
           }
 
+          let isLocalChanges = false;
+          let isLocalCommitsToPush = false;
           try {
                /* check existing file changes before pull data from remote repository */
                let StatusSummary = await git(_mdirname).status();
                if (StatusSummary.files.length > 0) {
-                    // app.dialogs.showInfoDialog(constant.commit_changes);
-                    // return true;
-                    result.result = true;
-                    result.message = constant.commit_changes;
-                    resolve(result);
+                    isLocalChanges = true;
                } else {
-                    result.result = false;
-                    result.message = "No changes available";
-                    resolve(result);
+                    isLocalChanges = false;
                }
+
+               let rawLog = await git(_mdirname).raw([
+                    'log',
+                    '@{u}..'
+               ]);
+               if (rawLog == null) {
+                    isLocalCommitsToPush = false;
+
+               } else {
+                    isLocalCommitsToPush = true;
+
+               }
+
           } catch (error) {
                console.error(error.message);
-               // app.dialogs.showErrorDialog(error.message);
+               isLocalChanges = false;
+               isLocalCommitsToPush = false;
+          }
+
+          if (isLocalChanges || isLocalCommitsToPush) {
+               result.result = true;
+               result.message = constant.commit_changes;
+               resolve(result);
+          } else {
                result.result = false;
-               result.message = error.message;
+               result.message = constant.commit_changes;
                resolve(result);
           }
+
+
 
      });
 
@@ -734,9 +753,13 @@ async function initClone() {
 }
 async function _sync() {
      const mGit = git(_mdirname);
+
+
+
+
      try {
           let isChanges = await isChangesAvailable();
-          
+
           if (isChanges.result) {
                console.log("push...!");
                let res = await app.dialogs.showConfirmDialog("Would you like to push your changes?");
@@ -782,6 +805,7 @@ async function _sync() {
 
                     user = user.trim();
                     email = email.trim();
+                    pass = '';
 
                     if (user != null && email != null) {
                          /* add username into local git config */
@@ -808,42 +832,37 @@ async function _sync() {
                          } else {
                               app.dialogs.showErrorDialog(constant.invalid_commit_msg);
                          }
+                    } else {
+                         return;
                     }
 
                     /* get local remote url  */
                     let res = await mGit.getRemotes(true);
                     if (res.length == 1) {
-                         let remote = res[0];
-                         let pushURL = remote.refs.push
 
-                         /* alert user to enter username  */
-                         let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+                         try {
+                              await pushData(res, user, pass);
+                         } catch (error) {
+                              /* alert user to enter username  */
+                              /* hard reset local data  */
+                              let mReset = await git(_mdirname).raw(
+                                   [
+                                        'config',
+                                        'credential.helper',
+                                        'store'
+                                   ]);
 
-                         let USER = user
-                         let PASS = resPASS.returnValue;
+                              // if (mReset != null) {
+                              let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+                              pass = resPASS.returnValue
+                              try {
+                                   await pushData(res, user, pass);
+                              } catch (error) {
+                                   app.dialogs.showErrorDialog(error.message);
+                              }
+                              // }
+                         }
 
-
-                         const REPO = pushURL;
-                         let URL = url.parse(REPO)
-
-                         const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
-
-                         let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
-                         /* push all commits to remote master branch  */
-                         mGit.push(gitPushUrl, 'master')
-                              .then((success) => {
-                                   vDialog.close();
-
-                                   setTimeout(function () {
-                                        app.dialogs.showInfoDialog("Push Successfull");
-                                   });
-
-                              }, (error) => {
-                                   console.error(error.message);
-                                   vDialog.close();
-                                   let eMsg = 'Push Failed' + '\n' + error.message;
-                                   app.dialogs.showErrorDialog(eMsg);
-                              });
                     } else {
                          app.dialogs.showInfoDialog(constant.add_remote);
                     }
@@ -853,6 +872,43 @@ async function _sync() {
 
           } else {
                console.log("pull...!");
+               /* pull data from remote repository  */
+               let res = await git(_mdirname).getRemotes(true);
+               if (res.length == 1) {
+                    let remote = res[0];
+                    let pushURL = remote.refs.fetch;
+
+                    let vDialog = null;
+                    try {
+
+                         vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
+                         let resFetch = await git(_mdirname).fetch();
+
+
+                         /* hard reset local data  */
+                         let mReset = await git(_mdirname).raw(
+                              [
+                                   'reset',
+                                   '--hard',
+                                   'origin/master'
+                              ]);
+
+                         vDialog.close();
+                         if (mReset == null) {
+                              return;
+                         }
+                         app.toast.info("Pull Successfull");
+                         readPullDirectory(_mdirname);
+                    } catch (error) {
+                         console.error(error.message);
+                         if (vDialog != null) {
+                              vDialog.close()
+                         }
+                         setTimeout(function () {
+                              app.dialogs.showErrorDialog(error.message);
+                         });
+                    }
+               }
           }
      } catch (error) {
           console.log(error.message);
@@ -868,6 +924,40 @@ async function _sync() {
                console.log("push repo");
           }
      } */
+}
+
+function pushData(res, USER, PASS) {
+     return new Promise((resolve, reject) => {
+          const mGit = git(_mdirname);
+          let remote = res[0];
+          let pushURL = remote.refs.push
+
+          /* alert user to enter username  */
+          //let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+
+          const REPO = pushURL;
+          let URL = url.parse(REPO)
+
+          const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+          let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
+          /* push all commits to remote master branch  */
+          mGit.push(gitPushUrl, 'master')
+               .then((success) => {
+                    vDialog.close();
+
+                    setTimeout(function () {
+                         resolve("Push Successfull");
+                    });
+
+               }, (error) => {
+                    vDialog.close();
+                    reject(error.message);
+                    //console.error(error.message);
+                    //let eMsg = 'Push Failed' + '\n' + error.message;
+                    //app.dialogs.showErrorDialog(eMsg);
+               });
+     });
 }
 async function _gitCreateNewRepo() {
 
