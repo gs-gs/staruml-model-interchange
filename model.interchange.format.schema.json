@@ -56,7 +56,7 @@
         "dependent": {
           "type": "array",
           "description": "The package dependent property.",
-          "items": { "$ref": "#/definitions/class" }
+          "items": { "$ref": "#/definitions/package" }
         },
         "tags": {"$ref": "#/definitions/common/tags"}
       },
