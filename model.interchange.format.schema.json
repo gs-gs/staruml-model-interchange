@@ -1,0 +1,198 @@
+{
+  "$id": "https://edi3.org/model.interchange.format.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "The json schema for edi3 model interchange format",
+  "title": "ICF",
+  "type": "object",
+  "required": ["packages"],
+  "additionalProperties": false,
+  "properties": {
+    "packages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/package" }
+    }
+  },
+  "definitions": {
+    "common": {
+      "cardinality": {
+        "type": "string",
+        "enum": ["1", "0..1", "?", "1..*","+","0..*","*"],
+        "description": "The common cardinality property."
+      },
+      "name": {
+        "type": "string",
+        "description": "The common name property."
+      },
+      "description": {
+        "type": "string",
+        "description": "The common description property."
+      },
+      "status": {
+        "type": "string",
+        "description": "The common status property."
+      },
+      "tags": {
+        "type": "array",
+        "description": "The common tags property.",
+        "items": { "$ref": "#/definitions/tag" }
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": [ "type", "name" ],
+      "description": "The package object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["package"],
+          "description": "The package type property."
+        },
+        "name" : {"$ref": "#/definitions/common/name"},
+        "classes": {
+          "type": "array",
+          "description": "The package classes property.",
+          "items": { "$ref": "#/definitions/class" }
+        },
+        "dependent": {
+          "type": "array",
+          "description": "The package dependent property.",
+          "items": { "$ref": "#/definitions/class" }
+        },
+        "tags": {"$ref": "#/definitions/common/tags"}
+      },
+      "additionalProperties": false
+    },
+    "class": {
+      "type": "object",
+      "description": "The class object",
+      "required": [ "type", "name" ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Entity"],
+          "description": "The type property."
+        },
+        "name" : {"$ref": "#/definitions/common/name"},
+        "isAbstract": {
+          "type": "boolean",
+          "description": "The abstract status flag."
+        },
+        "description": {"$ref": "#/definitions/common/description"},
+        "version": {
+          "type": "string",
+          "description": "The version property."
+        },
+        "status": {"$ref": "#/definitions/common/status"},
+        "required": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/property" }
+        },
+        "relationships": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/relationship" }
+        },
+        "tags": {"$ref": "#/definitions/common/tags"}
+      },
+      "additionalProperties": false
+    },
+    "property": {
+      "type": "object",
+      "description": "The property object",
+      "required": [ "dataType", "name" ],
+      "properties": {
+        "dataType": {
+          "type": "object",
+          "description": "The tag object",
+          "required": [ "type", "name" ],
+          "description": "The type property.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "The type property."
+            },
+            "name" : {"$ref": "#/definitions/common/name"}
+          }
+        },
+        "name" : {"$ref": "#/definitions/common/name"},
+        "description": {"$ref": "#/definitions/common/description"},
+        "isID": {
+          "type": "boolean",
+          "description": "The isID property."
+        },
+        "status": {"$ref": "#/definitions/common/status"},
+        "cardinality": { "$ref": "#/definitions/common/cardinality" },
+        "tags": {"$ref": "#/definitions/common/tags"},
+        "defaultValue": {
+          "type": "string",
+          "description": "The defaultValue property."
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationship": {
+      "type": "object",
+      "description": "The relationship object",
+      "required": ["name", "type", "source", "target"],
+      "properties": {
+        "name" : {"$ref": "#/definitions/common/name"},
+        "description": {"$ref": "#/definitions/common/description"},
+        "type": {
+          "type": "string",
+          "enum": ["aggregation", "composition", "association"],
+          "description": ""
+        },
+        "source": { "$ref": "#/definitions/relationshipEnd" },
+        "target": { "$ref": "#/definitions/relationshipEnd" },
+        "tags": {"$ref": "#/definitions/common/tags"}
+      },
+      "additionalProperties": false
+    },
+    "relationshipEnd": {
+      "type": "object",
+      "description": "The relationshipEnd object",
+      "required": ["name", "type", "package"],
+      "properties": {
+        "name" : {"$ref": "#/definitions/common/name"},
+        "description": {"$ref": "#/definitions/common/description"},
+        "type": {
+          "type": "string",
+          "enum": ["Entity"],
+          "description": ""
+        },
+        "cardinality": { "$ref": "#/definitions/common/cardinality" },
+        "package": {
+          "type": "string",
+          "description": ""
+        },
+        "navigable": {
+          "type": "boolean",
+          "description": ""
+        },
+        "tags": {"$ref": "#/definitions/common/tags"}
+      },
+      "additionalProperties": false
+    },
+    "tag": {
+      "type": "object",
+      "description": "The tag object",
+      "required": [ "name", "value", "kind" ],
+      "properties": {
+        "name" : {"$ref": "#/definitions/common/name"},
+        "value": {
+          "type": "string",
+          "description": ""
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["string", "reference", "boolean", "number", "hidden"],
+          "description": ""
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
