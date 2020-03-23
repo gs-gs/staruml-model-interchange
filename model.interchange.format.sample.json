@@ -1,0 +1,39 @@
+{
+  "packages" :[{
+    "type": "package",
+    "name": "Package3",
+    "classes" :[
+    {
+        "type": "Entity",
+        "name": "Class1",
+        "isAbstract": true,
+        "description": "",
+        "version": "",
+        "status": "",
+        "required": [],
+        "properties": [
+            {
+                "name": "Attribute1",
+                "description": "",
+                "isID": false,
+                "status": "",
+                "cardinality": "0..*",
+                "tags": [
+                    {
+                        "name": "Tag1",
+                        "value": "123",
+                        "kind": "string"
+                    }
+                ],
+                "defaultValue": "",
+                "dataType": {
+                    "type": "",
+                    "name": "Attribute1"
+                }
+            }
+        ],
+        "relationships": []
+    }],
+    "dependent": []
+  }]
+}
