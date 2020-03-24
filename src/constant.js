@@ -69,7 +69,8 @@ const constant = {
         value: 1
     }],
     title_model_interchange: 'Model Interchange',
-    clone_progress_msg: 'Please wait until git cloning is being processed'
+    clone_progress_msg: 'Please wait until git cloning is being processed',
+    push_success_msg:'Push Successfull'
 }
 /**
  * @function configMessage

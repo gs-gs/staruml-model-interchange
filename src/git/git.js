@@ -176,10 +176,10 @@ async function _gitAddConfig() {
                          if (_email) {
 
                               /* add username into local git config */
-                              git(_mdirname).addConfig('user.name', _username);
+                              git(_mdirname).addConfig('--local user.name', _username);
 
                               /* add email into local git config */
-                              git(_mdirname).addConfig('user.email', _email);
+                              git(_mdirname).addConfig('--local user.email', _email);
 
                               app.dialogs.showInfoDialog(constant.getConfigMsg(_username, _email));
                          } else {
@@ -268,7 +268,7 @@ async function _gitPush() {
                          vDialog.close();
 
                          setTimeout(function () {
-                              app.dialogs.showInfoDialog("Push Successfull");
+                              app.dialogs.showInfoDialog(constant.push_success_msg);
                          });
 
                     }, (error) => {
@@ -309,7 +309,7 @@ function isChangesAvailable() {
           }
 
           let isLocalChanges = false;
-          let isLocalCommitsToPush = false;
+          // let isLocalCommitsToPush = false;
           try {
                /* check existing file changes before pull data from remote repository */
                let StatusSummary = await git(_mdirname).status();
@@ -323,21 +323,21 @@ function isChangesAvailable() {
                     'log',
                     '@{u}..'
                ]);
-               if (rawLog == null) {
-                    isLocalCommitsToPush = false;
+               // if (rawLog == null) {
+               //      isLocalCommitsToPush = false;
 
-               } else {
-                    isLocalCommitsToPush = true;
+               // } else {
+               //      isLocalCommitsToPush = true;
 
-               }
+               // }
 
           } catch (error) {
                console.error(error.message);
                isLocalChanges = false;
-               isLocalCommitsToPush = false;
+               // isLocalCommitsToPush = false;
           }
 
-          if (isLocalChanges || isLocalCommitsToPush) {
+          if (isLocalChanges ) { //|| isLocalCommitsToPush
                result.result = true;
                result.message = constant.commit_changes;
                resolve(result);
@@ -649,7 +649,7 @@ async function _gitClone() {
      if (resUSER == '') {
           return;
      }
-
+     
      /* alert user to enter username  */
      let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
      resPASS = resPASS.returnValue;
@@ -686,12 +686,13 @@ async function _gitClone() {
                .clone(cloneURL)
                .then(() => {
                     mDialog.close();
-                    setTimeout(function () {
-
-                         console.log('finished')
+                    setTimeout(async function () {
+                         /* add username into local git config */
+                         console.log('finished');
                          let clonePath = basePath + path.sep + cloneFolderName;
                          dataStore.getStore().set('repoPath', clonePath);
                          _mdirname = clonePath;
+                         await git(_mdirname).raw(['config','--local','user.name',resUSER]);
                          let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
                          app.dialogs.showInfoDialog(cloneMsg);
                          readPullDirectory(_mdirname);
@@ -725,26 +726,6 @@ async function initClone() {
           console.log(resultDialog);
           _gitClone();
 
-          /* app.dialogs.showSelectDropdownDialog(constant.msg_option_init_clone, constant.options_init_clone).then(function ({
-               buttonId,
-               returnValue
-          }) {
-               console.log("returnValue", returnValue);
-               if (buttonId === 'ok') {
-
-                    if (returnValue === constant.CREATE_REPO) {
-                         console.log("create repo");
-                         _gitCreateNewRepo();
-                    } else if (returnValue === constant.CLONE_REPO) {
-                         _gitClone();
-                    } else if (returnValue === constant.ADD_REPO) {
-                         console.log("add repo");
-                    }
-
-               } else {
-                    console.log("User canceled")
-               }
-          }); */
      } else {
           app.dialogs.showInfoDialog(constant.msg_repo_already_exist);
      }
@@ -767,12 +748,14 @@ async function _sync() {
                     /* check for username is available or not before commit  */
                     let user = await mGit.raw([
                          'config',
+                         '--local',
                          'user.name'
                     ]);
 
                     /* check for email is available or not before commit  */
                     let email = await mGit.raw([
                          'config',
+                         '--local',
                          'user.email'
                     ]);
 
@@ -792,9 +775,9 @@ async function _sync() {
                     if (email == null) {
 
                          /* alert user to enter email */
-                         let resPassword = await app.dialogs.showInputDialog(constant.enter_email);
-                         if (resPassword.buttonId == 'ok') {
-                              email = resPassword.returnValue;
+                         let resEmail = await app.dialogs.showInputDialog(constant.enter_email);
+                         if (resEmail.buttonId == 'ok') {
+                              email = resEmail.returnValue;
 
                          } else {
                               app.dialogs.showAlertDialog(constant.enter_email);
@@ -809,10 +792,11 @@ async function _sync() {
 
                     if (user != null && email != null) {
                          /* add username into local git config */
-                         mGit.addConfig('user.name', user);
+                         await mGit.raw(['config','--local','user.name',user]);
+     
+                         /* check for email is available or not before commit  */
+                         await mGit.raw(['config','--local','user.email',email]);
 
-                         /* add email into local git config */
-                         mGit.addConfig('user.email', email);
                     }
 
                     /* alert user to enter commit message */
@@ -842,6 +826,9 @@ async function _sync() {
 
                          try {
                               await pushData(res, user, pass);
+                              setTimeout(function(){
+                                   app.toast.info(constant.push_success_msg);
+                              },5);
                          } catch (error) {
                               /* alert user to enter username  */
                               /* hard reset local data  */
@@ -857,6 +844,9 @@ async function _sync() {
                               pass = resPASS.returnValue
                               try {
                                    await pushData(res, user, pass);
+                                   setTimeout(function(){
+                                        app.toast.info(constant.push_success_msg);
+                                   },5);
                               } catch (error) {
                                    app.dialogs.showErrorDialog(error.message);
                               }
@@ -938,7 +928,8 @@ function pushData(res, USER, PASS) {
           const REPO = pushURL;
           let URL = url.parse(REPO)
 
-          const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+          // const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+          const gitPushUrl = pushURL;
 
           let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
           /* push all commits to remote master branch  */
@@ -947,7 +938,7 @@ function pushData(res, USER, PASS) {
                     vDialog.close();
 
                     setTimeout(function () {
-                         resolve("Push Successfull");
+                         resolve(constant.push_success_msg);
                     });
 
                }, (error) => {

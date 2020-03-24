@@ -1,4 +1,5 @@
 const path = require('path');
+const os = require('os');
 
 let fileName = '';
 let ext = '';
@@ -25,7 +26,8 @@ function getExtension(){
 
 function getStore(){
     const store = require('data-store')({
-        path: process.cwd() + '/.' + getFileName() + '_' + getExtension() + '.json'
+        // path: process.cwd() + '/.' + getFileName() + '_' + getExtension() + '.json'
+        path: path.join(os.homedir(), '.config/'+getFileName()+'_'+getExtension()+'.json')
     });
     return store;
 }
