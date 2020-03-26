@@ -428,7 +428,7 @@ async function importModel(file) {
                 app.dialogs.showInfoDialog(constant.mi_msg_success);
             });
         }
-    });
+    },5);
 
 }
 /**

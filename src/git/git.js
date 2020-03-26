@@ -461,7 +461,9 @@ function readPullDirectory(_mdirname) {
                if (filesList.length == 1) {
                     let mFile = filesList[0];
                     let finalPath = _mdirname + path.sep + mFile;
-                    transport.importModel(finalPath);
+                    setTimeout(function(){
+                         transport.importModel(finalPath);
+                    },5);
                }
           } else if (err) {
                app.toast.error(err.message);
