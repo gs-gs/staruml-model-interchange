@@ -159,11 +159,17 @@ function getClasswiseAssociations(element) {
 function importDataToModel(XMIData) {
 
     let mainOwnedElements = []
-    let Package = {
+    /* let Package = {
         '_type': 'UMLPackage',
         'name': XMIData.name,
         'ownedElements': mainOwnedElements
-    };
+    }; */
+
+    let Package = {};
+    Package[fields._type]='UMLPackage';
+    Package[fields.name] = XMIData.name;
+    Package[fields.ownedElements] = mainOwnedElements;
+
     mUtils.resetNewAddedElement();
 
     if (XMIData.type == fields.package) {
@@ -188,7 +194,7 @@ function importDataToModel(XMIData) {
         else {
 
             let mProject = app.project.getProject();
-            Package['_parent'] = {
+            Package[fields._parent] = {
                 '$ref': mProject._id
             }
             result = addNewPackageInExplorer(Package, XMIData, mainOwnedElements);

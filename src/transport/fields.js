@@ -1,7 +1,8 @@
 const fields = {
-    'package': 'Package',
     'type': 'type',
+    '_type': '_type',
     'name': 'name',
+    'ownedElements': 'ownedElements',
     'abstractFiles': 'abstractFiles',
     'dependent': 'dependent',
     'isAbstract': 'isAbstract',
@@ -12,7 +13,6 @@ const fields = {
     'Required': 'Required',
     'Property': 'Property',
     'isID': 'isID',
-    'status': 'status',
     'pattern': 'pattern',
     'DataType': 'DataType',
     '_parent': '_parent',

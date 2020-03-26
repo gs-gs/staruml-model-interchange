@@ -650,7 +650,7 @@ async function _gitClone() {
           return;
      }
      
-     /* alert user to enter username  */
+     /* alert user to enter password  */
      let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
      resPASS = resPASS.returnValue;
      if (resPASS == '') {
@@ -659,7 +659,6 @@ async function _gitClone() {
 
      let USER = resUSER;
      let PASS = resPASS;
-
 
      const REPO = repoURL;
      let URL = url.parse(REPO)

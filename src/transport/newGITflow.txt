@@ -1,22 +1,11 @@
 Git 
     1   Init/Clone
-             1. Create new repository
-
-                   Name
-                   Description
-                   Local Path ( Select path where you want to create new repository )
-                   Git ignore
-
-             2. Clone
-
-                   Repository url
-                   Local path ( select path to clone )
-            
-             3. Add Local Repository ( select existing local repository path )
+             1. Enter repository URL
+             2. Enter username
+             3. password
+             4. Select local path ( select path to clone )
 
     2.  Sync
-            1. Fetch
-                if no commits then only fetch 
-            2. Push
-                if local commits available then only push
+            1. If any local changes -> Push
+            2. If no any local changes -> Pull and reset
 
