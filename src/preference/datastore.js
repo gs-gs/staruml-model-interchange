@@ -27,9 +27,12 @@ function getExtension(){
 function getStore(){
     const store = require('data-store')({
         // path: process.cwd() + '/.' + getFileName() + '_' + getExtension() + '.json'
-        path: path.join(os.homedir(), '.config/'+getFileName()+'_'+getExtension()+'.json')
+        path: path.join(os.homedir(), '.config/staruml-model-interchange.json')
     });
+    console.log("Home Directory : ",os.homedir());
     return store;
 }
 module.exports.initialize = initialize;
 module.exports.getStore = getStore;
+module.exports.getFileName = getFileName;
+module.exports.getExtension = getExtension;

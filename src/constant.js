@@ -43,6 +43,7 @@ const constant = {
     msg_clone_repository: 'Select folder where you want to clone repository',
     msg_create_repository: 'Select folder where you want to create repository',
     msg_option_init_clone: 'Select one of the following options',
+    save_file_before_operation: 'Please save file to perform model-interchange operations',
     CREATE_REPO: '0',
     CLONE_REPO: '1',
     ADD_REPO: '2',

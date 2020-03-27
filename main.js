@@ -24,6 +24,7 @@ function _projectClosed() {
  * @description function will be called when the extension is loaded
  */
 function init() {
+     
      /* Register preference for repository url */
      app.preferences.register(prefs);
      app.commands.register('tool.transport:import', transport.importModel);

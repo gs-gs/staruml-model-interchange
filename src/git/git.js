@@ -14,8 +14,11 @@ var junk = require('junk');
  * @description setup directory structure for git directory when project loaded
  */
 function _projectLoaded() {
+     
+
      dataStore.initialize();
-     _mdirname = dataStore.getStore().get('repoPath');
+     let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+     _mdirname = dataStore.getStore().get(repoPath);
      console.log("_mdirname", _mdirname);
      /* _fname = app.project.getFilename();
      if (_fname == null) {
@@ -691,7 +694,8 @@ async function _gitClone() {
                          /* add username into local git config */
                          console.log('finished');
                          let clonePath = basePath + path.sep + cloneFolderName;
-                         dataStore.getStore().set('repoPath', clonePath);
+                         let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+                         dataStore.getStore().set(repoPath, clonePath);
                          _mdirname = clonePath;
                          await git(_mdirname).raw(['config','--local','user.name',resUSER]);
                          let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
@@ -711,8 +715,14 @@ async function _gitClone() {
 
 }
 async function initClone() {
+     let fileName = app.project.filename;
+     if(fileName == null){
+          app.dialogs.showAlertDialog(constant.save_file_before_operation);
+          return;
+     }
      console.log("initClone");
-     _mdirname = dataStore.getStore().get('repoPath');
+     let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+     _mdirname = dataStore.getStore().get(repoPath);
 
      let isDir = false;
      if (_mdirname != null && !fs.existsSync(_mdirname)) {
@@ -734,10 +744,15 @@ async function initClone() {
 
 }
 async function _sync() {
+
+
+     let fileName = app.project.filename;
+     if(fileName == null){
+          app.dialogs.showAlertDialog(constant.save_file_before_operation);
+          return;
+     }
+
      const mGit = git(_mdirname);
-
-
-
 
      try {
           let isChanges = await isChangesAvailable();
