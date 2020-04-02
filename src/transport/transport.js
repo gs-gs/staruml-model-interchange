@@ -398,11 +398,10 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
  */
 async function importModel(file) {
 
-    let fileName = app.project.filename;
-     if(fileName == null){
-          app.dialogs.showAlertDialog(constant.save_file_before_operation);
-          return;
-     }
+    let isSave = await utils.isNewFileSaved();
+    if(!isSave){
+        return;
+    }
 
     let finalPath = null;
     if (file) {
@@ -477,13 +476,12 @@ function processImport(MainXMIData) {
  * @function exportModel
  * @description Export the selected package in JSONSchema standars
  */
-function exportModel() {
+async function exportModel() {
 
-    let fileName = app.project.filename;
-     if(fileName == null){
-          app.dialogs.showAlertDialog(constant.save_file_before_operation);
-          return;
-     }
+    let isSave = await utils.isNewFileSaved();
+    if(!isSave){
+        return;
+    }
 
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */

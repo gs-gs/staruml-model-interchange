@@ -2,7 +2,7 @@
     "name": "staruml-model-interchange",
     "title": "model-interchange",
     "description": "This specification provides a standard JSON structure/schema for the representation of semantic library content and API models. This is used to import library content into any conformant modelling tool, and to interchange API models between conformant modelling tools.",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "engines": {
         "staruml": ">=3.0.0"
     },

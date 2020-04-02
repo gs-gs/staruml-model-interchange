@@ -6,6 +6,7 @@ var path = require('path');
 const fs = require('fs');
 const git = require('simple-git/promise');
 const constant = require('../constant');
+var utils = require('../transport/utils');
 var _fname = null;
 var _mdirname = null;
 var junk = require('junk');
@@ -20,24 +21,6 @@ function _projectLoaded() {
      let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
      _mdirname = dataStore.getStore().get(repoPath);
      console.log("_mdirname", _mdirname);
-     /* _fname = app.project.getFilename();
-     if (_fname == null) {
-          _fname = app.project.getProject().name;
-     }
-     let basefile = path.basename(_fname);
-     let basefileName = path.parse(basefile).name;
-     if (_fname) {
-          _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname + path.sep + basefileName + '_git';
-
-          if (!fs.existsSync(_mdirname)) {
-               fs.mkdirSync(_mdirname);
-               fs.readdir(_mdirname, function (err, files) {});
-          }
-     } */
-
-
-
 }
 /**
  * @function _gitInit
@@ -322,10 +305,10 @@ function isChangesAvailable() {
                     isLocalChanges = false;
                }
 
-               let rawLog = await git(_mdirname).raw([
-                    'log',
-                    '@{u}..'
-               ]);
+               // let rawLog = await git(_mdirname).raw([
+               //      'log',
+               //      '@{u}..'
+               // ]);
                // if (rawLog == null) {
                //      isLocalCommitsToPush = false;
 
@@ -648,29 +631,29 @@ async function _gitClone() {
           return;
      }
 
-     /* alert user to enter username  */
-     let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
-     resUSER = resUSER.returnValue;
-     if (resUSER == '') {
-          return;
-     }
+     // /* alert user to enter username  */
+     // let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+     // resUSER = resUSER.returnValue;
+     // if (resUSER == '') {
+     //      return;
+     // }
      
-     /* alert user to enter password  */
-     let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-     resPASS = resPASS.returnValue;
-     if (resPASS == '') {
-          return;
-     }
+     // /* alert user to enter password  */
+     // let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+     // resPASS = resPASS.returnValue;
+     // if (resPASS == '') {
+     //      return;
+     // }
 
-     let USER = resUSER;
-     let PASS = resPASS;
+     // let USER = resUSER;
+     // let PASS = resPASS;
 
-     const REPO = repoURL;
-     let URL = url.parse(REPO)
+     // const REPO = repoURL;
+     // let URL = url.parse(REPO)
 
-     const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+     // const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
 
-     let cloneFolderName = path.basename(cloneURL);
+     let cloneFolderName = path.basename(repoURL/* cloneURL */);
      const basePath = app.dialogs.showSaveDialog(constant.msg_clone_repository, null, null);
      if (basePath == null) {
           return;
@@ -687,7 +670,7 @@ async function _gitClone() {
      let mDialog = dm.showModalDialog("", constant.title_model_interchange, constant.clone_progress_msg, [], true);
      setTimeout(async function () {
           git(basePath).silent(true)
-               .clone(cloneURL)
+               .clone(repoURL)
                .then(() => {
                     mDialog.close();
                     setTimeout(async function () {
@@ -697,7 +680,7 @@ async function _gitClone() {
                          let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
                          dataStore.getStore().set(repoPath, clonePath);
                          _mdirname = clonePath;
-                         await git(_mdirname).raw(['config','--local','user.name',resUSER]);
+                         //await git(_mdirname).raw(['config','--local','user.name',resUSER]);
                          let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
                          app.dialogs.showInfoDialog(cloneMsg);
                          readPullDirectory(_mdirname);
@@ -714,10 +697,32 @@ async function _gitClone() {
 
 
 }
+async function showDiff(){
+     const mGit = git(_mdirname);
+     let path = dataStore.getDiffPath();
+
+     let result = await mGit.raw([
+          'diff'
+     ]);
+
+     console.log("diff",result);
+     fs.writeFile(path, result, 'utf-8', async function (err) {
+          if (err) {
+              console.error("Error : ", err.message);
+              return;
+          } else {
+              const open = require('open');
+              let resultOpen = await open(path);
+               console.log("resultOpen", resultOpen);
+          }
+      });
+
+     console.log("Git diff result : ",result);
+}
 async function initClone() {
-     let fileName = app.project.filename;
-     if(fileName == null){
-          app.dialogs.showAlertDialog(constant.save_file_before_operation);
+
+     let isSave = await utils.isNewFileSaved();
+     if(!isSave){
           return;
      }
      console.log("initClone");
@@ -745,15 +750,11 @@ async function initClone() {
 }
 async function _sync() {
 
-
-     let fileName = app.project.filename;
-     if(fileName == null){
-          app.dialogs.showAlertDialog(constant.save_file_before_operation);
+     let isSave = await utils.isNewFileSaved();
+     if(!isSave){
           return;
      }
-
-     const mGit = git(_mdirname);
-
+     
      try {
           let isChanges = await isChangesAvailable();
 
@@ -840,34 +841,7 @@ async function _sync() {
                     let res = await mGit.getRemotes(true);
                     if (res.length == 1) {
 
-                         try {
-                              await pushData(res, user, pass);
-                              setTimeout(function(){
-                                   app.toast.info(constant.push_success_msg);
-                              },5);
-                         } catch (error) {
-                              /* alert user to enter username  */
-                              /* hard reset local data  */
-                              let mReset = await git(_mdirname).raw(
-                                   [
-                                        'config',
-                                        'credential.helper',
-                                        'store'
-                                   ]);
-
-                              // if (mReset != null) {
-                              let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-                              pass = resPASS.returnValue
-                              try {
-                                   await pushData(res, user, pass);
-                                   setTimeout(function(){
-                                        app.toast.info(constant.push_success_msg);
-                                   },5);
-                              } catch (error) {
-                                   app.dialogs.showErrorDialog(error.message);
-                              }
-                              // }
-                         }
+                         pushUntillCorrectCredential(res,user);
 
                     } else {
                          app.dialogs.showInfoDialog(constant.add_remote);
@@ -932,22 +906,111 @@ async function _sync() {
      } */
 }
 
-function pushData(res, USER, PASS) {
-     return new Promise((resolve, reject) => {
+async function pushUntillCorrectCredential(res,user){
+     try {
+          await pushData(res,user);
+          setTimeout(function(){
+               app.toast.info(constant.push_success_msg);
+          },5);
+     } catch (error) {
+          let errMsg = error.message;
+          let includeStr = constant.include_string;
+          if(errMsg.includes(includeStr)){
+               let result = app.dialogs.showConfirmDialog(error.message+"\nPlease enter corrent username & email");
+               if(result == "ok"){
+                    /* alert user to enter username */
+                    let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
+                    if (resUsername.buttonId == 'ok') {
+                         user = resUsername.returnValue;
+
+                    } else {
+                         app.dialogs.showAlertDialog(constant.enter_username);
+                         return;
+                    }
+
+                    /* alert user to enter email */
+                    let resEmail = await app.dialogs.showInputDialog(constant.enter_email);
+                    if (resEmail.buttonId == 'ok') {
+                         email = resEmail.returnValue;
+
+                    } else {
+                         app.dialogs.showAlertDialog(constant.enter_email);
+                         return;
+                    }
+
+
+                    user = user.trim();
+                    email = email.trim();
+                    pass = '';
+
+                    if (user != null && email != null) {
+                         /* add username into local git config */
+                         const mGit = git(_mdirname);
+                         await mGit.raw(['config','--local','user.name',user]);
+
+                         /* check for email is available or not before commit  */
+                         await mGit.raw(['config','--local','user.email',email]);
+
+
+                         let res = await mGit.getRemotes(true);
+                         if (res.length == 1) {
+
+                              pushUntillCorrectCredential(res,user);
+
+                         } else {
+                              app.dialogs.showInfoDialog(constant.add_remote);
+                         }
+                    }
+               }
+          }else{
+               app.dialogs.showErrorDialog(error.message);
+          }
+          
+     }
+}
+
+function pushData(res,user) {
+     return new Promise(async (resolve, reject) => {
           const mGit = git(_mdirname);
           let remote = res[0];
           let pushURL = remote.refs.push
+          let USER = user;
+          let PASS = null;
+          PASS = await mGit.raw([
+               'config',
+               '--local',
+               'user.pass'
+          ]);
 
-          /* alert user to enter username  */
-          //let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+          if(PASS == null || PASS == ''){
+               /* alert user to enter username  */
+               let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+               if(resPASS.returnValue == ''){
+                    throw new Error('Please enter password');
+               }
+               await mGit.raw(['config','--local','user.pass',resPASS.returnValue]);
+               PASS = resPASS.returnValue;
+          }
+          
+          
 
+          PASS = PASS.trim();
           const REPO = pushURL;
           let URL = url.parse(REPO)
 
-          // const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
-          const gitPushUrl = pushURL;
+          const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+          // const gitPushUrl = pushURL;
 
           let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
+
+          /* store github password  */
+          /* Command : git config credential.helper store */
+          /* await mGit.raw([
+               'config',
+               '--local',
+               'credential.helper',
+               'store'
+          ]); */
           /* push all commits to remote master branch  */
           mGit.push(gitPushUrl, 'master')
                .then((success) => {
@@ -957,9 +1020,10 @@ function pushData(res, USER, PASS) {
                          resolve(constant.push_success_msg);
                     });
 
-               }, (error) => {
+               }, async (error) => {
                     vDialog.close();
-                    reject(error.message);
+                    await mGit.raw(['config','--local','--unset','user.pass']);
+                    reject(error);
                     //console.error(error.message);
                     //let eMsg = 'Push Failed' + '\n' + error.message;
                     //app.dialogs.showErrorDialog(eMsg);
