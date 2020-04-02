@@ -10,7 +10,7 @@ function initialize() {
     let res=base.split(".");
     if(res.length==2){
         fileName = res[0];
-        ext = res [1];
+        ext = res[1];
     }
 
 }
@@ -32,7 +32,13 @@ function getStore(){
     console.log("Home Directory : ",os.homedir());
     return store;
 }
+
+function getDiffPath(){
+    let configPath = path.join(os.homedir(), '.config');
+    return path.join(configPath,'diffChanges.diff');
+}
 module.exports.initialize = initialize;
 module.exports.getStore = getStore;
 module.exports.getFileName = getFileName;
 module.exports.getExtension = getExtension;
+module.exports.getDiffPath = getDiffPath;

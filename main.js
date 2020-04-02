@@ -1,3 +1,4 @@
+const fsNew = require('fs-extra')
 const git = require('./src/git/git');
 const transport = require('./src/transport/transport');
 const prefs = require('./src/preference/prefs') ;
@@ -48,5 +49,15 @@ function init() {
      // app.project.on('projectCreated', _projectCreated);
      app.project.on('projectSaved', _projectSaved);
 }
+function runStarUML(){
+    let src = 'D:/Faizan-Vahevaria/StarUML/staruml-model-interchange/';
+    let dest = 'C:/Users/Mayur/AppData/Roaming/StarUML/extensions/user/staruml-model-interchange/';
+    console.log("Coping files..!")
+    fsNew.copy(src, dest)
+    .then(() => console.log('success!'))
+    .catch(err => console.error(err))
+    return '';
+}
 
 exports.init = init
+exports.runStarUML = runStarUML
