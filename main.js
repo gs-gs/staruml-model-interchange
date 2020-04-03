@@ -1,7 +1,10 @@
+var path = require('path');
 const fsNew = require('fs-extra')
 const git = require('./src/git/git');
 const transport = require('./src/transport/transport');
 const prefs = require('./src/preference/prefs') ;
+const os = require('os');
+const baseDirName = require('./package.json').name;
 
 /**
  * @function _projectSaved
@@ -50,13 +53,25 @@ function init() {
      app.project.on('projectSaved', _projectSaved);
 }
 function runStarUML(){
-    let src = 'D:/Faizan-Vahevaria/StarUML/staruml-model-interchange/';
-    let dest = 'C:/Users/Mayur/AppData/Roaming/StarUML/extensions/user/staruml-model-interchange/';
-    console.log("Coping files..!")
-    fsNew.copy(src, dest)
-    .then(() => console.log('success!'))
-    .catch(err => console.error(err))
-    return '';
+     /* possible values of os 'aix', 'darwin', 'freebsd', 'linux', 'openbsd', 'sunos', 'win32' */
+     let homeDirectory = os.homedir();
+     let dest = '';
+     let src = __dirname+path.sep;
+     if(os.platform == 'win32') {
+          dest = homeDirectory+path.sep+'AppData'+path.sep+'Roaming'+path.sep+'StarUML'+path.sep+'extensions'+path.sep+'user'+path.sep+baseDirName+path.sep;
+     }
+     else if(os.platform == 'linux') {
+          dest = homeDirectory+'.config'+path.sep+'StarUML'+path.sep+'extensions'+path.sep+'user'+path.sep+baseDirName+path.sep;
+     }
+     console.log("platform : ",os.platform);
+     console.log("base : ",baseDirName);
+     console.log("src : ",src);
+     console.log("dest : ",dest);
+     console.log("Coping files..!")
+     fsNew.copy(src, dest)
+     .then(() => console.log('success!'))
+     .catch(err => console.error(err));
+     return '';
 }
 
 exports.init = init
