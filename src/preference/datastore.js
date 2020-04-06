@@ -6,11 +6,14 @@ let ext = '';
 function initialize() {
 
     let basePath = app.project.filename;
-    let base = path.parse(basePath).base;
-    let res=base.split(".");
-    if(res.length==2){
-        fileName = res[0];
-        ext = res[1];
+    if(basePath !=null){
+
+        let base = path.parse(basePath).base;
+        let res=base.split(".");
+        if(res.length==2){
+            fileName = res[0];
+            ext = res[1];
+        }
     }
 
 }

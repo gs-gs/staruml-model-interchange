@@ -749,7 +749,7 @@ async function initClone() {
 
 }
 async function _sync() {
-
+     const mGit = git(_mdirname);
      let isSave = await utils.isNewFileSaved();
      if(!isSave){
           return;
@@ -916,7 +916,7 @@ async function pushUntillCorrectCredential(res,user){
           let errMsg = error.message;
           let includeStr = constant.include_string;
           if(errMsg.includes(includeStr)){
-               let result = app.dialogs.showConfirmDialog(error.message+"\nPlease enter corrent username & email");
+               let result = app.dialogs.showConfirmDialog(error.message+constant.enter_correct_un_pw);
                if(result == "ok"){
                     /* alert user to enter username */
                     let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
@@ -976,29 +976,48 @@ function pushData(res,user) {
           let pushURL = remote.refs.push
           let USER = user;
           let PASS = null;
-          PASS = await mGit.raw([
+          /* PASS = await mGit.raw([
                'config',
                '--local',
                'user.pass'
-          ]);
+          ]); */
 
-          if(PASS == null || PASS == ''){
-               /* alert user to enter username  */
-               let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-               if(resPASS.returnValue == ''){
-                    throw new Error('Please enter password');
+          let pURL=url.parse(pushURL);
+          let auth=pURL.auth;
+          console.log("auth : ",auth);
+          if(auth == null){
+
+               // if(PASS == null || PASS == ''){
+                    /* alert user to enter username  */
+                    let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+                    if(resPASS.returnValue == ''){
+                         throw new Error('Please enter password');
+                    }
+                    //await mGit.raw(['config','--local','user.pass',resPASS.returnValue]);
+                    PASS = resPASS.returnValue;
+
+                    const nURL = pURL.protocol + '//' + USER + ':' + PASS + '@' + pURL.host + pURL.path;
+                    await mGit.raw(['remote','set-url','origin',nURL]);
+
+
+               // }
+          }else{
+
+               let unpw=auth.split(":");
+               if(unpw.length==2){
+                    PASS=unpw[1];
                }
-               await mGit.raw(['config','--local','user.pass',resPASS.returnValue]);
-               PASS = resPASS.returnValue;
           }
-          
-          
+
 
           PASS = PASS.trim();
           const REPO = pushURL;
-          let URL = url.parse(REPO)
+          let URL = url.parse(REPO);
 
           const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+          console.log("Push url : ",gitPushUrl);
+          let newURL=url.parse(gitPushUrl);
+          console.log("new URL ",newURL);
           // const gitPushUrl = pushURL;
 
           let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
@@ -1022,7 +1041,10 @@ function pushData(res,user) {
 
                }, async (error) => {
                     vDialog.close();
-                    await mGit.raw(['config','--local','--unset','user.pass']);
+                    let unsetURL = url.parse(gitPushUrl);
+                    const nURL = unsetURL.protocol + '//' + unsetURL.host + unsetURL.path;
+                    await mGit.raw(['remote','set-url','origin',nURL]);
+                    // await mGit.raw(['config','--local','--unset','user.pass']);
                     reject(error);
                     //console.error(error.message);
                     //let eMsg = 'Push Failed' + '\n' + error.message;

@@ -16,6 +16,7 @@ const constant = {
     enter_commit_msg: "Enter commit message",
     invalid_commit_repo: "Invalid commit message.",
     enter_username: "Please enter username",
+    enter_correct_un_pw:"\nPlease enter corrent username or password",
     enter_repo_name: "Please enter repository name",
     msg_repo_already_exist: "Repository already initialized or cloned",
     enter_email: "Please enter email",
