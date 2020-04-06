@@ -327,7 +327,7 @@ function addNewEntity(XMIData, result) {
             if (searchedEntityRes.length == 0) {
                 let newAdded = app.repository.readObject(entityObject);
                 newAdded._parent = result;
-                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                let mResult = app.engine.addItem(result, fields.ownedElements, newAdded);
                 utils.addNewAddedElement(newAdded);
             }
         }

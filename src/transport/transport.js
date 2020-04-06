@@ -159,11 +159,17 @@ function getClasswiseAssociations(element) {
 function importDataToModel(XMIData) {
 
     let mainOwnedElements = []
-    let Package = {
+    /* let Package = {
         '_type': 'UMLPackage',
         'name': XMIData.name,
         'ownedElements': mainOwnedElements
-    };
+    }; */
+
+    let Package = {};
+    Package[fields._type]='UMLPackage';
+    Package[fields.name] = XMIData.name;
+    Package[fields.ownedElements] = mainOwnedElements;
+
     mUtils.resetNewAddedElement();
 
     if (XMIData.type == fields.package) {
@@ -188,7 +194,7 @@ function importDataToModel(XMIData) {
         else {
 
             let mProject = app.project.getProject();
-            Package['_parent'] = {
+            Package[fields._parent] = {
                 '$ref': mProject._id
             }
             result = addNewPackageInExplorer(Package, XMIData, mainOwnedElements);
@@ -391,6 +397,12 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
  * @param {file} string
  */
 async function importModel(file) {
+
+    let isSave = await utils.isNewFileSaved();
+    if(!isSave){
+        return;
+    }
+
     let finalPath = null;
     if (file) {
         finalPath = file;
@@ -422,7 +434,7 @@ async function importModel(file) {
                 app.dialogs.showInfoDialog(constant.mi_msg_success);
             });
         }
-    });
+    },5);
 
 }
 /**
@@ -464,7 +476,12 @@ function processImport(MainXMIData) {
  * @function exportModel
  * @description Export the selected package in JSONSchema standars
  */
-function exportModel() {
+async function exportModel() {
+
+    let isSave = await utils.isNewFileSaved();
+    if(!isSave){
+        return;
+    }
 
     app.elementPickerDialog
         .showDialog("Select the package or project to generate OpenAPI Specs.", null, null) /* type.UMLPackage */
@@ -473,6 +490,7 @@ function exportModel() {
             returnValue
         }) {
             if (buttonId === "ok") {
+                
                 let varSel = returnValue.getClassName();
                 let valPackagename = type.UMLPackage.name;
                 if (varSel == valPackagename) {

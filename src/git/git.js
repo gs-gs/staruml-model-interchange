@@ -1,9 +1,12 @@
 const transport = require('../transport/transport');
+const nodeUtils = require('util');
+const dataStore = require('../preference/datastore');
 var url = require('url');
 var path = require('path');
 const fs = require('fs');
 const git = require('simple-git/promise');
 const constant = require('../constant');
+var utils = require('../transport/utils');
 var _fname = null;
 var _mdirname = null;
 var junk = require('junk');
@@ -12,24 +15,12 @@ var junk = require('junk');
  * @description setup directory structure for git directory when project loaded
  */
 function _projectLoaded() {
+     
 
-     _fname = app.project.getFilename();
-     if(_fname==null){
-          _fname=app.project.getProject().name;
-     }
-     let basefile = path.basename(_fname);
-     let basefileName = path.parse(basefile).name;
-     if (_fname) {
-          _mdirname = path.dirname(_fname);
-          _mdirname = _mdirname + path.sep + basefileName + '_git';
-
-          if (!fs.existsSync(_mdirname)) {
-               fs.mkdirSync(_mdirname);
-               fs.readdir(_mdirname, function (err, files) {
-               });
-          }
-     }
-
+     dataStore.initialize();
+     let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+     _mdirname = dataStore.getStore().get(repoPath);
+     console.log("_mdirname", _mdirname);
 }
 /**
  * @function _gitInit
@@ -37,10 +28,10 @@ function _projectLoaded() {
  */
 async function _gitInit() {
 
-     if (!_fname && !_mdirname) {
+     /* if (!_fname && !_mdirname) {
           app.dialogs.showInfoDialog(constant.project_not_found);
           return;
-     }
+     } */
      try {
           /* check for repository is exist or not */
           let isRepo = await git(_mdirname).checkIsRepo();
@@ -169,12 +160,12 @@ async function _gitAddConfig() {
                     if (resPassword.buttonId == 'ok') {
                          _email = resPassword.returnValue;
                          if (_email) {
-                              
+
                               /* add username into local git config */
-                              git(_mdirname).addConfig('user.name', _username);
+                              git(_mdirname).addConfig('--local user.name', _username);
 
                               /* add email into local git config */
-                              git(_mdirname).addConfig('user.email', _email);
+                              git(_mdirname).addConfig('--local user.email', _email);
 
                               app.dialogs.showInfoDialog(constant.getConfigMsg(_username, _email));
                          } else {
@@ -263,7 +254,7 @@ async function _gitPush() {
                          vDialog.close();
 
                          setTimeout(function () {
-                              app.dialogs.showInfoDialog("Push Successfull");
+                              app.dialogs.showInfoDialog(constant.push_success_msg);
                          });
 
                     }, (error) => {
@@ -281,6 +272,99 @@ async function _gitPush() {
           app.dialogs.showErrorDialog(error.message);
      }
 }
+
+function isChangesAvailable() {
+     return new Promise(async (resolve, reject) => {
+          let result = {};
+          try {
+               /* check for repository is exist or not */
+               let isRepo = await git(_mdirname).checkIsRepo();
+               if (!isRepo) {
+
+                    // app.dialogs.showErrorDialog(constant.init_repo_first);
+                    result.result = false;
+                    result.message = constant.init_repo_first;
+                    resolve(result);
+               }
+          } catch (error) {
+               console.error(error.message);
+               // app.dialogs.showErrorDialog(error.message);
+               result.result = false;
+               result.message = error.message;
+               resolve(result);
+          }
+
+          let isLocalChanges = false;
+          // let isLocalCommitsToPush = false;
+          try {
+               /* check existing file changes before pull data from remote repository */
+               let StatusSummary = await git(_mdirname).status();
+               if (StatusSummary.files.length > 0) {
+                    isLocalChanges = true;
+               } else {
+                    isLocalChanges = false;
+               }
+
+               // let rawLog = await git(_mdirname).raw([
+               //      'log',
+               //      '@{u}..'
+               // ]);
+               // if (rawLog == null) {
+               //      isLocalCommitsToPush = false;
+
+               // } else {
+               //      isLocalCommitsToPush = true;
+
+               // }
+
+          } catch (error) {
+               console.error(error.message);
+               isLocalChanges = false;
+               // isLocalCommitsToPush = false;
+          }
+
+          if (isLocalChanges ) { //|| isLocalCommitsToPush
+               result.result = true;
+               result.message = constant.commit_changes;
+               resolve(result);
+          } else {
+               result.result = false;
+               result.message = constant.commit_changes;
+               resolve(result);
+          }
+
+
+
+     });
+
+}
+
+// async function isChangesAvailable() {
+//      try {
+//           /* check for repository is exist or not */
+//           let isRepo = await git(_mdirname).checkIsRepo();
+//           if (!isRepo) {
+//                app.dialogs.showErrorDialog(constant.init_repo_first);
+//                return;
+//           }
+//      } catch (error) {
+//           console.error(error.message);
+//           app.dialogs.showErrorDialog(error.message);
+//      }
+
+//      try {
+//           /* check existing file changes before pull data from remote repository */
+//           let StatusSummary = await git(_mdirname).status();
+//           if (StatusSummary.files.length == 1) {
+//                // app.dialogs.showInfoDialog(constant.commit_changes);
+//                return true;
+//           }
+//      } catch (error) {
+//           console.error(error.message);
+//           app.dialogs.showErrorDialog(error.message);
+//      }
+//      return false;
+// }
 /**
  * @function _gitPull
  * @description Pull latest changes from remote master repository and override local content
@@ -310,7 +394,7 @@ async function _gitPull() {
           console.error(error.message);
           app.dialogs.showErrorDialog(error.message);
      }
-     
+
      /* pull data from remote repository  */
      let res = await git(_mdirname).getRemotes(true);
      if (res.length == 1) {
@@ -319,7 +403,7 @@ async function _gitPull() {
 
           let vDialog = null;
           try {
-             
+
                vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
                let resFetch = await git(_mdirname).fetch();
 
@@ -363,7 +447,9 @@ function readPullDirectory(_mdirname) {
                if (filesList.length == 1) {
                     let mFile = filesList[0];
                     let finalPath = _mdirname + path.sep + mFile;
-                    transport.importModel(finalPath);
+                    setTimeout(function(){
+                         transport.importModel(finalPath);
+                    },5);
                }
           } else if (err) {
                app.toast.error(err.message);
@@ -428,11 +514,11 @@ async function _gitStatus() {
 
           /* get local file changes list  */
           let statusSummery = await git(_mdirname).status();
-          if (statusSummery == null || statusSummery =='') {
+          if (statusSummery == null || statusSummery == '') {
                app.dialogs.showErrorDialog(constant.summary_not_available);
                return;
           }
-          if (statusSummery != null || statusSummery !='') {
+          if (statusSummery != null || statusSummery != '') {
                let not_addedFiled = '------------------------------<br><b>Not added files</b><br>------------------------------';
 
 
@@ -470,7 +556,7 @@ async function _gitStatus() {
                     finalStatus += stagedFiles + '<br><br>';
                }
 
-               if(not_added.length==0 && modified.length==0 && staged.length==0){
+               if (not_added.length == 0 && modified.length == 0 && staged.length == 0) {
                     app.dialogs.showErrorDialog(constant.summary_not_available);
                     return;
                }
@@ -511,7 +597,7 @@ async function _gitDiff() {
                     app.dialogs.showModalDialog("", constant.title_import_mi_commit_diff, strDiff, [], true);
                }
 
-          }else{
+          } else {
                app.dialogs.showErrorDialog(constant.diff_not_available);
           }
 
@@ -534,6 +620,466 @@ async function _gitDiff() {
 function _getDirectory() {
      return _mdirname;
 }
+
+async function _gitClone() {
+
+     /* get local remote url  */
+     let repoResult = await app.dialogs.showInputDialog(constant.enter_remote_url);
+     let repoURL = repoResult.returnValue;
+
+     if (repoURL == '') {
+          return;
+     }
+
+     // /* alert user to enter username  */
+     // let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+     // resUSER = resUSER.returnValue;
+     // if (resUSER == '') {
+     //      return;
+     // }
+     
+     // /* alert user to enter password  */
+     // let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+     // resPASS = resPASS.returnValue;
+     // if (resPASS == '') {
+     //      return;
+     // }
+
+     // let USER = resUSER;
+     // let PASS = resPASS;
+
+     // const REPO = repoURL;
+     // let URL = url.parse(REPO)
+
+     // const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+
+     let cloneFolderName = path.basename(repoURL/* cloneURL */);
+     const basePath = app.dialogs.showSaveDialog(constant.msg_clone_repository, null, null);
+     if (basePath == null) {
+          return;
+     }
+     // console.log(basePath);
+     // Returns an array of paths of selected files
+
+     if (!fs.existsSync(basePath)) {
+          fs.mkdirSync(basePath);
+     }
+
+
+     let dm = app.dialogs;
+     let mDialog = dm.showModalDialog("", constant.title_model_interchange, constant.clone_progress_msg, [], true);
+     setTimeout(async function () {
+          git(basePath).silent(true)
+               .clone(repoURL)
+               .then(() => {
+                    mDialog.close();
+                    setTimeout(async function () {
+                         /* add username into local git config */
+                         console.log('finished');
+                         let clonePath = basePath + path.sep + cloneFolderName;
+                         let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+                         dataStore.getStore().set(repoPath, clonePath);
+                         _mdirname = clonePath;
+                         //await git(_mdirname).raw(['config','--local','user.name',resUSER]);
+                         let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
+                         app.dialogs.showInfoDialog(cloneMsg);
+                         readPullDirectory(_mdirname);
+
+                    }, 10);
+               })
+               .catch((error) => {
+                    mDialog.close();
+                    setTimeout(function () {
+                         app.dialogs.showErrorDialog(error.message);
+                    }, 10);
+               });
+     }, 0);
+
+
+}
+async function showDiff(){
+     const mGit = git(_mdirname);
+     let path = dataStore.getDiffPath();
+
+     let result = await mGit.raw([
+          'diff'
+     ]);
+
+     console.log("diff",result);
+     fs.writeFile(path, result, 'utf-8', async function (err) {
+          if (err) {
+              console.error("Error : ", err.message);
+              return;
+          } else {
+              const open = require('open');
+              let resultOpen = await open(path);
+               console.log("resultOpen", resultOpen);
+          }
+      });
+
+     console.log("Git diff result : ",result);
+}
+async function initClone() {
+
+     let isSave = await utils.isNewFileSaved();
+     if(!isSave){
+          return;
+     }
+     console.log("initClone");
+     let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
+     _mdirname = dataStore.getStore().get(repoPath);
+
+     let isDir = false;
+     if (_mdirname != null && !fs.existsSync(_mdirname)) {
+          fs.mkdirSync(_mdirname, {
+               recursive: true
+          });
+     }
+
+     let isRepo = await git(_mdirname).checkIsRepo();
+     if (!isRepo) {
+          let resultDialog = app.dialogs.showAlertDialog(constant.msg_repo_not_detected);
+          console.log(resultDialog);
+          _gitClone();
+
+     } else {
+          app.dialogs.showInfoDialog(constant.msg_repo_already_exist);
+     }
+
+
+}
+async function _sync() {
+     const mGit = git(_mdirname);
+     let isSave = await utils.isNewFileSaved();
+     if(!isSave){
+          return;
+     }
+     
+     try {
+          let isChanges = await isChangesAvailable();
+
+          if (isChanges.result) {
+               console.log("push...!");
+               let res = await app.dialogs.showConfirmDialog("Would you like to push your changes?");
+               if (res == "ok") {
+                    /* check for username is available or not before commit  */
+                    let user = await mGit.raw([
+                         'config',
+                         '--local',
+                         'user.name'
+                    ]);
+
+                    /* check for email is available or not before commit  */
+                    let email = await mGit.raw([
+                         'config',
+                         '--local',
+                         'user.email'
+                    ]);
+
+                    /* if username and email is not available, it will alert accordingly */
+                    if (user == null) {
+                         /* alert user to enter username */
+                         let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
+                         if (resUsername.buttonId == 'ok') {
+                              user = resUsername.returnValue;
+
+                         } else {
+                              app.dialogs.showAlertDialog(constant.enter_username);
+                              return;
+                         }
+                    }
+
+                    if (email == null) {
+
+                         /* alert user to enter email */
+                         let resEmail = await app.dialogs.showInputDialog(constant.enter_email);
+                         if (resEmail.buttonId == 'ok') {
+                              email = resEmail.returnValue;
+
+                         } else {
+                              app.dialogs.showAlertDialog(constant.enter_email);
+                              return;
+                         }
+
+                    }
+
+                    user = user.trim();
+                    email = email.trim();
+                    pass = '';
+
+                    if (user != null && email != null) {
+                         /* add username into local git config */
+                         await mGit.raw(['config','--local','user.name',user]);
+     
+                         /* check for email is available or not before commit  */
+                         await mGit.raw(['config','--local','user.email',email]);
+
+                    }
+
+                    /* alert user to enter commit message */
+                    let resCommit = await app.dialogs.showTextDialog(constant.enter_commit_msg, "");
+                    if (resCommit.buttonId == "ok") {
+                         if (resCommit.returnValue) {
+                              try {
+                                   /* stage all files before commit */
+                                   let result = await mGit.add('./*');
+
+                                   /* commit changes */
+                                   let commit = await mGit.commit(resCommit.returnValue);
+                              } catch (error) {
+                                   console.error(error.message);
+                                   app.dialogs.showErrorDialog(error.message);
+                              }
+                         } else {
+                              app.dialogs.showErrorDialog(constant.invalid_commit_msg);
+                         }
+                    } else {
+                         return;
+                    }
+
+                    /* get local remote url  */
+                    let res = await mGit.getRemotes(true);
+                    if (res.length == 1) {
+
+                         pushUntillCorrectCredential(res,user);
+
+                    } else {
+                         app.dialogs.showInfoDialog(constant.add_remote);
+                    }
+
+               }
+
+
+          } else {
+               console.log("pull...!");
+               /* pull data from remote repository  */
+               let res = await git(_mdirname).getRemotes(true);
+               if (res.length == 1) {
+                    let remote = res[0];
+                    let pushURL = remote.refs.fetch;
+
+                    let vDialog = null;
+                    try {
+
+                         vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until pull successfull", [], true);
+                         let resFetch = await git(_mdirname).fetch();
+
+
+                         /* hard reset local data  */
+                         let mReset = await git(_mdirname).raw(
+                              [
+                                   'reset',
+                                   '--hard',
+                                   'origin/master'
+                              ]);
+
+                         vDialog.close();
+                         if (mReset == null) {
+                              return;
+                         }
+                         app.toast.info("Pull Successfull");
+                         readPullDirectory(_mdirname);
+                    } catch (error) {
+                         console.error(error.message);
+                         if (vDialog != null) {
+                              vDialog.close()
+                         }
+                         setTimeout(function () {
+                              app.dialogs.showErrorDialog(error.message);
+                         });
+                    }
+               }
+          }
+     } catch (error) {
+          console.log(error.message);
+          app.dialogs.showErrorDialog(error.message);
+     }
+
+
+     /* let res = await app.dialogs.showSelectDropdownDialog(constant.msg_option_sync, constant.options_sync);
+     if (res != null && res.buttonId == 'ok') {
+          if (res.returnValue == constant.FETCH_REPO) {
+               console.log("fetch repo");
+          } else if (res.returnValue == constant.PUSH_REPO) {
+               console.log("push repo");
+          }
+     } */
+}
+
+async function pushUntillCorrectCredential(res,user){
+     try {
+          await pushData(res,user);
+          setTimeout(function(){
+               app.toast.info(constant.push_success_msg);
+          },5);
+     } catch (error) {
+          let errMsg = error.message;
+          let includeStr = constant.include_string;
+          if(errMsg.includes(includeStr)){
+               let result = app.dialogs.showConfirmDialog(error.message+constant.enter_correct_un_pw);
+               if(result == "ok"){
+                    /* alert user to enter username */
+                    let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
+                    if (resUsername.buttonId == 'ok') {
+                         user = resUsername.returnValue;
+
+                    } else {
+                         app.dialogs.showAlertDialog(constant.enter_username);
+                         return;
+                    }
+
+                    /* alert user to enter email */
+                    let resEmail = await app.dialogs.showInputDialog(constant.enter_email);
+                    if (resEmail.buttonId == 'ok') {
+                         email = resEmail.returnValue;
+
+                    } else {
+                         app.dialogs.showAlertDialog(constant.enter_email);
+                         return;
+                    }
+
+
+                    user = user.trim();
+                    email = email.trim();
+                    pass = '';
+
+                    if (user != null && email != null) {
+                         /* add username into local git config */
+                         const mGit = git(_mdirname);
+                         await mGit.raw(['config','--local','user.name',user]);
+
+                         /* check for email is available or not before commit  */
+                         await mGit.raw(['config','--local','user.email',email]);
+
+
+                         let res = await mGit.getRemotes(true);
+                         if (res.length == 1) {
+
+                              pushUntillCorrectCredential(res,user);
+
+                         } else {
+                              app.dialogs.showInfoDialog(constant.add_remote);
+                         }
+                    }
+               }
+          }else{
+               app.dialogs.showErrorDialog(error.message);
+          }
+          
+     }
+}
+
+function pushData(res,user) {
+     return new Promise(async (resolve, reject) => {
+          const mGit = git(_mdirname);
+          let remote = res[0];
+          let pushURL = remote.refs.push
+          let USER = user;
+          let PASS = null;
+          /* PASS = await mGit.raw([
+               'config',
+               '--local',
+               'user.pass'
+          ]); */
+
+          let pURL=url.parse(pushURL);
+          let auth=pURL.auth;
+          console.log("auth : ",auth);
+          if(auth == null){
+
+               // if(PASS == null || PASS == ''){
+                    /* alert user to enter username  */
+                    let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+                    if(resPASS.returnValue == ''){
+                         throw new Error('Please enter password');
+                    }
+                    //await mGit.raw(['config','--local','user.pass',resPASS.returnValue]);
+                    PASS = resPASS.returnValue;
+
+                    const nURL = pURL.protocol + '//' + USER + ':' + PASS + '@' + pURL.host + pURL.path;
+                    await mGit.raw(['remote','set-url','origin',nURL]);
+
+
+               // }
+          }else{
+
+               let unpw=auth.split(":");
+               if(unpw.length==2){
+                    PASS=unpw[1];
+               }
+          }
+
+
+          PASS = PASS.trim();
+          const REPO = pushURL;
+          let URL = url.parse(REPO);
+
+          const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+          console.log("Push url : ",gitPushUrl);
+          let newURL=url.parse(gitPushUrl);
+          console.log("new URL ",newURL);
+          // const gitPushUrl = pushURL;
+
+          let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
+
+          /* store github password  */
+          /* Command : git config credential.helper store */
+          /* await mGit.raw([
+               'config',
+               '--local',
+               'credential.helper',
+               'store'
+          ]); */
+          /* push all commits to remote master branch  */
+          mGit.push(gitPushUrl, 'master')
+               .then((success) => {
+                    vDialog.close();
+
+                    setTimeout(function () {
+                         resolve(constant.push_success_msg);
+                    });
+
+               }, async (error) => {
+                    vDialog.close();
+                    let unsetURL = url.parse(gitPushUrl);
+                    const nURL = unsetURL.protocol + '//' + unsetURL.host + unsetURL.path;
+                    await mGit.raw(['remote','set-url','origin',nURL]);
+                    // await mGit.raw(['config','--local','--unset','user.pass']);
+                    reject(error);
+                    //console.error(error.message);
+                    //let eMsg = 'Push Failed' + '\n' + error.message;
+                    //app.dialogs.showErrorDialog(eMsg);
+               });
+     });
+}
+async function _gitCreateNewRepo() {
+
+
+     /* alert user to enter repository name  */
+     let resRepoName = await app.dialogs.showInputDialog(constant.enter_repo_name);
+     resRepoName = resRepoName.returnValue;
+     if (resRepoName == '') {
+          return;
+     }
+
+     /* select repository path where you want to create new repository */
+     const basePath = app.dialogs.showSaveDialog(constant.msg_create_repository, null, null);
+     if (basePath == null) {
+          return;
+     }
+
+     let createNewDirecoty = basePath + path.sep + resRepoName;
+     /* create repository directory if not exist */
+     if (!fs.existsSync(createNewDirecoty)) {
+          fs.mkdirSync(createNewDirecoty, {
+               recursive: true
+          });
+     }
+
+     _mdirname = createNewDirecoty;
+     _gitInit();
+
+}
 module.exports.getInit = _gitInit;
 module.exports.getAddRemote = _gitAddRemote;
 module.exports.getCommit = _gitCommit;
@@ -546,3 +1092,7 @@ module.exports.getStatus = _gitStatus;
 module.exports.getDiff = _gitDiff;
 module.exports.projectLoaded = _projectLoaded;
 module.exports.getDirectory = _getDirectory;
+module.exports.gitClone = _gitClone;
+module.exports.initClone = initClone;
+module.exports.sync = _sync;
+module.exports.gitCreateNewRepo = _gitCreateNewRepo;
