@@ -27,6 +27,11 @@
                     "id": "tool.transport.export",
                     "command": "tool.transport:export"
 
+               },{
+                    "label": "exportNew",
+                    "id": "tool.transport.exportNew",
+                    "command": "tool.transport:exportNew"
+
                }]
           }]
      }]

@@ -2,6 +2,7 @@ var path = require('path');
 const fsNew = require('fs-extra')
 const git = require('./src/git/git');
 const transport = require('./src/transport/transport');
+const transportNew = require('./src/transport/transportNew');
 const prefs = require('./src/preference/prefs') ;
 const os = require('os');
 const baseDirName = require('./package.json').name;
@@ -33,6 +34,7 @@ function init() {
      app.preferences.register(prefs);
      app.commands.register('tool.transport:import', transport.importModel);
      app.commands.register('tool.transport:export', transport.exportModel);
+     app.commands.register('tool.transport:exportNew', transportNew.exportNewModel);
      app.commands.register('tool.git:initclone', git.initClone);
      app.commands.register('tool.git:sync', git.sync);
      app.project.on('projectLoaded', git.projectLoaded);

@@ -41,5 +41,8 @@ const fields = {
     'tags': 'tags',
     'kind': 'kind',
     'defaultValue': 'defaultValue',
+    'contexts': 'contexts',
+    'dataTypes': 'dataTypes',
+
 };
 module.exports = fields;
