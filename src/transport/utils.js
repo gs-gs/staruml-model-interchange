@@ -1088,6 +1088,31 @@ function findOtherElements(entity) {
         }
     });
 }
+function isNewFileSaved(){
+    return new Promise((resolve,reject)=>{
+         let fileName = app.project.filename;
+         if(fileName == null){
+              let result = app.dialogs.showConfirmDialog(constant.save_file_before_operation);
+              if(result == 'ok'){
+                   let saveResult = app.commands.execute("project:save");  
+                   console.log("Save Result",saveResult);
+                   if(saveResult == null){
+                        resolve(false);
+                   }
+                   else{
+                        resolve(true);
+                   }
+              }
+              else{
+                   resolve(false);
+              }
+         }
+         else{
+              resolve(true);
+         }
+    });
+    
+}
 module.exports.getElementType = getElementType;
 module.exports.isString = isString;
 module.exports.getRelationshipType = getRelationshipType;
@@ -1118,3 +1143,4 @@ module.exports.addOtherDependentClass = addOtherDependentClass;
 module.exports.getOtherDependentClass = getOtherDependentClass;
 module.exports.findOtherElements = findOtherElements;
 module.exports.resetOtherDependentClass = resetOtherDependentClass;
+module.exports.isNewFileSaved = isNewFileSaved;

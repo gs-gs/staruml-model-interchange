@@ -353,7 +353,7 @@ function addNewEvent(XMIData, result) {
             if (searchedEventRes.length == 0) {
                 let newAdded = app.repository.readObject(interfaceObject);
                 newAdded._parent = result;
-                let mResult = app.engine.addItem(result, 'ownedElements', newAdded);
+                let mResult = app.engine.addItem(result, fields.ownedElements, newAdded);
                 utils.addNewAddedElement(newAdded);
 
             }

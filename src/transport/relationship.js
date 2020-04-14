@@ -88,8 +88,8 @@ function updateAggregationToImport(entity, attr, _id) {
     /* UMLAssociation (aggregation) */
     let UMLAssociation = app.repository.get(_id);
 
-    app.engine.setProperty(UMLAssociation, 'name', attr.name);
-    app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
+    app.engine.setProperty(UMLAssociation, fields.name, attr.name);
+    app.engine.setProperty(UMLAssociation, fields.documentation, attr.description);
 
     /* Source */
     let objEnd1 = {};
@@ -246,8 +246,8 @@ function updateCompositionToImport(entity, attr, _id) {
 
     let UMLAssociation = app.repository.get(_id);
 
-    app.engine.setProperty(UMLAssociation, 'name', attr.name);
-    app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
+    app.engine.setProperty(UMLAssociation, fields.name, attr.name);
+    app.engine.setProperty(UMLAssociation, fields.documentation, attr.description);
 
     /* Source */
     let objEnd1 = {};
@@ -377,8 +377,8 @@ function addGeneralizationToImport(objRelationship, entity, attr) {
 function updateGeneralizationToImport(entity, attr, _id) {
     let UMLGeneralization = app.repository.get(_id);
 
-    app.engine.setProperty(UMLGeneralization, 'name', attr.name);
-    app.engine.setProperty(UMLGeneralization, 'documentation', attr.description);
+    app.engine.setProperty(UMLGeneralization, fields.name, attr.name);
+    app.engine.setProperty(UMLGeneralization, fields.documentation, attr.description);
 
     /* Source */
     /* 
@@ -400,7 +400,7 @@ function updateGeneralizationToImport(entity, attr, _id) {
 
 
     if (fRefEnd1.length > 0) {
-        app.engine.setProperty(UMLGeneralization, 'source', app.repository.readObject(objSource));
+        app.engine.setProperty(UMLGeneralization, fields.source, app.repository.readObject(objSource));
     }
      */
     /* target */
@@ -422,7 +422,7 @@ function updateGeneralizationToImport(entity, attr, _id) {
     });
 
     if (fRefEnd2.length > 0) {
-        app.engine.setProperty(UMLGeneralization, 'target', app.repository.readObject(objTarget));
+        app.engine.setProperty(UMLGeneralization, fields.target, app.repository.readObject(objTarget));
     }
     */
 
@@ -488,8 +488,8 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
 function updateInterfaceRealizationToImport(entity, attr, _id) {
     let UMLInterfaceRealization = app.repository.get(_id);
 
-    app.engine.setProperty(UMLInterfaceRealization, 'name', attr.name);
-    app.engine.setProperty(UMLInterfaceRealization, 'documentation', attr.description);
+    app.engine.setProperty(UMLInterfaceRealization, fields.name, attr.name);
+    app.engine.setProperty(UMLInterfaceRealization, fields.documentation, attr.description);
 
     /* Source */
     /* 
@@ -511,7 +511,7 @@ function updateInterfaceRealizationToImport(entity, attr, _id) {
 
 
     if (fRefEnd1.length > 0) {
-        app.engine.setProperty(UMLInterfaceRealization, 'source', app.repository.readObject(objSource));
+        app.engine.setProperty(UMLInterfaceRealization, fields.source, app.repository.readObject(objSource));
     }
      */
     /* target */
@@ -533,7 +533,7 @@ function updateInterfaceRealizationToImport(entity, attr, _id) {
     });
 
     if (fRefEnd2.length > 0) {
-        app.engine.setProperty(UMLInterfaceRealization, 'target', app.repository.readObject(objTarget));
+        app.engine.setProperty(UMLInterfaceRealization, fields.target, app.repository.readObject(objTarget));
     }
     */
 
@@ -592,8 +592,8 @@ function updateAssociationClassLink(entity, attr, _id) {
     /* objRelationship._type = 'UMLAssociationClassLink';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description; */
-    app.engine.setProperty(UMLAssociationClassLink, 'name', attr.name);
-    app.engine.setProperty(UMLAssociationClassLink, 'documentation', attr.description);
+    app.engine.setProperty(UMLAssociationClassLink, fields.name, attr.name);
+    app.engine.setProperty(UMLAssociationClassLink, fields.documentation, attr.description);
 
     /* associationSide */
     /*  let associationSide = {}; */
@@ -743,8 +743,8 @@ function updateInterfaceToImport(entity, attr, _id) {
     /* objRelationship._type = 'UMLAssociation';
     objRelationship.name = attr.name;
     objRelationship.documentation = attr.description; */
-    app.engine.setProperty(UMLAssociation, 'name', attr.name);
-    app.engine.setProperty(UMLAssociation, 'documentation', attr.description);
+    app.engine.setProperty(UMLAssociation, fields.name, attr.name);
+    app.engine.setProperty(UMLAssociation, fields.documentation, attr.description);
     /* Source */
     let objEnd1 = {};
     if (UMLAssociation.end1.hasOwnProperty('_id')) {
@@ -959,7 +959,7 @@ function setRelationship(ownedElements, XMIData) {
                                 /* Existing relationship */
                                 oldOwnedElements[mIndex] = rel;
                             }
-                            app.engine.setProperty(entity, 'ownedElements', oldOwnedElements);
+                            app.engine.setProperty(entity, fields.ownedElements, oldOwnedElements);
                         }
                     } catch (error) {
                         console.error("Error : " + mSubObject.name, error.message);

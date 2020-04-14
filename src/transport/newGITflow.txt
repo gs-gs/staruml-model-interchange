@@ -1,0 +1,13 @@
+Tools -> Git 
+
+    1   Init/Clone
+             1. Enter repository URL
+             4. Select local path ( select path to clone )
+
+    2.  Sync
+            1. If any local changes -> 
+                    - Enter username, email, password
+                    - Enter commit message
+                    - Push
+            2. If no any local changes -> Pull and reset
+
