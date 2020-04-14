@@ -2,31 +2,12 @@
      "menu": [{
           "id": "tools",
           "submenu": [{
-               "label": "Git",
-               "id": "tool.git",
-               "submenu": [{
-                    "label": "Init/Clone",
-                    "id": "tool.git.initclone",
-                    "command": "tool.git:initclone"
-               }, {
-                    "label": "Sync",
-                    "id": "tool.git.sync",
-                    "command": "tool.git:sync"
-
-               }]
-
-          }, {
                "label": "model interchange",
                "id": "tool.transport",
                "submenu": [{
-                    "label": "import",
-                    "id": "tool.transport.import",
-                    "command": "tool.transport:import"
-               },{
                     "label": "export",
                     "id": "tool.transport.exportNew",
                     "command": "tool.transport:exportNew"
-
                }]
           }]
      }]
