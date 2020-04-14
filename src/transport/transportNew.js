@@ -127,19 +127,54 @@ async function exportNewModel() {
 
 }
 
+function addContextsRecursively(otherContexts){
+    if (otherContexts.length > 0) {
+        let newOtherContext = [];
+        otherContexts.forEach(oContext => {
+            let result = newOtherContext.filter(element => {
+                return oContext._id == element._id
+            });
+            if (result.length == 0) {
+                newOtherContext.push(oContext);
+            }
+        });
+
+        console.log("newOtherContext ", newOtherContext);
+        /* Adding new Other Contexts */
+        newOtherContext.forEach(pkg => {
+
+            let exportElement = pkg;
+            let varSel = exportElement.getClassName();
+            let valPackagename = type.UMLPackage.name;
+
+            if (varSel == valPackagename) {
+
+                addContexts(arrContexts, exportElement);
+
+            }
+
+        });
+    }
+}
+const JSON_FILE_FILTERS = [{
+    name: 'JSON File',
+    extensions: ['json']
+}]
 function saveFile(mMainObject) {
     /* select repository path where you want to create new repository */
-    const basePath = app.dialogs.showSaveDialog(constant.msg_export_file, null, null);
+    const basePath = app.dialogs.showSaveDialog(constant.msg_export_file, null, JSON_FILE_FILTERS);
+    // let dirPath = path.dirname(basePath);
     if (basePath == null) {
         return;
     }
 
-    let createNewDirecoty = basePath; // + path.sep + 'domain-sample.json';
+    let fileName = path.basename(basePath);
+    let createNewDirecoty = path.dirname(basePath);
     /* create repository directory if not exist */
     if (!fs.existsSync(createNewDirecoty)) {
         fs.mkdirSync(createNewDirecoty);
     }
-    createNewDirecoty = createNewDirecoty + path.sep + 'domain-sample.json';
+    createNewDirecoty = createNewDirecoty + path.sep + fileName;
     setTimeout(function () {
         fs.writeFile(createNewDirecoty, JSON.stringify(mMainObject, null, 4), 'utf-8', function (err) {
             if (err) {
@@ -238,7 +273,8 @@ function addDatatype(mMainObject) {
                     dataTypeClassObject[fields.name] = element.name;
                     let tags = element.tags;
                     if (tags.length > 0) {
-                        dataTypeClassObject[fields.status] = tags[0].name;
+                        let tag = tags[0];
+                        dataTypeClassObject[tag.name] = tag.reference.name;
                     }
                     arrDataTypesClasses.push(dataTypeClassObject);
                 });
@@ -432,25 +468,25 @@ function addPropertyStatus(property, propertyObj) {
 }
 
 function addPropertyCardinality(property, propertyObj) {
-    let minCardinality = '',
-        maxCardinality = '';
+    let minCardinality = '-1',
+        maxCardinality = '-1';
     let multiplicity = property.multiplicity;
     /* '0..1', '1', '0..*', '1..*', '*' */
     if (multiplicity == '0..1') {
-        minCardinality = '0';
-        maxCardinality = '1';
+        minCardinality = 0;
+        maxCardinality = 1;
     } else if (multiplicity == '1') {
-        minCardinality = '1';
-        maxCardinality = '1';
+        minCardinality = 1;
+        maxCardinality = 1;
     } else if (multiplicity == '0..*') {
-        minCardinality = '0';
+        minCardinality = 0;
     } else if (multiplicity == '1..*') {
-        minCardinality = '1';
+        minCardinality = 1;
     }
-    if (minCardinality != '') {
+    if (minCardinality != '-1') {
         propertyObj[fields.minCardinality] = minCardinality;
     }
-    if (maxCardinality != '') {
+    if (maxCardinality != '-1') {
         propertyObj[fields.maxCardinality] = maxCardinality;
     }
 }
