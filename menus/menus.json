@@ -22,13 +22,8 @@
                     "label": "import",
                     "id": "tool.transport.import",
                     "command": "tool.transport:import"
-               }, {
-                    "label": "export",
-                    "id": "tool.transport.export",
-                    "command": "tool.transport:export"
-
                },{
-                    "label": "exportNew",
+                    "label": "export",
                     "id": "tool.transport.exportNew",
                     "command": "tool.transport:exportNew"
 

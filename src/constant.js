@@ -16,7 +16,7 @@ const constant = {
     enter_commit_msg: "Enter commit message",
     invalid_commit_repo: "Invalid commit message.",
     enter_username: "Please enter username",
-    enter_correct_un_pw:"\nPlease enter corrent username, email and password",
+    enter_correct_un_pw: "\nPlease enter corrent username, email and password",
     enter_repo_name: "Please enter repository name",
     msg_repo_already_exist: "Repository already initialized or cloned",
     enter_email: "Please enter email",
@@ -74,7 +74,18 @@ const constant = {
     }],
     title_model_interchange: 'Model Interchange',
     clone_progress_msg: 'Please wait until git cloning is being processed',
-    push_success_msg:'Push Successfull'
+    push_success_msg: 'Push Successfull',
+    msg_file_select: 'Select one of the following type.',
+    fileOptions: [{
+        text: "Export all packages",
+        value: 1
+    }, {
+        text: "Select one package",
+        value: 2
+    }],
+    msg_file_saveas: 'Save File as...',
+    msg_export_file:'Select path where you want to export',
+    datatype_pkg_name:'DataTypes'
 }
 /**
  * @function configMessage

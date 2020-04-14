@@ -43,6 +43,15 @@ const fields = {
     'defaultValue': 'defaultValue',
     'contexts': 'contexts',
     'dataTypes': 'dataTypes',
+    'dataType': 'dataType',
+    'entities': 'entities',
+    'properties': 'properties',
+    'relationships': 'relationships',
+    'attributes': 'attributes',
+    'extra': 'extra',
+    'minCardinality': 'minCardinality',
+    'maxCardinality': 'maxCardinality',
+    'context': 'context'
 
 };
 module.exports = fields;
