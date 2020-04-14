@@ -70,55 +70,46 @@ async function exportNewModel() {
                                 /* Adding Contexts */
                                 addContexts(arrContexts, exportElement);
 
-                                if (otherContexts.length > 0) {
-                                    let newOtherContext = [];
-                                    otherContexts.forEach(oContext => {
-                                        let result = newOtherContext.filter(element => {
-                                            return oContext._id == element._id
-                                        });
-                                        if (result.length == 0) {
-                                            newOtherContext.push(oContext);
-                                        }
-                                    });
+                                addContextsRecursively(otherContexts, arrContexts)
+                                // if (otherContexts.length > 0) {
+                                //     let newOtherContext = [];
+                                //     otherContexts.forEach(oContext => {
+                                //         let result = newOtherContext.filter(element => {
+                                //             return oContext._id == element._id
+                                //         });
+                                //         if (result.length == 0) {
+                                //             newOtherContext.push(oContext);
+                                //         }
+                                //     });
 
-                                    console.log("newOtherContext ", newOtherContext);
-                                    /* Adding new Other Contexts */
-                                    newOtherContext.forEach(pkg => {
+                                //     console.log("newOtherContext ", newOtherContext);
+                                //     /* Adding new Other Contexts */
+                                //     newOtherContext.forEach(pkg => {
 
-                                        let exportElement = pkg;
-                                        let varSel = exportElement.getClassName();
-                                        let valPackagename = type.UMLPackage.name;
+                                //         let exportElement = pkg;
+                                //         let varSel = exportElement.getClassName();
+                                //         let valPackagename = type.UMLPackage.name;
 
-                                        if (varSel == valPackagename) {
+                                //         if (varSel == valPackagename) {
 
-                                            addContexts(arrContexts, exportElement);
+                                //             addContexts(arrContexts, exportElement);
 
-                                        }
-
-                                    });
-                                }
-
+                                //         }
+                                //     });
+                                // }
+                                
                                 /* Adding Datatype */
                                 addDatatype(mMainObject);
 
                                 /* Save Generated File */
                                 saveFile(mMainObject)
 
-                                console.log("MainObject ", JSON.stringify(mMainObject, null, 4));
-
-
                             } else {
                                 app.toast.info("Please select package only");
                             }
-
-
                         }
                     });
-
             }
-
-
-
 
         } else {
             console.log("Dialog cancelled")
@@ -127,10 +118,11 @@ async function exportNewModel() {
 
 }
 
-function addContextsRecursively(otherContexts){
-    if (otherContexts.length > 0) {
+function addContextsRecursively(oContexts, arrContexts) {
+    let newOtherContexts = oContexts;//JSON.parse(JSON.stringify(oContexts));
+    if (newOtherContexts.length > 0) {
         let newOtherContext = [];
-        otherContexts.forEach(oContext => {
+        newOtherContexts.forEach(oContext => {
             let result = newOtherContext.filter(element => {
                 return oContext._id == element._id
             });
@@ -148,9 +140,9 @@ function addContextsRecursively(otherContexts){
             let valPackagename = type.UMLPackage.name;
 
             if (varSel == valPackagename) {
-
+                otherContexts = [];
                 addContexts(arrContexts, exportElement);
-
+                addContextsRecursively(otherContexts, arrContexts);
             }
 
         });
@@ -160,6 +152,7 @@ const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
 }]
+
 function saveFile(mMainObject) {
     /* select repository path where you want to create new repository */
     const basePath = app.dialogs.showSaveDialog(constant.msg_export_file, null, JSON_FILE_FILTERS);
