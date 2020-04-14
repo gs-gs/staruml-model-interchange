@@ -256,20 +256,17 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
     if (classRelationship.length > 0) {
         classRelationship.forEach(rel => {
             let relationshipObj = {};
-            let relType = '';
             let type = '';
             if (rel.end2.aggregation == 'shared' && rel.end1.aggregation == 'none') {
-                relType = 'aggregation';
                 type = 'references';
             } else if (rel.end2.aggregation == 'composite' && rel.end1.aggregation == 'none') {
-                relType = 'composition';
                 type = 'contains';
             } else {
                 return;
             }
 
             /* Adding relationship 'name' */
-            relationshipObj[fields.name] = relType;
+            relationshipObj[fields.name] = rel.name;
 
             /* Adding relationship 'description' */
             if (rel.documentation != "") {
@@ -308,20 +305,17 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
     if (classRelationship.length > 0) {
         classRelationship.forEach(rel => {
             let relationshipObj = {};
-            let relType = '';
             let type = '';
             if (rel.end2.aggregation == 'shared' && rel.end1.aggregation == 'none') {
-                relType = 'aggregation';
                 type = 'references';
             } else if (rel.end2.aggregation == 'composite' && rel.end1.aggregation == 'none') {
-                relType = 'composition';
                 type = 'contains';
             } else {
                 return;
             }
 
             /* Adding relationship 'name' */
-            relationshipObj[fields.name] = relType;
+            relationshipObj[fields.name] = rel.name;
 
             /* Adding relationship 'description' */
             if (rel.documentation != "") {
@@ -362,20 +356,17 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
 
         classRelationship.forEach(rel => {
             let relationshipObj = {};
-            let relType = '';
             let type = '';
             if (rel.end1.aggregation == 'shared' && rel.end2.aggregation == 'none') {
-                relType = 'aggregation';
                 type = 'references';
             } else if (rel.end1.aggregation == 'composite' && rel.end2.aggregation == 'none') {
-                relType = 'composition';
                 type = 'contains';
             } else {
                 return;
             }
 
             /* Adding relationship 'name' */
-            relationshipObj[fields.name] = relType;
+            relationshipObj[fields.name] = rel.name;
 
             /* Adding relationship 'description' */
             if (rel.documentation != "") {
