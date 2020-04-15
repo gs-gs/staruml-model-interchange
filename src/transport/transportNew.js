@@ -202,6 +202,7 @@ function addResources(arrResources, exportElement) {
                 addPropertyStatus(property, propertyObj);
 
                 /* Adding property 'dataType */
+if(property.type != null)
                 propertyObj[fields.dataType] = property.type.name;
 
                 /* Adding property 'minCardinality' & 'maxCardinality' */
@@ -253,6 +254,7 @@ function addDatatype(mMainObject) {
                     let tags = element.tags;
                     if (tags.length > 0) {
                         let tag = tags[0];
+if(tag.reference != null)
                         dataTypeClassObject[tag.name] = tag.reference.name;
                     }
                     arrDataTypesClasses.push(dataTypeClassObject);
@@ -457,6 +459,7 @@ function addPropertyStatus(property, propertyObj) {
     let tags = property.tags;
     if (tags.length > 0) {
         let tag = tags[0];
+if (tag.reference != null)
         propertyObj[tag.name] = tag.reference.name;
     }
 
