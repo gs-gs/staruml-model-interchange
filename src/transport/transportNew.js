@@ -73,7 +73,7 @@ async function exportNewModel() {
 
                                 /* Adding Other resources recursively */
                                 addResourcesRecursively(otherResources, arrResources);
-                                
+
                                 /* Adding Datatype */
                                 addDatatype(mMainObject);
 
@@ -95,7 +95,7 @@ async function exportNewModel() {
 }
 
 function addResourcesRecursively(oResources, arrResources) {
-    let newOtherResources = oResources;//JSON.parse(JSON.stringify(oResources));
+    let newOtherResources = oResources; //JSON.parse(JSON.stringify(oResources));
     if (newOtherResources.length > 0) {
         let newOtherResource = [];
         newOtherResources.forEach(oResource => {
@@ -121,7 +121,7 @@ function addResourcesRecursively(oResources, arrResources) {
                     return fResource.name == exportElement.name;
                 });
 
-                if(result.length == 0){
+                if (result.length == 0) {
                     addResources(arrResources, exportElement);
                     addResourcesRecursively(otherResources, arrResources);
                 }
@@ -202,8 +202,9 @@ function addResources(arrResources, exportElement) {
                 addPropertyStatus(property, propertyObj);
 
                 /* Adding property 'dataType */
-if(property.type != null)
-                propertyObj[fields.dataType] = property.type.name;
+                if (property.type != null) {
+                    propertyObj[fields.dataType] = property.type.name;
+                }
 
                 /* Adding property 'minCardinality' & 'maxCardinality' */
                 addPropertyCardinality(property, propertyObj);
@@ -254,8 +255,9 @@ function addDatatype(mMainObject) {
                     let tags = element.tags;
                     if (tags.length > 0) {
                         let tag = tags[0];
-if(tag.reference != null)
-                        dataTypeClassObject[tag.name] = tag.reference.name;
+                        if (tag.reference != null) {
+                            dataTypeClassObject[tag.name] = tag.reference.name;
+                        }
                     }
                     arrDataTypesClasses.push(dataTypeClassObject);
                 });
@@ -312,13 +314,14 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
     }
     return relationshipsArr;
 }
-function addRelationshipGeneralization(entity,selPackage){
+
+function addRelationshipGeneralization(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLGeneralization");
     let classRelationship = umlRelationship.filter(rel => {
         return entity._id == rel.source._id;
     });
-    if(classRelationship.length > 0){
+    if (classRelationship.length > 0) {
         classRelationship.forEach(rel => {
             let relationshipObj = {};
             let type = 'typeOf';
@@ -353,6 +356,7 @@ function addRelationshipGeneralization(entity,selPackage){
     }
     return relationshipsArr;
 }
+
 function addRelationshipTargettingEnd2(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLAssociation");
@@ -459,8 +463,9 @@ function addPropertyStatus(property, propertyObj) {
     let tags = property.tags;
     if (tags.length > 0) {
         let tag = tags[0];
-if (tag.reference != null)
-        propertyObj[tag.name] = tag.reference.name;
+        if (tag.reference != null) {
+            propertyObj[tag.name] = tag.reference.name;
+        }
     }
 
     // Do not remove this code this will be raised as seperate ticket later : https://edi3.slack.com/archives/DJ9KBLSPL/p1586776587005900
