@@ -37,7 +37,10 @@ function init() {
      app.commands.register('tool.transport:exportNew', transportNew.exportNewModel);
      app.commands.register('tool.git:initclone', git.initClone);
      app.commands.register('tool.git:sync', git.sync);
+     
+     /* Enable below line when git feature to enable 
      app.project.on('projectLoaded', git.projectLoaded);
+     */
      /* app.commands.register('tool.git:init', git.getInit);
      app.commands.register('tool.git:addremote', git.getAddRemote);
      app.commands.register('tool.git:commit', git.getCommit);

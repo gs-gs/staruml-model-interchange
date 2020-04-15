@@ -2,21 +2,21 @@ var path = require('path');
 const fs = require('fs');
 const fields = require('../transport/fields');
 const constant = require('../constant');
-let otherContexts = [];
+let otherResources = [];
 async function exportNewModel() {
 
 
-    otherContexts = [];
+    otherResources = [];
     app.dialogs.showSelectDropdownDialog(constant.msg_file_select, constant.fileOptions).then(function ({
         buttonId,
         returnValue
     }) {
         if (buttonId === 'ok') {
             let mMainObject = {};
-            /* Adding Contexts */
-            /* Working with contexts */
-            let arrContexts = [];
-            mMainObject[fields.contexts] = arrContexts;
+            /* Adding resources */
+            /* Working with resources */
+            let arrResources = [];
+            mMainObject[fields.resources] = arrResources;
 
             if (returnValue == "1") {
                 /* Export all package */
@@ -28,7 +28,7 @@ async function exportNewModel() {
                         return pkg._id != dataTypePkgId;
                     })
 
-                    /* Adding Contexts */
+                    /* Adding Resources */
                     filterPackages.forEach(pkg => {
 
                         let exportElement = pkg;
@@ -37,7 +37,7 @@ async function exportNewModel() {
 
                         if (varSel == valPackagename) {
 
-                            addContexts(arrContexts, exportElement);
+                            addResources(arrResources, exportElement);
 
                         }
 
@@ -67,12 +67,12 @@ async function exportNewModel() {
 
                             if (varSel == valPackagename) {
 
-                                otherContexts = [];
-                                /* Adding Contexts */
-                                addContexts(arrContexts, exportElement);
+                                otherResources = [];
+                                /* Adding Resources */
+                                addResources(arrResources, exportElement);
 
-                                /* Adding Other contexts recursively */
-                                addContextsRecursively(otherContexts, arrContexts);
+                                /* Adding Other resources recursively */
+                                addResourcesRecursively(otherResources, arrResources);
                                 
                                 /* Adding Datatype */
                                 addDatatype(mMainObject);
@@ -94,36 +94,36 @@ async function exportNewModel() {
 
 }
 
-function addContextsRecursively(oContexts, arrContexts) {
-    let newOtherContexts = oContexts;//JSON.parse(JSON.stringify(oContexts));
-    if (newOtherContexts.length > 0) {
-        let newOtherContext = [];
-        newOtherContexts.forEach(oContext => {
-            let result = newOtherContext.filter(element => {
-                return oContext._id == element._id
+function addResourcesRecursively(oResources, arrResources) {
+    let newOtherResources = oResources;//JSON.parse(JSON.stringify(oResources));
+    if (newOtherResources.length > 0) {
+        let newOtherResource = [];
+        newOtherResources.forEach(oResource => {
+            let result = newOtherResource.filter(element => {
+                return oResource._id == element._id
             });
             if (result.length == 0) {
-                newOtherContext.push(oContext);
+                newOtherResource.push(oResource);
             }
         });
 
-        console.log("newOtherContext ", newOtherContext);
-        /* Adding new Other Contexts */
-        newOtherContext.forEach(pkg => {
+        console.log("newOtherResource ", newOtherResource);
+        /* Adding new Other Resources */
+        newOtherResource.forEach(pkg => {
 
             let exportElement = pkg;
             let varSel = exportElement.getClassName();
             let valPackagename = type.UMLPackage.name;
 
             if (varSel == valPackagename) {
-                otherContexts = [];
-                let result = arrContexts.filter(fContext => {
-                    return fContext.name == exportElement.name;
+                otherResources = [];
+                let result = arrResources.filter(fResource => {
+                    return fResource.name == exportElement.name;
                 });
 
                 if(result.length == 0){
-                    addContexts(arrContexts, exportElement);
-                    addContextsRecursively(otherContexts, arrContexts);
+                    addResources(arrResources, exportElement);
+                    addResourcesRecursively(otherResources, arrResources);
                 }
             }
 
@@ -133,7 +133,7 @@ function addContextsRecursively(oContexts, arrContexts) {
 const JSON_FILE_FILTERS = [{
     name: 'JSON File',
     extensions: ['json']
-}]
+}];
 
 function saveFile(mMainObject) {
     /* select repository path where you want to create new repository */
@@ -165,7 +165,7 @@ function saveFile(mMainObject) {
 }
 
 
-function addContexts(arrContexts, exportElement) {
+function addResources(arrResources, exportElement) {
     let selPackage = exportElement;
 
     /* Adding Entities */
@@ -174,12 +174,12 @@ function addContexts(arrContexts, exportElement) {
         return;
     }
 
-    let objContext = {};
-    arrContexts.push(objContext);
-    objContext[fields.name] = selPackage.name;
+    let objResource = {};
+    arrResources.push(objResource);
+    objResource[fields.name] = selPackage.name;
 
     let entitiesArr = [];
-    objContext[fields.entities] = entitiesArr;
+    objResource[fields.entities] = entitiesArr;
 
 
     umlEntities.forEach(entity => {
@@ -301,7 +301,7 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
             relationshipObj.target = target;
             target[fields.name] = rel.end1.reference.name;
             if (rel.end1.reference._parent._id != selPackage._id) {
-                target[fields.context] = rel.end1.reference._parent.name;
+                target[fields.resource] = rel.end1.reference._parent.name;
             }
 
             relationshipsArr.push(relationshipObj);
@@ -342,8 +342,8 @@ function addRelationshipGeneralization(entity,selPackage){
             relationshipObj.target = target;
             target[fields.name] = rel.target.name;
             if (rel.target._parent._id != selPackage._id) {
-                target[fields.context] = rel.target._parent.name;
-                otherContexts.push(rel.target._parent);
+                target[fields.resource] = rel.target._parent.name;
+                otherResources.push(rel.target._parent);
             }
 
             relationshipsArr.push(relationshipObj);
@@ -390,8 +390,8 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
             relationshipObj.target = target;
             target[fields.name] = rel.end1.reference.name;
             if (rel.end1.reference._parent._id != selPackage._id) {
-                target[fields.context] = rel.end1.reference._parent.name;
-                otherContexts.push(rel.end1.reference._parent);
+                target[fields.resource] = rel.end1.reference._parent.name;
+                otherResources.push(rel.end1.reference._parent);
             }
 
             relationshipsArr.push(relationshipObj);
@@ -442,8 +442,8 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
             relationshipObj.target = target;
             target[fields.name] = rel.end2.reference.name;
             if (rel.end2.reference._parent._id != selPackage._id) {
-                target[fields.context] = rel.end2.reference._parent.name;
-                otherContexts.push(rel.end2.reference._parent);
+                target[fields.resource] = rel.end2.reference._parent.name;
+                otherResources.push(rel.end2.reference._parent);
             }
 
             relationshipsArr.push(relationshipObj);

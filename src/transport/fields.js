@@ -41,7 +41,7 @@ const fields = {
     'tags': 'tags',
     'kind': 'kind',
     'defaultValue': 'defaultValue',
-    'contexts': 'contexts',
+    'resources': 'resources',
     'dataTypes': 'dataTypes',
     'dataType': 'dataType',
     'entities': 'entities',
@@ -51,7 +51,7 @@ const fields = {
     'extra': 'extra',
     'minCardinality': 'minCardinality',
     'maxCardinality': 'maxCardinality',
-    'context': 'context'
+    'resource': 'resource'
 
 };
 module.exports = fields;
