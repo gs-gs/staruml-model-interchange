@@ -6,6 +6,7 @@ let otherContexts = [];
 async function exportNewModel() {
 
 
+    otherContexts = [];
     app.dialogs.showSelectDropdownDialog(constant.msg_file_select, constant.fileOptions).then(function ({
         buttonId,
         returnValue
@@ -70,33 +71,8 @@ async function exportNewModel() {
                                 /* Adding Contexts */
                                 addContexts(arrContexts, exportElement);
 
+                                /* Adding Other contexts recursively */
                                 addContextsRecursively(otherContexts, arrContexts);
-                                // if (otherContexts.length > 0) {
-                                //     let newOtherContext = [];
-                                //     otherContexts.forEach(oContext => {
-                                //         let result = newOtherContext.filter(element => {
-                                //             return oContext._id == element._id
-                                //         });
-                                //         if (result.length == 0) {
-                                //             newOtherContext.push(oContext);
-                                //         }
-                                //     });
-
-                                //     console.log("newOtherContext ", newOtherContext);
-                                //     /* Adding new Other Contexts */
-                                //     newOtherContext.forEach(pkg => {
-
-                                //         let exportElement = pkg;
-                                //         let varSel = exportElement.getClassName();
-                                //         let valPackagename = type.UMLPackage.name;
-
-                                //         if (varSel == valPackagename) {
-
-                                //             addContexts(arrContexts, exportElement);
-
-                                //         }
-                                //     });
-                                // }
                                 
                                 /* Adding Datatype */
                                 addDatatype(mMainObject);
@@ -141,8 +117,14 @@ function addContextsRecursively(oContexts, arrContexts) {
 
             if (varSel == valPackagename) {
                 otherContexts = [];
-                addContexts(arrContexts, exportElement);
-                addContextsRecursively(otherContexts, arrContexts);
+                let result = arrContexts.filter(fContext => {
+                    return fContext.name == exportElement.name;
+                });
+
+                if(result.length == 0){
+                    addContexts(arrContexts, exportElement);
+                    addContextsRecursively(otherContexts, arrContexts);
+                }
             }
 
         });
