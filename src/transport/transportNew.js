@@ -70,7 +70,7 @@ async function exportNewModel() {
                                 /* Adding Contexts */
                                 addContexts(arrContexts, exportElement);
 
-                                addContextsRecursively(otherContexts, arrContexts)
+                                addContextsRecursively(otherContexts, arrContexts);
                                 // if (otherContexts.length > 0) {
                                 //     let newOtherContext = [];
                                 //     otherContexts.forEach(oContext => {
@@ -233,7 +233,8 @@ function addContexts(arrContexts, exportElement) {
         let relationshipsArr = [],
             relArrEnd1 = [],
             relArrEnd2 = [],
-            relArrEnd3 = [];
+            relArrEnd3 = [],
+            relArrGeneralization = [];
 
         /* Add relationship that end1 have 'composition','share' and end2 have 'none' */
         relArrEnd1 = addRelationshipTargettingEnd1(entity, selPackage);
@@ -244,7 +245,10 @@ function addContexts(arrContexts, exportElement) {
         /* TODO Add relationship that end1 have 'none' and end2 have 'none' */
         // relArrEnd3 = addRelationshipTargettingEndNone(entity, selPackage);
 
-        relationshipsArr = relArrEnd1.concat(relArrEnd2, relArrEnd3);
+        /* Add generalization relationship */
+        relArrGeneralization = addRelationshipGeneralization(entity, selPackage);
+
+        relationshipsArr = relArrEnd1.concat(relArrEnd2, relArrEnd3, relArrGeneralization);
         if (relationshipsArr.length > 0) {
             objEntity[fields.relationships] = relationshipsArr;
         }
@@ -324,7 +328,47 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
     }
     return relationshipsArr;
 }
+function addRelationshipGeneralization(entity,selPackage){
+    let relationshipsArr = [];
+    let umlRelationship = app.repository.select("@UMLGeneralization");
+    let classRelationship = umlRelationship.filter(rel => {
+        return entity._id == rel.source._id;
+    });
+    if(classRelationship.length > 0){
+        classRelationship.forEach(rel => {
+            let relationshipObj = {};
+            let type = 'typeOf';
 
+            /* Adding relationship 'name' */
+            relationshipObj[fields.name] = rel.name;
+
+            /* Adding relationship 'description' */
+            if (rel.documentation != "") {
+                relationshipObj[fields.description] = rel.documentation;
+            }
+            /* Adding relationship 'status' */
+            addPropertyStatus(rel, relationshipObj);
+
+            /* Adding relationship 'type */
+            relationshipObj[fields.type] = type;
+
+            /* Adding relationship 'minCardinality' & 'maxCardinality' */
+            addPropertyCardinality(rel.target, relationshipObj);
+
+            /* Addint relationship 'target */
+            let target = {};
+            relationshipObj.target = target;
+            target[fields.name] = rel.target.name;
+            if (rel.target._parent._id != selPackage._id) {
+                target[fields.context] = rel.target._parent.name;
+                otherContexts.push(rel.target._parent);
+            }
+
+            relationshipsArr.push(relationshipObj);
+        });
+    }
+    return relationshipsArr;
+}
 function addRelationshipTargettingEnd2(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLAssociation");
