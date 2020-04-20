@@ -85,7 +85,8 @@ const constant = {
     }],
     msg_file_saveas: 'Save File as...',
     msg_export_file:'Select path where you want to export',
-    datatype_pkg_name:'DataTypes'
+    datatype_pkg_name:'DataTypes',
+    status_code_enum_name:'StatusCode'
 }
 /**
  * @function configMessage

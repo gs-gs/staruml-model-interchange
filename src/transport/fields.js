@@ -51,7 +51,8 @@ const fields = {
     'extra': 'extra',
     'minCardinality': 'minCardinality',
     'maxCardinality': 'maxCardinality',
-    'resource': 'resource'
+    'resource': 'resource',
+    'reference': 'reference'
 
 };
 module.exports = fields;
