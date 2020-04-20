@@ -35,6 +35,7 @@ function init() {
      app.commands.register('tool.transport:import', transport.importModel);
      app.commands.register('tool.transport:export', transport.exportModel);
      app.commands.register('tool.transport:exportNew', transportNew.exportNewModel);
+     app.commands.register('tool.transport:importNew', transportNew.importNewModel);
      app.commands.register('tool.git:initclone', git.initClone);
      app.commands.register('tool.git:sync', git.sync);
      

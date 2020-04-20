@@ -271,7 +271,7 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
     let umlRelationship = app.repository.select("@UMLAssociation");
     let classRelationship = umlRelationship.filter(rel => {
         return entity._id == rel.end2.reference._id;
-    })
+    });
     if (classRelationship.length > 0) {
         classRelationship.forEach(rel => {
             let relationshipObj = {};
@@ -382,6 +382,7 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
             if (rel.documentation != "") {
                 relationshipObj[fields.description] = rel.documentation;
             }
+
             /* Adding relationship 'status' */
             addPropertyStatus(rel, relationshipObj);
 
@@ -517,4 +518,240 @@ function addPropertyCardinality(property, propertyObj) {
         propertyObj[fields.maxCardinality] = maxCardinality;
     }
 }
+
+function isDatatypePkgAvail() {
+    let project = app.project.getProject();
+    let rootPackages = app.repository.select(project.name + "::@UMLPackage");
+    let dataTypePkgResult = rootPackages.filter(pkg => {
+        return pkg.name == constant.datatype_pkg_name;
+    });
+    if (dataTypePkgResult.length == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function importNewModel() {
+    var mFiles = app.dialogs.showOpenDialog('Import file As JSON (.json)', null, JSON_FILE_FILTERS)
+    if (mFiles == null) {
+        return;
+    }
+    finalPath = mFiles[0];
+    let filePath = finalPath;
+    var contentStr = fs.readFileSync(filePath, 'utf8');
+    var content = JSON.parse(contentStr);
+    console.log("File Data : ", content);
+    let dataTypesContent = content.dataTypes;
+
+    if (!isStatusCodeAvail()) {
+        addStatusCodeEnum();
+    }
+
+    if (!isDatatypePkgAvail()) {
+        addDataTypePackage(dataTypesContent);
+    } else {
+        updateDataTypePackage(dataTypesContent);
+    }
+
+
+    app.modelExplorer.rebuild();
+}
+
+function addStatusCodeEnum() {
+    let project = app.project.getProject();
+    let createStatusCodeEnume = {};
+    let mainOwnedElements = [];
+
+    createStatusCodeEnume[fields._type] = 'UMLEnumeration';
+    createStatusCodeEnume[fields.name] = constant.status_code_enum_name;
+    createStatusCodeEnume[fields.ownedElements] = mainOwnedElements;
+    createStatusCodeEnume[fields._parent] = {
+        '$ref': project._id
+    }
+    let enumStatusCode = app.repository.readObject(createStatusCodeEnume);
+    app.engine.addItem(project, 'ownedElements', enumStatusCode);
+
+    let literals = ['active', 'deleted', 'deprecated', 'proposed'];
+    literals.forEach(literal => {
+        let createUMLLiteral = {};
+        createUMLLiteral[fields._type] = 'UMLEnumerationLiteral';
+        createUMLLiteral[fields.name] = literal;
+        createUMLLiteral[fields._parent] = {
+            '$ref': enumStatusCode._id
+        }
+
+        let enumLiteral = app.repository.readObject(createUMLLiteral);
+        app.engine.addItem(enumStatusCode, 'literals', enumLiteral);
+    });
+
+
+    app.modelExplorer.rebuild();
+}
+
+function isStatusCodeAvail() {
+    let result = app.repository.select(constant.status_code_enum_name);
+    result = result.filter(mEnum => {
+        return mEnum instanceof type.UMLEnumeration;
+    });
+    if (result.length == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function updateDataTypePackage(dataTypesContent) {
+    // 'active', 'deleted', 'deprecated', 'proposed'
+    let statusCodeEnum = app.repository.select(constant.status_code_enum_name)
+    statusCodeEnum = statusCodeEnum.filter(cEnum => {
+        return cEnum instanceof type.UMLEnumeration;
+    });
+    if (statusCodeEnum.length == 1) {
+        statusCodeEnum = statusCodeEnum[0];
+    }
+    let enumStatusLiterals = statusCodeEnum.literals;
+
+    let project = app.project.getProject();
+    let rootPackages = app.repository.select(project.name + "::@UMLPackage");
+    let dataTypePkgResult = rootPackages.filter(pkg => {
+        return pkg.name == constant.datatype_pkg_name;
+    });
+
+    
+    if (dataTypePkgResult.length == 1) {
+        let dataTypePackage = dataTypePkgResult[0];
+        let dataTypeClasses = app.repository.select(dataTypePackage.name + "::@UMLClass");
+
+        let needToCreateType = [];
+        dataTypesContent.forEach(dtPr => {
+            let resFlter =  dataTypeClasses.filter(res => {
+                return dtPr.name == res.name;
+            });     
+            if(resFlter.length == 0){
+                needToCreateType.push(dtPr);
+            }
+        });
+
+        /* Update -> datatype class, Creat/Update -> tag */
+        if (dataTypeClasses.length > 0) {
+            dataTypeClasses.forEach(dataTypeClass => {
+
+                console.log("Updated datatype : ",dataTypeClass.name);
+                let result = dataTypesContent.filter(contentClass => {
+                    return contentClass.name == dataTypeClass.name;
+                });
+
+                if (result.length != 0) {
+                    let contentClass = result[0];
+
+                    let contentClassKeys = Object.keys(contentClass);
+
+                    contentClassKeys.forEach(key => {
+                        if (dataTypeClass.hasOwnProperty(key)) {
+                            app.engine.setProperty(dataTypeClass, key, dataTypeClass[key]);
+                        }
+
+                        let tags = dataTypeClass.tags;
+                        if (key == 'status' && tags.length > 0) {
+
+                            tags.filter(tag => {
+                                if (tag.name == key) {
+
+                                    let statusName = contentClass[key];
+                                    console.log("Updated status: ", statusName);
+                                    let resStatus = enumStatusLiterals.filter(statusLiteral => {
+                                        return statusLiteral.name == statusName;
+                                    });
+                                    if (resStatus.length == 1) {
+                                        app.engine.setProperty(tag, 'reference', resStatus[0]);
+                                    }
+                                }
+                            });
+                        } else if (key == 'status' && tags.length == 0) {
+                            console.log("Created status : ", contentClass[key]);
+                            createStatusTag(contentClass,dataTypeClass);
+                        }
+                    });
+                   
+                }
+            });
+        }
+
+        /* Create -> datatype class, Create -> tag */
+        createDataType(needToCreateType,dataTypePackage);
+    }
+}
+
+function addDataTypePackage(dataTypesContent) {
+    let project = app.project.getProject();
+    let createDataTypePackage = {};
+    let mainOwnedElements = [];
+
+    createDataTypePackage[fields._type] = 'UMLPackage';
+    createDataTypePackage[fields.name] = constant.datatype_pkg_name;
+    createDataTypePackage[fields.ownedElements] = mainOwnedElements;
+    createDataTypePackage[fields._parent] = {
+        '$ref': project._id
+    }
+    let pkg = app.repository.readObject(createDataTypePackage);
+    app.engine.addItem(project, 'ownedElements', pkg);
+
+    createDataType(dataTypesContent,pkg);
+
+    app.modelExplorer.rebuild();
+}
+function createDataType(dataTypesContent,parent){
+    dataTypesContent.forEach(contentClass => {
+        console.log("Created datatype : ",contentClass.name);
+        let createClass = [];
+        createClass[fields.name] = contentClass.name;
+        createClass[fields._type] = 'UMLClass';
+        let dtClass = app.repository.readObject(createClass);
+        app.engine.addItem(parent, 'ownedElements', dtClass);
+
+        if (contentClass.hasOwnProperty('status')) {
+            createStatusTag(contentClass,dtClass);
+        }
+    });
+}
+function createStatusTag(contentClass,dtClass) {
+    let statusName = contentClass.status;
+    let arrTag = [];
+
+    let createTag = {};
+    createTag[fields._type] = 'Tag';
+    createTag[fields.name] = 'status';
+    createTag[fields.kind] = 'reference';
+    createTag[fields._parent] = {
+        '$ref': dtClass._id
+    }
+    let resultReference = app.repository.select(statusName);
+    resultReference = resultReference.filter(refe => {
+        return refe instanceof type.UMLEnumerationLiteral;
+    });
+
+    if (resultReference.length > 0) {
+        createTag[fields.reference] = {
+            '$ref': resultReference[0]._id
+        }
+    }
+    let cTag = app.repository.readObject(createTag);
+    arrTag.push(cTag);
+    app.engine.setProperty(dtClass, 'tags', arrTag);
+
+    /*  
+    "_type": "Tag",
+     "_id": "AAAAAAFxXx3BFEbB/xo=",
+     "_parent": {
+         "$ref": "AAAAAAFxXxLWFT56jMo="
+     },
+     "name": "status",
+     "kind": "reference",
+     "reference": {
+         "$ref": "AAAAAAFxXxijZUC75JM="
+     } 
+     */
+}
 module.exports.exportNewModel = exportNewModel;
+module.exports.importNewModel = importNewModel;

@@ -5,6 +5,10 @@
                "label": "model interchange",
                "id": "tool.transport",
                "submenu": [{
+                    "label": "import",
+                    "id": "tool.transport.importNew",
+                    "command": "tool.transport:importNew"
+               },{
                     "label": "export",
                     "id": "tool.transport.exportNew",
                     "command": "tool.transport:exportNew"
