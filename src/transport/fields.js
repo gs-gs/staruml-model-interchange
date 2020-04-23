@@ -52,7 +52,11 @@ const fields = {
     'minCardinality': 'minCardinality',
     'maxCardinality': 'maxCardinality',
     'resource': 'resource',
-    'reference': 'reference'
+    'reference': 'reference',
+    'multiplicity': 'multiplicity',
+    'contains' : 'contains',
+    'references' : 'references',
+    'typeOf' : 'typeOf',
 
 };
 module.exports = fields;
