@@ -657,10 +657,10 @@ function updateMultiplicity(cProp, entityProp) {
 }
 
 function updateContext(statusCodes, dataTypes, content) {
-    let resourceContent = content.resources;
+    let resourcesContent = content.resources;
 
     /* Updating class and properties */
-    forEach(resourceContent, resource => {
+    forEach(resourcesContent, resource => {
         let resourcePackage = app.repository.select(resource.name);
         resourcePackage = resourcePackage.filter(res => {
             return res instanceof type.UMLPackage;
@@ -686,9 +686,8 @@ function updateContext(statusCodes, dataTypes, content) {
         }
     });
 
-    /* Updating Relationship */
-    console.log("Relationship");
-    forEach(resourceContent, resource => {
+    /* Updating Relationship -> description, type, status, multiplicity */
+    forEach(resourcesContent, resource => {
         let resourcePackage = app.repository.select(resource.name);
         resourcePackage = resourcePackage.filter(res => {
             return res instanceof type.UMLPackage;
@@ -725,87 +724,43 @@ function updateContext(statusCodes, dataTypes, content) {
                             if (eRelationship.type == fields.references) {
                                 let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
 
+                                /* Found relationship need to update*/
                                 if (foundRelationship.length != 0) {
                                     foundRelationship = foundRelationship[0];
-                                    console.log("found relationship : ", foundRelationship);
+                                    console.log("found relationship : aggregation : ", foundRelationship);
 
                                     if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
 
+                                        updateAggregationRelationship(eRelationship, foundRelationship, statusCodes);
 
-                                        /* Updating relationship description */
-                                        if (eRelationship.hasOwnProperty(fields.description)) {
-
-                                            app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
-
-                                        }
-
-                                        /* Updating relationship multiplicity */
-                                        if (eRelationship.hasOwnProperty(fields.minCardinality) || eRelationship.hasOwnProperty(fields.maxCardinality)) {
-
-                                            let sourceEnd, targetEnd;
-                                            if (foundRelationship.end1.aggregation == 'shared' && foundRelationship.end2.aggregation == 'none') {
-                                                // target is end2 
-                                                sourceEnd = foundRelationship.end1;
-                                                targetEnd = foundRelationship.end2;
-                                            } else if (foundRelationship.end2.aggregation == 'shared' && foundRelationship.end1.aggregation == 'none') {
-                                                // target is end1
-                                                sourceEnd = foundRelationship.end2;
-                                                targetEnd = foundRelationship.end1;
-                                            }
-
-                                            updateMultiplicity(targetEnd, eRelationship);
-
-                                        }
-
-                                        /* Updating relationship status */
-
-                                        if (eRelationship.hasOwnProperty(fields.status)) {
-
-                                            updateStatus(eRelationship, foundRelationship, statusCodes);
-
-                                        }
                                     }
+                                } else {
+                                    /* Not found relationship need to create*/
+                                    console.log("Need to create : aggregation : ", eRelationship);
+
+                                    let newCreated = createAggregationRelationship(eRelationship, mClass);
+                                    updateAggregationRelationship(eRelationship, newCreated, statusCodes);
+
                                 }
                             } else if (eRelationship.type == fields.contains) {
                                 let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
 
                                 if (foundRelationship.length != 0) {
                                     foundRelationship = foundRelationship[0];
-                                    console.log("found relationship : ", foundRelationship);
+                                    console.log("found relationship : composition : ", foundRelationship);
 
                                     if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
-                                        /* Updating relationship description */
-                                        if (eRelationship.hasOwnProperty(fields.description)) {
 
-                                            app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
+                                        updateCompositeRelationship(eRelationship, foundRelationship, statusCodes);
 
-                                        }
-
-                                        /* Updating relationship multiplicity */
-                                        if (eRelationship.hasOwnProperty(fields.minCardinality) || eRelationship.hasOwnProperty(fields.maxCardinality)) {
-
-                                            let targetEnd;
-                                            if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
-                                                // target is end2 
-                                                targetEnd = foundRelationship.end2;
-                                            } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
-                                                // target is end1
-                                                targetEnd = foundRelationship.end1;
-                                            }
-
-                                            updateMultiplicity(targetEnd, eRelationship);
-
-                                        }
-
-                                        /* Updating relationship status */
-
-                                        if (eRelationship.hasOwnProperty(fields.status)) {
-
-                                            updateStatus(eRelationship, foundRelationship, statusCodes);
-
-                                        }
                                     }
 
+                                } else {
+                                    /* Not found relationship need to create*/
+                                    console.log("Need to create : composition : ", eRelationship);
+
+                                    let newCreated = createCompositionRelationhip(eRelationship, mClass);
+                                    updateCompositeRelationship(eRelationship, newCreated, statusCodes);
 
                                 }
                             } else if (eRelationship.type == fields.typeOf) {
@@ -816,23 +771,17 @@ function updateContext(statusCodes, dataTypes, content) {
 
                                     if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
 
-                                        /* Updating relationship description */
+                                        updateGeneralizationRelationship(eRelationship, foundRelationship, statusCodes);
 
-                                        if (eRelationship.hasOwnProperty(fields.description)) {
-
-                                            app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
-
-                                        }
-
-                                        /* Updating relationship status */
-
-                                        if (eRelationship.hasOwnProperty(fields.status)) {
-
-                                            updateStatus(eRelationship, foundRelationship, statusCodes);
-
-                                        }
 
                                     }
+
+                                } else {
+                                    /* Not found relationship need to create*/
+                                    console.log("Need to create : generalization : ", eRelationship);
+
+                                    let newCreated = createGeneralizationRelationship(eRelationship, mClass);
+                                    updateGeneralizationRelationship(eRelationship, newCreated, statusCodes);
 
                                 }
                             }
@@ -844,6 +793,322 @@ function updateContext(statusCodes, dataTypes, content) {
             });
         }
     });
+}
+
+function createAggregationRelationship(eRelationship, mClass) {
+    let sourceClass = null,
+        targetClass = null;
+    if (eRelationship.target.hasOwnProperty(fields.resource)) {
+        let resource = eRelationship.target[fields.resource];
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + resource + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    } else {
+
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + sourceClass._parent.name + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    }
+
+    if (sourceClass != null && targetClass != null) {
+        targetResource = eRelationship.target.name
+        let createNewAggregation = {};
+        createNewAggregation[fields._type] = 'UMLAssociation';
+        createNewAggregation[fields._parent] = {
+            '$ref': targetClass._id
+        };
+
+        createNewAggregation = app.repository.readObject(createNewAggregation);
+        createNewAggregation = JSON.parse(app.repository.writeObject(createNewAggregation));
+
+        /* Creating source/end1 */
+        let createEnd1 = {};
+        createEnd1[fields._type] = 'UMLAssociationEnd';
+        createEnd1[fields._parent] = {
+            '$ref': createNewAggregation._id
+        };
+        createEnd1[fields.reference] = {
+            '$ref': sourceClass._id
+        }
+        createEnd1[fields.aggregation] = 'shared';
+        let tmpCreatedEnd1 = app.repository.readObject(createEnd1);
+        console.log("tmpCreatedEnd1", tmpCreatedEnd1);
+
+        /* Creating target/end2 */
+        let createEnd2 = {};
+        createEnd2[fields._type] = 'UMLAssociationEnd';
+        createEnd2[fields._parent] = {
+            '$ref': createNewAggregation._id
+        };
+        createEnd2[fields.reference] = {
+            '$ref': targetClass._id
+        }
+        createEnd2[fields.aggregation] = 'none';
+        let tmpCreatedEnd2 = app.repository.readObject(createEnd2);
+        console.log("tmpCreatedEnd2", tmpCreatedEnd2);
+
+        objEnd1 = JSON.parse(app.repository.writeObject(tmpCreatedEnd1));
+        objEnd2 = JSON.parse(app.repository.writeObject(tmpCreatedEnd2));
+        createNewAggregation[fields.end1] = objEnd1;
+
+
+        createNewAggregation[fields.end2] = objEnd2;
+
+        createNewAggregation = app.repository.readObject(createNewAggregation);
+
+        app.engine.setProperty(createNewAggregation, fields.name, eRelationship.name);
+
+        app.engine.addItem(targetClass, fields.ownedElements, createNewAggregation);
+
+        return createNewAggregation;
+    }
+}
+
+function createCompositionRelationhip(eRelationship, mClass) {
+    let sourceClass = null,
+        targetClass = null;
+    if (eRelationship.target.hasOwnProperty(fields.resource)) {
+        let resource = eRelationship.target[fields.resource];
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + resource + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    } else {
+
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + sourceClass._parent.name + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    }
+    if (sourceClass != null && targetClass != null) {
+        targetResource = eRelationship.target.name
+        let createNewComposition = {};
+        createNewComposition[fields._type] = 'UMLAssociation';
+        createNewComposition[fields._parent] = {
+            '$ref': targetClass._id
+        };
+
+        createNewComposition = app.repository.readObject(createNewComposition);
+        createNewComposition = JSON.parse(app.repository.writeObject(createNewComposition));
+
+        /* Creating source/end1 */
+        let createEnd1 = {};
+        createEnd1[fields._type] = 'UMLAssociationEnd';
+        createEnd1[fields._parent] = {
+            '$ref': createNewComposition._id
+        };
+        createEnd1[fields.reference] = {
+            '$ref': sourceClass._id
+        }
+        createEnd1[fields.aggregation] = 'composite';
+        let tmpCreatedEnd1 = app.repository.readObject(createEnd1);
+        console.log("tmpCreatedEnd1", tmpCreatedEnd1);
+
+        /* Creating target/end2 */
+        let createEnd2 = {};
+        createEnd2[fields._type] = 'UMLAssociationEnd';
+        createEnd2[fields._parent] = {
+            '$ref': createNewComposition._id
+        };
+        createEnd2[fields.reference] = {
+            '$ref': targetClass._id
+        }
+        createEnd2[fields.aggregation] = 'none';
+        let tmpCreatedEnd2 = app.repository.readObject(createEnd2);
+        console.log("tmpCreatedEnd2", tmpCreatedEnd2);
+
+        objEnd1 = JSON.parse(app.repository.writeObject(tmpCreatedEnd1));
+        objEnd2 = JSON.parse(app.repository.writeObject(tmpCreatedEnd2));
+        createNewComposition[fields.end1] = objEnd1;
+
+
+        createNewComposition[fields.end2] = objEnd2;
+
+        createNewComposition = app.repository.readObject(createNewComposition);
+
+        app.engine.setProperty(createNewComposition, fields.name, eRelationship.name);
+
+        app.engine.addItem(targetClass, fields.ownedElements, createNewComposition);
+
+        return createNewComposition;
+    }
+}
+
+function createGeneralizationRelationship(eRelationship, mClass) {
+    let sourceClass = null,
+        targetClass = null;
+    if (eRelationship.target.hasOwnProperty(fields.resource)) {
+        let resource = eRelationship.target[fields.resource];
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + resource + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    } else {
+
+        let resourceName = eRelationship.target[fields.name];
+
+        sourceClass = mClass;
+        targetClass = app.repository.select("@UMLPackage[name=" + sourceClass._parent.name + "]::@UMLClass[name=" + resourceName + "]");
+        if (targetClass.length != 0) {
+            targetClass = targetClass[0];
+        } else {
+            targetClass = null;
+        }
+
+    }
+    if (sourceClass != null && targetClass != null) {
+        targetResource = eRelationship.target.name
+        let createNewGeneralization = {};
+        createNewGeneralization[fields._type] = 'UMLGeneralization';
+        createNewGeneralization[fields._parent] = {
+            '$ref': targetClass._id
+        };
+
+        createNewGeneralization = app.repository.readObject(createNewGeneralization);
+        createNewGeneralization = JSON.parse(app.repository.writeObject(createNewGeneralization));
+
+        /* Creating source/end1 */
+        let createSource = {};
+        createSource = {
+            '$ref': sourceClass._id
+        }
+
+        /* Creating target/end2 */
+        let createTarget = {};
+        createTarget = {
+            '$ref': targetClass._id
+        }
+
+        createNewGeneralization[fields.source] = createSource;
+
+
+        createNewGeneralization[fields.target] = createTarget;
+
+        createNewGeneralization = app.repository.readObject(createNewGeneralization);
+
+        app.engine.setProperty(createNewGeneralization, fields.name, eRelationship.name);
+
+        app.engine.addItem(targetClass, fields.ownedElements, createNewGeneralization);
+
+        return createNewGeneralization;
+    }
+}
+
+function updateAggregationRelationship(eRelationship, foundRelationship, statusCodes) {
+    /* Updating relationship description */
+    if (eRelationship.hasOwnProperty(fields.description)) {
+
+        app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
+
+    }
+
+    /* Updating relationship multiplicity */
+    if (eRelationship.hasOwnProperty(fields.minCardinality) || eRelationship.hasOwnProperty(fields.maxCardinality)) {
+
+        let sourceEnd, targetEnd;
+        if (foundRelationship.end1.aggregation == 'shared' && foundRelationship.end2.aggregation == 'none') {
+            // target is end2 
+            sourceEnd = foundRelationship.end1;
+            targetEnd = foundRelationship.end2;
+        } else if (foundRelationship.end2.aggregation == 'shared' && foundRelationship.end1.aggregation == 'none') {
+            // target is end1
+            sourceEnd = foundRelationship.end2;
+            targetEnd = foundRelationship.end1;
+        }
+
+        updateMultiplicity(targetEnd, eRelationship);
+
+    }
+
+    /* Updating relationship status */
+    if (eRelationship.hasOwnProperty(fields.status)) {
+
+        updateStatus(eRelationship, foundRelationship, statusCodes);
+
+    }
+}
+
+function updateCompositeRelationship(eRelationship, foundRelationship, statusCodes) {
+    /* Updating relationship description */
+    if (eRelationship.hasOwnProperty(fields.description)) {
+
+        app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
+
+    }
+
+    /* Updating relationship multiplicity */
+    if (eRelationship.hasOwnProperty(fields.minCardinality) || eRelationship.hasOwnProperty(fields.maxCardinality)) {
+
+        let targetEnd;
+        if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
+            // target is end2 
+            targetEnd = foundRelationship.end2;
+        } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
+            // target is end1
+            targetEnd = foundRelationship.end1;
+        }
+
+        updateMultiplicity(targetEnd, eRelationship);
+
+    }
+
+    /* Updating relationship status */
+
+    if (eRelationship.hasOwnProperty(fields.status)) {
+
+        updateStatus(eRelationship, foundRelationship, statusCodes);
+
+    }
+}
+
+function updateGeneralizationRelationship(eRelationship, foundRelationship, statusCodes) {
+    /* Updating relationship description */
+
+    if (eRelationship.hasOwnProperty(fields.description)) {
+
+        app.engine.setProperty(foundRelationship, fields.documentation, eRelationship.description);
+
+    }
+
+    /* Updating relationship status */
+
+    if (eRelationship.hasOwnProperty(fields.status)) {
+
+        updateStatus(eRelationship, foundRelationship, statusCodes);
+
+    }
 }
 
 function isRelationshipValid(eRelationship, foundRelationship, mClass) {
@@ -939,6 +1204,10 @@ function updateStatus(sObject, tElement, statusCodes) {
             resSCode = resSCode[0];
             app.engine.setProperty(mTag, fields.reference, resSCode);
         }
+    } else {
+        console.log("Need to create status : ", status);
+        createStatusTag(sObject, tElement);
+
     }
 }
 

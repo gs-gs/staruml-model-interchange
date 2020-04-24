@@ -57,6 +57,8 @@ const fields = {
     'contains' : 'contains',
     'references' : 'references',
     'typeOf' : 'typeOf',
+    'end1' : 'end1',
+    'end2' : 'end2',
 
 };
 module.exports = fields;
