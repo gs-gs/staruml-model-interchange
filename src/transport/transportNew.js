@@ -545,29 +545,40 @@ function importNewModel() {
     console.log("File Data : ", content);
     let dataTypesContent = content.dataTypes;
 
-    /* Adding Status Code Enum */
-    if (!isStatusCodeAvail()) {
-        addStatusCodeEnum();
-    }
-
-    /* Adding / Updating Data Type Package */
-    if (!isDatatypePkgAvail()) {
-        addDataTypePackage(dataTypesContent);
-    } else {
-        updateDataTypePackage(dataTypesContent);
-    }
+    let fileName = path.basename(filePath);
+    let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + fileName, [], true);
+    setTimeout(() => {
 
 
-    let statusCodes = app.repository.select(constant.status_code_enum_name)[0];
-    statusCodes = statusCodes.literals;
+        /* Adding Status Code Enum */
+        if (!isStatusCodeAvail()) {
+            addStatusCodeEnum();
+        }
 
-    let dataTypes = app.repository.select(constant.datatype_pkg_name)[0];
-    dataTypes = app.repository.select(dataTypes.name + '::@UMLClass');
+        /* Adding / Updating Data Type Package */
+        if (!isDatatypePkgAvail()) {
+            addDataTypePackage(dataTypesContent);
+        } else {
+            updateDataTypePackage(dataTypesContent);
+        }
 
-    /* Updating Context -> Class, Properties */
-    updateContext(statusCodes, dataTypes, content);
 
-    app.modelExplorer.rebuild();
+        let statusCodes = app.repository.select(constant.status_code_enum_name)[0];
+        statusCodes = statusCodes.literals;
+
+        let dataTypes = app.repository.select(constant.datatype_pkg_name)[0];
+        dataTypes = app.repository.select(dataTypes.name + '::@UMLClass');
+
+        /* Updating Context -> Class, Properties */
+        updateContext(statusCodes, dataTypes, content);
+
+        app.modelExplorer.rebuild();
+
+        app.dialogs.showInfoDialog(fileName+constant.msg_import_success);
+
+        vDialog.close();
+
+    }, 5);
 }
 
 function updatingProperties(mClass, entity, dataTypes, statusCodes) {

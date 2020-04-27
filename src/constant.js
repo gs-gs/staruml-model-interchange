@@ -47,6 +47,7 @@ const constant = {
     msg_option_init_clone: 'Select one of the following options',
     save_file_before_operation: 'Please save file to perform model-interchange operations',
     include_string: 'Invalid username or password',
+    msg_import_success: ' imported successfully',
     CREATE_REPO: '0',
     CLONE_REPO: '1',
     ADD_REPO: '2',
