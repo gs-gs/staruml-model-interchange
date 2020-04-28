@@ -590,6 +590,7 @@ function updatingProperties(mClass, entity, dataTypes, statusCodes) {
 
         if (entityProperties != null && entityProperties.length > 0) {
 
+            let newCreateProperties = [];
             forEach(entityProperties, entityProp => {
                 let cProp = mClassProperties.filter(cProp => {
                     return entityProp.name == cProp.name;
@@ -600,41 +601,67 @@ function updatingProperties(mClass, entity, dataTypes, statusCodes) {
                     let name = '';
                     name = entityProp[fields.name];
 
-                    /* Updating datatype */
-                    if (entityProp.hasOwnProperty(fields.dataType)) {
+                    updateProp(cProp, entityProp, dataTypes, statusCodes);
 
-                        let dataType = '';
-                        dataType = entityProp[fields.dataType];
 
-                        let resDType = dataTypes.filter(dType => {
-                            return dType.name == dataType;
-                        });
+                } else {
+                    console.log("Need to create properties", entityProp);
+                    let createProperty = {};
+                    createProperty[fields._type] = 'UMLAttribute';
+                    createProperty[fields.name] = entityProp.name;
+                    createProperty[fields._parent] = {
+                        '$ref': mClass._id
+                    };
 
-                        if (resDType.length != 0) {
-                            resDType = resDType[0];
-                        }
-
-                        app.engine.setProperty(cProp, fields.type, resDType);
-                    }
-
-                    /* Updating status */
-                    if (entityProp.hasOwnProperty(fields.status)) {
-
-                        updateStatus(entityProp, cProp, statusCodes);
-
-                    }
-
-                    /* Updating multiplicity */
-                    if (entityProp.hasOwnProperty(fields.minCardinality) || entityProp.hasOwnProperty(fields.maxCardinality)) {
-
-                        updateMultiplicity(cProp, entityProp);
-
-                    }
-
+                    let createdProperty = app.repository.readObject(createProperty);
+                    newCreateProperties.push({
+                        'propContent': entityProp,
+                        'propAttrib': createdProperty
+                    });
                 }
             });
 
+            if (newCreateProperties.length > 0) {
+                forEach(newCreateProperties, cProp => {
+                    app.engine.addItem(mClass, fields.attributes, cProp.propAttrib);
+                    updateProp(cProp.propAttrib,cProp.propContent,dataTypes,statusCodes);
+                });
+            }
+
         }
+    }
+}
+
+function updateProp(cProp, entityProp, dataTypes, statusCodes) {
+    /* Updating datatype */
+    if (entityProp.hasOwnProperty(fields.dataType)) {
+
+        let dataType = '';
+        dataType = entityProp[fields.dataType];
+
+        let resDType = dataTypes.filter(dType => {
+            return dType.name == dataType;
+        });
+
+        if (resDType.length != 0) {
+            resDType = resDType[0];
+        }
+
+        app.engine.setProperty(cProp, fields.type, resDType);
+    }
+
+    /* Updating status */
+    if (entityProp.hasOwnProperty(fields.status)) {
+
+        updateStatus(entityProp, cProp, statusCodes);
+
+    }
+
+    /* Updating multiplicity */
+    if (entityProp.hasOwnProperty(fields.minCardinality) || entityProp.hasOwnProperty(fields.maxCardinality)) {
+
+        updateMultiplicity(cProp, entityProp);
+
     }
 }
 
@@ -683,6 +710,8 @@ function updateContext(statusCodes, dataTypes, content) {
             console.log("---------------Package to update : " + rPackage.name + "---------------");
             let entities = resource[fields.entities];
             let classesFromPackage = app.repository.select(rPackage.name + "::@UMLClass");
+
+            let newCreatedClasses = [];
             forEach(entities, entity => {
                 let resClass = classesFromPackage.filter(mClass => {
                     return mClass.name == entity.name;
@@ -694,8 +723,34 @@ function updateContext(statusCodes, dataTypes, content) {
                     updatingProperties(mClass, entity, dataTypes, statusCodes);
 
 
+                } else {
+                    console.log("Class to create ", entity.name);
+                    let createClass = {};
+                    createClass[fields._type] = 'UMLClass';
+                    createClass[fields.name] = entity.name;
+                    createClass[fields._parent] = {
+                        '$ref': rPackage._id
+                    };
+                    let newClass = app.repository.readObject(createClass);
+                    newCreatedClasses.push(newClass);
                 }
             });
+
+            if (newCreatedClasses.length > 0) {
+                forEach(newCreatedClasses, newClass => {
+
+                    let resEntities = entities.filter(mEntity => {
+                        return mEntity.name == newClass.name;
+                    });
+                    if (resEntities.length != 0) {
+                        let entity = resEntities[0];
+                        app.engine.addItem(rPackage, fields.ownedElements, newClass);
+                        updatingProperties(newClass, entity, dataTypes, statusCodes);
+                    }
+
+
+                });
+            }
         }
     });
 
