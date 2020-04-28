@@ -553,6 +553,8 @@ function importNewModel() {
         /* Adding Status Code Enum */
         if (!isStatusCodeAvail()) {
             addStatusCodeEnum();
+        } else {
+            addtatusCodeIfNotExist(dataTypesContent);
         }
 
         /* Adding / Updating Data Type Package */
@@ -574,7 +576,7 @@ function importNewModel() {
 
         app.modelExplorer.rebuild();
 
-        app.dialogs.showInfoDialog(fileName+constant.msg_import_success);
+        app.dialogs.showInfoDialog(fileName + constant.msg_import_success);
 
         vDialog.close();
 
@@ -1249,8 +1251,40 @@ function addStatusCodeEnum() {
         app.engine.addItem(enumStatusCode, 'literals', enumLiteral);
     });
 
+}
 
-    app.modelExplorer.rebuild();
+function addtatusCodeIfNotExist(dataTypesContent) {
+    let project = app.project.getProject();
+
+    let enums = app.repository.select(project.name + '::@UMLEnumeration');
+    if (enums.length > 0) {
+        let enumStatusCode = enums[0];
+        let literals = enumStatusCode.literals;
+
+        forEach(dataTypesContent, dataType => {
+
+            if (dataType.hasOwnProperty(fields.status)) {
+
+                let result = literals.filter(cLiteral => {
+                    return dataType.status == cLiteral.name;
+                });
+
+                if (result.length == 0) {
+
+                    let createUMLLiteral = {};
+                    createUMLLiteral[fields._type] = 'UMLEnumerationLiteral';
+                    createUMLLiteral[fields.name] = dataType.status;
+                    createUMLLiteral[fields._parent] = {
+                        '$ref': enumStatusCode._id
+                    }
+
+                    let enumLiteral = app.repository.readObject(createUMLLiteral);
+                    app.engine.addItem(enumStatusCode, 'literals', enumLiteral);
+                }
+            }
+        });
+
+    }
 }
 
 function isStatusCodeAvail() {
@@ -1323,7 +1357,6 @@ function updateDataTypePackage(dataTypesContent) {
                                 if (tag.name == key) {
 
                                     let statusName = contentClass[key];
-                                    console.log("Updated status: ", statusName);
                                     let resStatus = enumStatusLiterals.filter(statusLiteral => {
                                         return statusLiteral.name == statusName;
                                     });
@@ -1363,7 +1396,6 @@ function addDataTypePackage(dataTypesContent) {
 
     createDataType(dataTypesContent, pkg);
 
-    app.modelExplorer.rebuild();
 }
 
 function createDataType(dataTypesContent, parent) {
