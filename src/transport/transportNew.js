@@ -4,6 +4,11 @@ const fs = require('fs');
 const fields = require('../transport/fields');
 const constant = require('../constant');
 let otherResources = [];
+
+/**
+ * @function exportNewModel
+ * @description export selected package or all packages and datatype package from the staruml project 
+ */
 async function exportNewModel() {
 
 
@@ -95,6 +100,12 @@ async function exportNewModel() {
 
 }
 
+/**
+ * @function addResourcesRecursively
+ * @description Add other depended package of selected package recursively to export json from staruml
+ * @param {Array} oResources
+ * @param {Array} arrResources
+ */
 function addResourcesRecursively(oResources, arrResources) {
     let newOtherResources = oResources; //JSON.parse(JSON.stringify(oResources));
     if (newOtherResources.length > 0) {
@@ -136,6 +147,11 @@ const JSON_FILE_FILTERS = [{
     extensions: ['json']
 }];
 
+/**
+ * @function saveFile
+ * @description Save file at selected path  
+ * @param {Object} mMainObject
+ */
 function saveFile(mMainObject) {
     /* select repository path where you want to create new repository */
     const basePath = app.dialogs.showSaveDialog(constant.msg_export_file, null, JSON_FILE_FILTERS);
@@ -165,7 +181,13 @@ function saveFile(mMainObject) {
     }, 10);
 }
 
-
+/**
+ * @function addResources
+ * @description Export resources {package} in exrpot json file of selected package or entire project from staruml
+ * @param {Array} arrResources
+ * @param {Object} exportElement
+ * @returns {Promise}
+ */
 function addResources(arrResources, exportElement) {
     let selPackage = exportElement;
 
@@ -241,6 +263,11 @@ function addResources(arrResources, exportElement) {
     });
 }
 
+/**
+ * @function addDatatype
+ * @description Export datatype package in export json file from staruml project
+ * @param {Object} mMainObject
+ */
 function addDatatype(mMainObject) {
     /* Working with dataTypes */
     let dataTypes = app.repository.select(constant.datatype_pkg_name);
@@ -267,6 +294,13 @@ function addDatatype(mMainObject) {
     }
 }
 
+/**
+ * @function addRelationshipTargettingEndNone
+ * @description Export association relationship of which aggregation property of source {end1} and target {end2} is none
+ * @param {Object} entity
+ * @param {Object} selPackage
+ * @returns {Array}
+ */
 function addRelationshipTargettingEndNone(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLAssociation");
@@ -315,7 +349,13 @@ function addRelationshipTargettingEndNone(entity, selPackage) {
     }
     return relationshipsArr;
 }
-
+/**
+ * @function addRelationshipGeneralization
+ * @description Export generalization relationship of class
+ * @param {Object} entity
+ * @param {Object} selPackage
+ * @returns {Array}
+ */
 function addRelationshipGeneralization(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLGeneralization");
@@ -358,6 +398,13 @@ function addRelationshipGeneralization(entity, selPackage) {
     return relationshipsArr;
 }
 
+/**
+ * @function addRelationshipTargettingEnd2
+ * @description Export association relationship of class targetting end2 property for aggregation or composition
+ * @param {Object} entity
+ * @param {Object} selPackage
+ * @returns {Array}
+ */
 function addRelationshipTargettingEnd2(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLAssociation");
@@ -409,6 +456,13 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
     return relationshipsArr;
 }
 
+/**
+ * @function addRelationshipTargettingEnd1
+ * @description Export association relationship of class targetting end1 property for aggregation or composition
+ * @param {Object} entity
+ * @param {Object} selPackage
+ * @returns {Array}
+ */
 function addRelationshipTargettingEnd1(entity, selPackage) {
     let relationshipsArr = [];
     let umlRelationship = app.repository.select("@UMLAssociation");
@@ -461,6 +515,12 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
     return relationshipsArr;
 }
 
+/**
+ * @function addPropertyStatus
+ * @description Export tags as status of property 
+ * @param {Object} property
+ * @param {Object} propertyObj
+ */
 function addPropertyStatus(property, propertyObj) {
     let tags = property.tags;
     if (tags.length > 0) {
@@ -496,6 +556,12 @@ function addPropertyStatus(property, propertyObj) {
      */
 }
 
+/**
+ * @function addPropertyCardinality
+ * @description Export multiplicity of property 
+ * @param {Object} property
+ * @param {Object} propertyObj
+ */
 function addPropertyCardinality(property, propertyObj) {
     let minCardinality = '-1',
         maxCardinality = '-1';
@@ -520,6 +586,11 @@ function addPropertyCardinality(property, propertyObj) {
     }
 }
 
+/**
+ * @function isDatatypePkgAvail
+ * @description check and return boolean if datatype package is available in staruml project or not
+ * @returns {Boolean}
+ */
 function isDatatypePkgAvail() {
     let project = app.project.getProject();
     let rootPackages = app.repository.select(project.name + "::@UMLPackage");
@@ -533,6 +604,10 @@ function isDatatypePkgAvail() {
     }
 }
 
+/**
+ * @function importNewModel
+ * @description Import selected model interchange json file 
+ */
 function importNewModel() {
     var mFiles = app.dialogs.showOpenDialog('Import file As JSON (.json)', null, JSON_FILE_FILTERS)
     if (mFiles == null) {
@@ -583,6 +658,14 @@ function importNewModel() {
     }, 5);
 }
 
+/**
+ * @function updatingProperties
+ * @description Update class properties or create new property if not exist
+ * @param {UMLClass} mClass
+ * @param {Object} entity
+ * @param {Array} dataTypes
+ * @param {Array} statusCodes
+ */
 function updatingProperties(mClass, entity, dataTypes, statusCodes) {
     let mClassProperties = mClass.attributes;
     let entityProperties = entity[fields.properties];
@@ -632,6 +715,14 @@ function updatingProperties(mClass, entity, dataTypes, statusCodes) {
     }
 }
 
+/**
+ * @function updateProp
+ * @description Update class property like datatype, status and multiplicity
+ * @param {UMLAttribute} cProp
+ * @param {Object} entityProp
+ * @param {Array} dataTypes
+ * @param {Array} statusCodes
+ */
 function updateProp(cProp, entityProp, dataTypes, statusCodes) {
     /* Updating datatype */
     if (entityProp.hasOwnProperty(fields.dataType)) {
@@ -665,6 +756,12 @@ function updateProp(cProp, entityProp, dataTypes, statusCodes) {
     }
 }
 
+/**
+ * @function updateMultiplicity
+ * @description Update multiplicity of class property
+ * @param {UMLAttribute} cProp
+ * @param {Object} entityProp
+ */
 function updateMultiplicity(cProp, entityProp) {
     let minCardinality = '-1',
         maxCardinality = '-1';
@@ -696,6 +793,13 @@ function updateMultiplicity(cProp, entityProp) {
     */
 }
 
+/**
+ * @function updateContext
+ * @description Update package with class, relationship and create class, relationship if not exist
+ * @param {Array} statusCodes
+ * @param {Array} dataTypes
+ * @param {Object} content
+ */
 function updateContext(statusCodes, dataTypes, content) {
     let resourcesContent = content.resources;
 
@@ -863,6 +967,12 @@ function updateContext(statusCodes, dataTypes, content) {
     });
 }
 
+/**
+ * @function createAggregationRelationship
+ * @description Create new aggregation relationship in staruml if now exist while importing model interchange json file
+ * @param {Object} eRelationship
+ * @param {Object} mClass
+ */
 function createAggregationRelationship(eRelationship, mClass) {
     let sourceClass = null,
         targetClass = null;
@@ -946,6 +1056,12 @@ function createAggregationRelationship(eRelationship, mClass) {
     }
 }
 
+/**
+ * @function createCompositionRelationhip
+ * @description Create new composition relationship in staruml if now exist while importing model interchange json file
+ * @param {Object} eRelationship
+ * @param {Object} mClass
+ */
 function createCompositionRelationhip(eRelationship, mClass) {
     let sourceClass = null,
         targetClass = null;
@@ -1028,6 +1144,12 @@ function createCompositionRelationhip(eRelationship, mClass) {
     }
 }
 
+/**
+ * @function createGeneralizationRelationship
+ * @description Create new generalization relationship in staruml if now exist while importing model interchange json file
+ * @param {Object} eRelationship
+ * @param {Object} mClass
+ */
 function createGeneralizationRelationship(eRelationship, mClass) {
     let sourceClass = null,
         targetClass = null;
@@ -1094,6 +1216,13 @@ function createGeneralizationRelationship(eRelationship, mClass) {
     }
 }
 
+/**
+ * @function updateAggregationRelationship
+ * @description Update existing aggregation relationshp in staruml project
+ * @param {Object} eRelationship
+ * @param {Object} foundRelationship
+ * @param {Array} statusCodes
+ */
 function updateAggregationRelationship(eRelationship, foundRelationship, statusCodes) {
     /* Updating relationship description */
     if (eRelationship.hasOwnProperty(fields.description)) {
@@ -1128,6 +1257,13 @@ function updateAggregationRelationship(eRelationship, foundRelationship, statusC
     }
 }
 
+/**
+ * @function updateCompositeRelationship
+ * @description Update existing composition relationshp in staruml project
+ * @param {Object} eRelationship
+ * @param {Object} foundRelationship
+ * @param {Array} statusCodes
+ */
 function updateCompositeRelationship(eRelationship, foundRelationship, statusCodes) {
     /* Updating relationship description */
     if (eRelationship.hasOwnProperty(fields.description)) {
@@ -1161,6 +1297,13 @@ function updateCompositeRelationship(eRelationship, foundRelationship, statusCod
     }
 }
 
+/**
+ * @function updateGeneralizationRelationship
+ * @description Update existing generalization relationshp in staruml project
+ * @param {Object} eRelationship
+ * @param {Object} foundRelationship
+ * @param {Array} statusCodes
+ */
 function updateGeneralizationRelationship(eRelationship, foundRelationship, statusCodes) {
     /* Updating relationship description */
 
@@ -1179,6 +1322,14 @@ function updateGeneralizationRelationship(eRelationship, foundRelationship, stat
     }
 }
 
+/**
+ * @function isRelationshipValid
+ * @description Check and return boolean if relationship like aggregation, composition & generalization is valid or not
+ * @param {Object} eRelationship
+ * @param {Object} foundRelationship
+ * @param {UMLClass} mClass
+ * @returns {Boolean}
+ */
 function isRelationshipValid(eRelationship, foundRelationship, mClass) {
     let resourceLocation = null;
     if (eRelationship.target.hasOwnProperty(fields.resource)) {
@@ -1256,6 +1407,13 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
     return false;
 }
 
+/**
+ * @function updateStatus
+ * @description Update status of property or relationshp in staruml project
+ * @param {Object} sObject
+ * @param {Object} tElement
+ * @param {Array} statusCodes
+ */
 function updateStatus(sObject, tElement, statusCodes) {
     let status = '';
     status = sObject[fields.status];
@@ -1279,6 +1437,10 @@ function updateStatus(sObject, tElement, statusCodes) {
     }
 }
 
+/**
+ * @function addStatusCodeEnum
+ * @description Add Status Code if not exist in staruml project
+ */
 function addStatusCodeEnum() {
     let project = app.project.getProject();
     let createStatusCodeEnume = {};
@@ -1308,6 +1470,11 @@ function addStatusCodeEnum() {
 
 }
 
+/**
+ * @function addtatusCodeIfNotExist
+ * @description Add new status (literal) if not exist in StatusCodes Enumeration in staruml project
+ * @param {Object} dataTypesContent
+ */
 function addtatusCodeIfNotExist(dataTypesContent) {
     let project = app.project.getProject();
 
@@ -1342,6 +1509,10 @@ function addtatusCodeIfNotExist(dataTypesContent) {
     }
 }
 
+/**
+ * @function isStatusCodeAvail
+ * @description Check and return boolean if status code (UMLEnumeration) is available or not in staruml project
+ */
 function isStatusCodeAvail() {
     let result = app.repository.select(constant.status_code_enum_name);
     result = result.filter(mEnum => {
@@ -1354,6 +1525,11 @@ function isStatusCodeAvail() {
     }
 }
 
+/**
+ * @function updateDataTypePackage
+ * @description Update existing datatypes of datatype package and create new datatype if not exist
+ * @param {Object} dataTypesContent
+ */
 function updateDataTypePackage(dataTypesContent) {
     // 'active', 'deleted', 'deprecated', 'proposed'
     let statusCodeEnum = app.repository.select(constant.status_code_enum_name)
@@ -1435,6 +1611,11 @@ function updateDataTypePackage(dataTypesContent) {
     }
 }
 
+/**
+ * @function addDataTypePackage
+ * @description Create datatype package if not exist in staruml project when import model interchange json file
+ * @param {Array} dataTypesContent
+ */
 function addDataTypePackage(dataTypesContent) {
     let project = app.project.getProject();
     let createDataTypePackage = {};
@@ -1453,6 +1634,12 @@ function addDataTypePackage(dataTypesContent) {
 
 }
 
+/**
+ * @function createDataType
+ * @description Create new datatype in datatype package if not exist in staruml project while importing model interchange json file
+ * @param {Object} dataTypesContent
+ * @param {Object} parent
+ */
 function createDataType(dataTypesContent, parent) {
     forEach(dataTypesContent, contentClass => {
         console.log("Created datatype : ", contentClass.name);
@@ -1468,6 +1655,12 @@ function createDataType(dataTypesContent, parent) {
     });
 }
 
+/**
+ * @function createStatusTag
+ * @description Create new status (Tag) if not exist in property or relationship while importing model interchange json file in staruml
+ * @param {Object} contentClass
+ * @param {Object} dtClass
+ */
 function createStatusTag(contentClass, dtClass) {
     let statusName = contentClass.status;
     let arrTag = [];
