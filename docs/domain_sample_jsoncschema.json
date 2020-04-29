@@ -1,0 +1,177 @@
+{
+    "$id": "https://edi3.org/specs/edi3-model-interchange/develop/domain-schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "The json schema for edi3 domain model interchange format",
+    "title": "DICF",
+    "type": "object",
+    "required": ["resources", "dataTypes"],
+    "properties": {
+      "resources": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/Resource" },
+        "minItems": 1
+      },
+      "dataTypes": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/DataType" },
+        "minItems": 1
+      }
+    },
+    "definitions": {
+      "general": {
+        "name": {
+          "type": "string",
+          "description": "The general name property."
+        },
+        "desc": {
+          "type": "string",
+          "description": "The general description property."
+        },
+        "statusCode": {
+          "type": "string",
+          "enum": ["active", "proposed", "deleted", "deprecated"],
+          "description": "The general property."
+        }
+      },
+      "Resource": {
+        "type": "object",
+        "description": "The context object",
+        "required": [ "name", "entities" ],
+        "properties": {
+          "name" : {"$ref": "#/definitions/general/name"},
+          "description": {"$ref": "#/definitions/general/desc"},
+          "entities": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Entity" },
+            "minItems": 1
+          }
+        }
+      },
+      "Entity": {
+        "type": "object",
+        "description": "The entity object",
+        "required": [ "name", "properties" ],
+        "properties": {
+          "name" : {"$ref": "#/definitions/general/name"},
+          "description": {"$ref": "#/definitions/general/desc"},
+          "version": {
+            "type": "string",
+            "description": "The version property."
+          },
+          "status": {"$ref": "#/definitions/general/statusCode"},
+          "properties": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Property" }
+          },
+          "relationships": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Relationship" }
+          },
+          "states": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/State" }
+          },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Event" }
+          }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "description": "The property object",
+        "required": [ "dataType", "name" ],
+        "properties": {
+          "name" : {"$ref": "#/definitions/general/name"},
+          "description": {"$ref": "#/definitions/general/desc"},
+          "status": {"$ref": "#/definitions/general/statusCode"},
+          "minCardinality": {
+            "type": "integer"
+          },
+          "maxCardinality": {
+            "type": "integer"
+          },
+          "pattern": {
+            "type": "string"
+          }
+        }
+      },
+      "Relationship": {
+        "type": "object",
+        "description": "The relationship object",
+        "required": ["name", "type", "target"],
+        "properties": {
+          "name" : {"$ref": "#/definitions/general/name"},
+          "description": {"$ref": "#/definitions/general/desc"},
+          "status": {"$ref": "#/definitions/general/statusCode"},
+          "type": {
+            "type": "string",
+            "enum": ["typeOf", "contains", "references"],
+            "description": "typeOf - generalisation, contains - composition, references - aggregation"
+          },
+          "minCardinality": {
+            "type": "integer"
+          },
+          "maxCardinality": {
+            "type": "integer"
+          },
+          "target": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name" : {"$ref": "#/definitions/general/name"},
+              "resource" : {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "State": {
+        "type": "object",
+        "description": "The state object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/general/name"
+          },
+          "description": {
+            "$ref": "#/definitions/general/desc"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "description": "The event object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/general/name"
+          },
+          "description": {
+            "$ref": "#/definitions/general/desc"
+          },
+          "from": {
+            "$ref": "#/definitions/State"
+          },
+          "to": {
+            "$ref": "#/definitions/State"
+          }
+        }
+      },
+      "DataType": {
+        "type": "object",
+        "description": "The dataType object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/general/name"
+          },
+          "description": {
+            "$ref": "#/definitions/general/desc"
+          },
+          "status": {"$ref": "#/definitions/general/statusCode"}
+        }
+      }
+    }
+  }
