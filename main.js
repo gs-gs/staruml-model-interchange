@@ -55,7 +55,7 @@ function init() {
      app.commands.register('tool.git:clone', git.gitClone);
      app.project.on('projectClosed', _projectClosed);
      app.project.on('projectSaved', _projectSaved); */
-     // app.project.on('projectCreated', _projectCreated);
+     /* app.project.on('projectCreated', _projectCreated); */
      app.project.on('projectSaved', _projectSaved);
 }
 function runStarUML(){

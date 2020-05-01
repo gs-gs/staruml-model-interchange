@@ -281,21 +281,21 @@ function isChangesAvailable() {
                let isRepo = await git(_mdirname).checkIsRepo();
                if (!isRepo) {
 
-                    // app.dialogs.showErrorDialog(constant.init_repo_first);
+                    /* app.dialogs.showErrorDialog(constant.init_repo_first); */
                     result.result = false;
                     result.message = constant.init_repo_first;
                     resolve(result);
                }
           } catch (error) {
                console.error(error.message);
-               // app.dialogs.showErrorDialog(error.message);
+               /* app.dialogs.showErrorDialog(error.message); */
                result.result = false;
                result.message = error.message;
                resolve(result);
           }
 
           let isLocalChanges = false;
-          // let isLocalCommitsToPush = false;
+          /* let isLocalCommitsToPush = false; */
           try {
                /* check existing file changes before pull data from remote repository */
                let StatusSummary = await git(_mdirname).status();
@@ -305,25 +305,27 @@ function isChangesAvailable() {
                     isLocalChanges = false;
                }
 
-               // let rawLog = await git(_mdirname).raw([
-               //      'log',
-               //      '@{u}..'
-               // ]);
-               // if (rawLog == null) {
-               //      isLocalCommitsToPush = false;
+               /* 
+                    let rawLog = await git(_mdirname).raw([
+                    'log',
+                    '@{u}..'
+                    ]);
+                    if (rawLog == null) {
+                         isLocalCommitsToPush = false;
 
-               // } else {
-               //      isLocalCommitsToPush = true;
+                    } else {
+                         isLocalCommitsToPush = true;
 
-               // }
+                    } 
+               */
 
           } catch (error) {
                console.error(error.message);
                isLocalChanges = false;
-               // isLocalCommitsToPush = false;
+               /* isLocalCommitsToPush = false; */
           }
 
-          if (isLocalChanges ) { //|| isLocalCommitsToPush
+          if (isLocalChanges ) { /* || isLocalCommitsToPush */
                result.result = true;
                result.message = constant.commit_changes;
                resolve(result);
@@ -339,32 +341,6 @@ function isChangesAvailable() {
 
 }
 
-// async function isChangesAvailable() {
-//      try {
-//           /* check for repository is exist or not */
-//           let isRepo = await git(_mdirname).checkIsRepo();
-//           if (!isRepo) {
-//                app.dialogs.showErrorDialog(constant.init_repo_first);
-//                return;
-//           }
-//      } catch (error) {
-//           console.error(error.message);
-//           app.dialogs.showErrorDialog(error.message);
-//      }
-
-//      try {
-//           /* check existing file changes before pull data from remote repository */
-//           let StatusSummary = await git(_mdirname).status();
-//           if (StatusSummary.files.length == 1) {
-//                // app.dialogs.showInfoDialog(constant.commit_changes);
-//                return true;
-//           }
-//      } catch (error) {
-//           console.error(error.message);
-//           app.dialogs.showErrorDialog(error.message);
-//      }
-//      return false;
-// }
 /**
  * @function _gitPull
  * @description Pull latest changes from remote master repository and override local content
@@ -631,35 +607,35 @@ async function _gitClone() {
           return;
      }
 
-     // /* alert user to enter username  */
-     // let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
-     // resUSER = resUSER.returnValue;
-     // if (resUSER == '') {
-     //      return;
-     // }
+     /* alert user to enter username  */
+     /* let resUSER = await app.dialogs.showInputDialog(constant.enter_username);
+     resUSER = resUSER.returnValue;
+     if (resUSER == '') {
+          return;
+     } */
      
-     // /* alert user to enter password  */
-     // let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-     // resPASS = resPASS.returnValue;
-     // if (resPASS == '') {
-     //      return;
-     // }
+     /* alert user to enter password  */
+     /* let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+     resPASS = resPASS.returnValue;
+     if (resPASS == '') {
+          return;
+     }
 
-     // let USER = resUSER;
-     // let PASS = resPASS;
+     let USER = resUSER;
+     let PASS = resPASS;
 
-     // const REPO = repoURL;
-     // let URL = url.parse(REPO)
+     const REPO = repoURL;
+     let URL = url.parse(REPO) */
 
-     // const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
+     /*  const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path; */
 
      let cloneFolderName = path.basename(repoURL/* cloneURL */);
      const basePath = app.dialogs.showSaveDialog(constant.msg_clone_repository, null, null);
      if (basePath == null) {
           return;
      }
-     // console.log(basePath);
-     // Returns an array of paths of selected files
+     /* console.log(basePath);
+     Returns an array of paths of selected files */
 
      if (!fs.existsSync(basePath)) {
           fs.mkdirSync(basePath);
@@ -680,7 +656,7 @@ async function _gitClone() {
                          let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
                          dataStore.getStore().set(repoPath, clonePath);
                          _mdirname = clonePath;
-                         //await git(_mdirname).raw(['config','--local','user.name',resUSER]);
+                         /* await git(_mdirname).raw(['config','--local','user.name',resUSER]); */
                          let cloneMsg = nodeUtils.format(constant.clone_successfull, clonePath, constant.msg_sync_changes);
                          app.dialogs.showInfoDialog(cloneMsg);
                          readPullDirectory(_mdirname);
@@ -987,20 +963,20 @@ function pushData(res,user) {
           console.log("auth : ",auth);
           if(auth == null){
 
-               // if(PASS == null || PASS == ''){
+               /* if(PASS == null || PASS == ''){ */
                     /* alert user to enter username  */
                     let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
                     if(resPASS.returnValue == ''){
                          throw new Error('Please enter password');
                     }
-                    //await mGit.raw(['config','--local','user.pass',resPASS.returnValue]);
+                    /* await mGit.raw(['config','--local','user.pass',resPASS.returnValue]); */
                     PASS = resPASS.returnValue;
 
                     const nURL = pURL.protocol + '//' + USER + ':' + PASS + '@' + pURL.host + pURL.path;
                     await mGit.raw(['remote','set-url','origin',nURL]);
 
 
-               // }
+               /*  } */
           }else{
 
                let unpw=auth.split(":");
@@ -1018,7 +994,7 @@ function pushData(res,user) {
           console.log("Push url : ",gitPushUrl);
           let newURL=url.parse(gitPushUrl);
           console.log("new URL ",newURL);
-          // const gitPushUrl = pushURL;
+          /* const gitPushUrl = pushURL; */
 
           let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
 
@@ -1044,11 +1020,11 @@ function pushData(res,user) {
                     let unsetURL = url.parse(gitPushUrl);
                     const nURL = unsetURL.protocol + '//' + unsetURL.host + unsetURL.path;
                     await mGit.raw(['remote','set-url','origin',nURL]);
-                    // await mGit.raw(['config','--local','--unset','user.pass']);
+                    /* await mGit.raw(['config','--local','--unset','user.pass']); */
                     reject(error);
-                    //console.error(error.message);
-                    //let eMsg = 'Push Failed' + '\n' + error.message;
-                    //app.dialogs.showErrorDialog(eMsg);
+                    /* console.error(error.message);
+                    let eMsg = 'Push Failed' + '\n' + error.message;
+                    app.dialogs.showErrorDialog(eMsg); */
                });
      });
 }

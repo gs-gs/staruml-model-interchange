@@ -40,7 +40,7 @@ function findPackage(element) {
  * @param {Array} showAlertForAbstract
  */
 function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) {
-    // let pkgName = '';
+    /* let pkgName = ''; */
     let parentElement;
     let className = '';
     if (itemGen instanceof type.UMLGeneralization) {
@@ -51,10 +51,10 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
         parentElement = itemGen.end2.reference;
     }
     let pElement = findPackage(parentElement);
-    // setTimeout(function(){
+    /* setTimeout(function(){ */
     if (pElement != null && pElement instanceof type.UMLPackage && pElement.name != umlPackage.name) {
         let strMsg = 'Class \'' + className + '\' in \'' + pElement.name + '\' Package';
-        //pElement.name + "/" + className;
+        /* pElement.name + "/" + className; */
         let result = showAlertForAbstract.filter(function (item) {
             return item == strMsg;
         });
@@ -62,7 +62,7 @@ function checkToShowAlertForAbstract(itemGen, umlPackage, showAlertForAbstract) 
             showAlertForAbstract.push(strMsg);
         }
     }
-    // },5);
+    /* },5); */
 }
 
 /**
@@ -134,7 +134,7 @@ function getAbstractClass(umlPackage) {
     result.message = "Abstract class available";
     result.abstractClasses = uniqueAbstractArr;
 
-    // return uniqueAbstractArr;
+    /* return uniqueAbstractArr; */
     return result;
 }
 
@@ -244,8 +244,8 @@ function mapAllRelationship() {
                 uniqueNewRelationship.push(newEle);
             }
         });
-        // console.log("-----newClassesAdded", newClassesAdded);
-        // console.log("-----uniqueNewRelationship", uniqueNewRelationship);
+        /* console.log("-----newClassesAdded", newClassesAdded);
+        console.log("-----uniqueNewRelationship", uniqueNewRelationship); */
         /* Step - 9 : Create view of newaly added element (class & relationship)*/
         /* #13 : The default class diagram shoudn't be generated for big projects  */
         shouldDrawView(newClassesAdded);
@@ -256,7 +256,7 @@ function mapAllRelationship() {
 function shouldDrawView(elementsToDraw) {
     let classDiagram = app.repository.select('@UMLClassDiagram');
     if (classDiagram.length > 0 && elementsToDraw.length <= 10) {
-        // console.log("newClasses", elementsToDraw.length);
+        /* console.log("newClasses", elementsToDraw.length); */
         mUtils.createViewOfElements(elementsToDraw);
         app.diagrams.repaint();;
 
@@ -533,12 +533,12 @@ async function exportModel() {
 
 
                     let mOtherDependent = mUtils.getOtherDependentClass();
-                    var newArray = []; //absClass.concat(mOtherDependent);
+                    var newArray = []; /* absClass.concat(mOtherDependent); */
                     newArray = absClass.concat(mOtherDependent);
                     newArrived = getNewArrived(mOtherDependent, finalOtherElement);
                     finalOtherElement.push(...newArrived);
 
-                    // let abc = await getOtherClassPromise(newArrived, finalOtherElement);
+                    /* let abc = await getOtherClassPromise(newArrived, finalOtherElement); */
                     let result = await getOtherClassPromise(newArrived, finalOtherElement);
 
                     console.log("abc", result);
@@ -583,7 +583,7 @@ async function exportModel() {
                             }
                         });
                     }); */
-                    // console.log("referenced classes of association-------",unqArray);
+                    /* console.log("referenced classes of association-------",unqArray); */
 
                     exportDependentElements(finalOtherElement, expPackages, jsonProcess);
                     /* Export json file at path */

@@ -558,11 +558,11 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     /* associationSide */
     let associationSide = {};
     let bindAssos = bindRelationshipToImport(entity, attr.association, true);
-    //let associationSide=app.repository.writeObject(bindAssos);
+    /* let associationSide=app.repository.writeObject(bindAssos); */
     if (bindAssos && bindAssos.hasOwnProperty('_id')) {
         associationSide['$ref'] = bindAssos._id;
     }
-    objRelationship.associationSide = associationSide; //JSON.parse(associationSide);
+    objRelationship.associationSide = associationSide; /* JSON.parse(associationSide); */
     /* classSide */
     let classSide = {};
     objRelationship.classSide = classSide;
@@ -692,7 +692,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
         throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
     } else if (fRefEnd2.length == 0) {
 
-        //TODO Do not remove this code. It will be used in future as required
+        /* TODO Do not remove this code. It will be used in future as required */
         /* let foundPackage = app.repository.search(target.package);
         let mainOwnedElements = [];
         if (foundPackage.length == 0) {
@@ -927,14 +927,14 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
  * @param {Object} XMIData
  */
 function setRelationship(ownedElements, XMIData) {
-    // console.log("--------------", XMIData.name + "--------------", );
-    // console.log("--------------", XMIData.type + "--------------");
+    /* console.log("--------------", XMIData.name + "--------------", );
+    console.log("--------------", XMIData.type + "--------------"); */
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
             if (mSubObject !=null && mSubObject.Relationship.length>0) {
-                // console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship);
+                /* console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship); */
 
 
                 forEach(mSubObject.Relationship, function (relationship) {
@@ -947,7 +947,7 @@ function setRelationship(ownedElements, XMIData) {
                             relationship.type == fields.interfaceRealization ||
                             relationship.type == fields.associationClassLink
                         ) {
-                            // console.log("-----rel name-----", relationship.name);
+                            /* console.log("-----rel name-----", relationship.name); */
                             let rel = bindRelationshipToImport(entity, relationship);
                             let mIndex = oldOwnedElements.findIndex(function (ele) {
                                 return ele._id == rel._id;

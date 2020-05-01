@@ -293,8 +293,8 @@ function bindProperty(attr) {
     objAttr._type = 'UMLAttribute';
     objAttr.name = attr.name;
 
-    //if(attr.DataType.type == utils.isString)
-    let dType = getDatatype(attr.DataType); //attr.DataType.type;
+    /* if(attr.DataType.type == utils.isString) */
+    let dType = getDatatype(attr.DataType); /* attr.DataType.type; */
     objAttr.type = dType;
     objAttr.isID = attr.isID;
     objAttr.multiplicity = attr.cardinality;
@@ -325,10 +325,10 @@ function bindOperation(attr) {
         let objParam = {};
         objParam._type = 'UMLParameter';
         objParam.name = param.name;
-        //TODO : Remove below comment and resolve issue
-        let dType = getDatatype(param.DataType); //attr.DataType.type;
+        /* TODO : Remove below comment and resolve issue */
+        let dType = getDatatype(param.DataType); /* attr.DataType.type; */
         /* objAttr.type = dType; */
-        objParam.type = dType //param.DataType.type;
+        objParam.type = dType /* param.DataType.type; */
         objParam.isID = param.isID;
         objParam.multiplicity = param.cardinality;
 
@@ -1070,20 +1070,20 @@ function findOtherElements(entity) {
                            oweEle instanceof type.UMLInterfaceRealization */
         ) {
 
-            // let end1Parent = oweEle.end1.reference._parent;
-            // let end2Parent = oweEle.end2.reference._parent;
+            /* let end1Parent = oweEle.end1.reference._parent;
+            let end2Parent = oweEle.end2.reference._parent;
 
-            // if (entityParent instanceof type.UMLPackage &&
-            //     end1Parent instanceof type.UMLPackage &&
-            //     entityParent.name != end1Parent.name) {
+            if (entityParent instanceof type.UMLPackage &&
+                end1Parent instanceof type.UMLPackage &&
+                entityParent.name != end1Parent.name) { */
             addOtherDependentClass(oweEle.end1.reference);
-            // }
+            /* }
 
-            // if (entityParent instanceof type.UMLPackage &&
-            //     end2Parent instanceof type.UMLPackage &&
-            //     entityParent.name != end2Parent.name) {
+            if (entityParent instanceof type.UMLPackage &&
+                end2Parent instanceof type.UMLPackage &&
+                entityParent.name != end2Parent.name) { */
             addOtherDependentClass(oweEle.end2.reference);
-            // }
+            /*  } */
 
         }
     });

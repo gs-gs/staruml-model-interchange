@@ -107,7 +107,7 @@ async function exportNewModel() {
  * @param {Array} arrResources
  */
 function addResourcesRecursively(oResources, arrResources) {
-    let newOtherResources = oResources; //JSON.parse(JSON.stringify(oResources));
+    let newOtherResources = oResources; /* JSON.parse(JSON.stringify(oResources)); */
     if (newOtherResources.length > 0) {
         let newOtherResource = [];
         forEach(newOtherResources, oResource => {
@@ -155,7 +155,7 @@ const JSON_FILE_FILTERS = [{
 function saveFile(mMainObject) {
     /* select repository path where you want to create new repository */
     const basePath = app.dialogs.showSaveDialog(constant.msg_export_file, null, JSON_FILE_FILTERS);
-    // let dirPath = path.dirname(basePath);
+    /* let dirPath = path.dirname(basePath); */
     if (basePath == null) {
         return;
     }
@@ -250,7 +250,7 @@ function addResources(arrResources, exportElement) {
         relArrEnd2 = addRelationshipTargettingEnd2(entity, selPackage);
 
         /* TODO Add relationship that end1 have 'none' and end2 have 'none' */
-        // relArrEnd3 = addRelationshipTargettingEndNone(entity, selPackage);
+        /* relArrEnd3 = addRelationshipTargettingEndNone(entity, selPackage); */
 
         /* Add generalization relationship */
         relArrGeneralization = addRelationshipGeneralization(entity, selPackage);
@@ -530,7 +530,7 @@ function addPropertyStatus(property, propertyObj) {
         }
     }
 
-    // Do not remove this code this will be raised as seperate ticket later : https://edi3.slack.com/archives/DJ9KBLSPL/p1586776587005900
+    /*  Do not remove this code this will be raised as seperate ticket later : https://edi3.slack.com/archives/DJ9KBLSPL/p1586776587005900 */
     /* 
     if (tags.length == 1) {
         let tag = tags[0];
@@ -1236,11 +1236,11 @@ function updateAggregationRelationship(eRelationship, foundRelationship, statusC
 
         let sourceEnd, targetEnd;
         if (foundRelationship.end1.aggregation == 'shared' && foundRelationship.end2.aggregation == 'none') {
-            // target is end2 
+            /*  target is end2  */
             sourceEnd = foundRelationship.end1;
             targetEnd = foundRelationship.end2;
         } else if (foundRelationship.end2.aggregation == 'shared' && foundRelationship.end1.aggregation == 'none') {
-            // target is end1
+            /*  target is end1 */
             sourceEnd = foundRelationship.end2;
             targetEnd = foundRelationship.end1;
         }
@@ -1277,10 +1277,10 @@ function updateCompositeRelationship(eRelationship, foundRelationship, statusCod
 
         let targetEnd;
         if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
-            // target is end2 
+            /*  target is end2  */
             targetEnd = foundRelationship.end2;
         } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
-            // target is end1
+            /*  target is end1 */
             targetEnd = foundRelationship.end1;
         }
 
@@ -1340,11 +1340,11 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
 
         let sourceEnd, targetEnd;
         if (foundRelationship.end1.aggregation == 'shared' && foundRelationship.end2.aggregation == 'none') {
-            // target is end2 
+            /* target is end2  */
             sourceEnd = foundRelationship.end1;
             targetEnd = foundRelationship.end2;
         } else if (foundRelationship.end2.aggregation == 'shared' && foundRelationship.end1.aggregation == 'none') {
-            // target is end1
+            /* target is end1 */
             sourceEnd = foundRelationship.end2;
             targetEnd = foundRelationship.end1;
         }
@@ -1364,11 +1364,11 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
 
         let sourceEnd, targetEnd;
         if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
-            // target is end2 
+            /* target is end2  */
             sourceEnd = foundRelationship.end1;
             targetEnd = foundRelationship.end2;
         } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
-            // target is end1
+            /* target is end1 */
             sourceEnd = foundRelationship.end2;
             targetEnd = foundRelationship.end1;
         }
@@ -1531,7 +1531,7 @@ function isStatusCodeAvail() {
  * @param {Object} dataTypesContent
  */
 function updateDataTypePackage(dataTypesContent) {
-    // 'active', 'deleted', 'deprecated', 'proposed'
+    /* 'active', 'deleted', 'deprecated', 'proposed' */
     let statusCodeEnum = app.repository.select(constant.status_code_enum_name)
     statusCodeEnum = statusCodeEnum.filter(cEnum => {
         return cEnum instanceof type.UMLEnumeration;
