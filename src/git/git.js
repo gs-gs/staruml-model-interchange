@@ -273,6 +273,11 @@ async function _gitPush() {
      }
 }
 
+/**
+ * @function isChangesAvailable
+ * @description check and return boolean if local changes is available or not
+ * @returns {Boolean} 
+ */
 function isChangesAvailable() {
      return new Promise(async (resolve, reject) => {
           let result = {};
@@ -305,7 +310,7 @@ function isChangesAvailable() {
                     isLocalChanges = false;
                }
 
-               /* 
+               /* TODO : Do not remove this code 
                     let rawLog = await git(_mdirname).raw([
                     'log',
                     '@{u}..'
@@ -597,6 +602,11 @@ function _getDirectory() {
      return _mdirname;
 }
 
+/**
+ * @function _gitClone
+ * @description clone remote repository at selected local path
+ * @returns {string}  
+ */
 async function _gitClone() {
 
      /* get local remote url  */
@@ -673,6 +683,12 @@ async function _gitClone() {
 
 
 }
+
+/**
+ * @function showDiff
+ * @description write differences at deffPath file 
+ * @returns {string}  
+ */
 async function showDiff(){
      const mGit = git(_mdirname);
      let path = dataStore.getDiffPath();
@@ -695,6 +711,11 @@ async function showDiff(){
 
      console.log("Git diff result : ",result);
 }
+
+/**
+ * @function initClone
+ * @description If repository is already exist/cloned, alert user already exist. If repository is not already exist, clone remote repository at selected path
+ */
 async function initClone() {
 
      let isSave = await utils.isNewFileSaved();
@@ -724,6 +745,11 @@ async function initClone() {
 
 
 }
+
+/**
+ * @function _sync
+ * @description If repository would have local commits, it will be pushed. If repository would have not local commits, it will pull and local changes would be overridded by remote changes
+ */
 async function _sync() {
      const mGit = git(_mdirname);
      let isSave = await utils.isNewFileSaved();
@@ -881,7 +907,10 @@ async function _sync() {
           }
      } */
 }
-
+/**
+ * @function pushUntillCorrectCredential
+ * @description This function infinitely ask for correct credential to push repository
+ */
 async function pushUntillCorrectCredential(res,user){
      try {
           await pushData(res,user);
@@ -945,6 +974,12 @@ async function pushUntillCorrectCredential(res,user){
      }
 }
 
+/**
+ * @function pushData
+ * @description Push all local commits to remote master branch
+ * @param {Object} res
+ * @param {Object} user
+ */
 function pushData(res,user) {
      return new Promise(async (resolve, reject) => {
           const mGit = git(_mdirname);
@@ -1028,6 +1063,11 @@ function pushData(res,user) {
                });
      });
 }
+
+/**
+ * @function _gitCreateNewRepo
+ * @description create new repository 
+ */
 async function _gitCreateNewRepo() {
 
 

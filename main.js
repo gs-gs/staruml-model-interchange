@@ -58,6 +58,11 @@ function init() {
      /* app.project.on('projectCreated', _projectCreated); */
      app.project.on('projectSaved', _projectSaved);
 }
+
+/**
+ * @function runStarUML
+ * @description This is script to run staruml project for Windows and Linux OS. This function will copy all project files in staruml installed directory
+ */
 function runStarUML(){
      /* possible values of os 'aix', 'darwin', 'freebsd', 'linux', 'openbsd', 'sunos', 'win32' */
      let homeDirectory = os.homedir();

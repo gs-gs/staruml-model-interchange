@@ -224,6 +224,11 @@ function importDataToModel(XMIData) {
 }
 let forRelationshipArray = [];
 
+/**
+ * @function mapAllRelationship
+ * @description Import all relationship in staruml 
+ * @param {Object} XMIData
+ */
 function mapAllRelationship() {
 
     forEach(forRelationshipArray, function (data) {
@@ -253,6 +258,11 @@ function mapAllRelationship() {
     });
 }
 
+/**
+ * @function shouldDrawView
+ * @description Check and draw relationship if not exist in staruml
+ * @param {Object} elementsToDraw
+ */
 function shouldDrawView(elementsToDraw) {
     let classDiagram = app.repository.select('@UMLClassDiagram');
     if (classDiagram.length > 0 && elementsToDraw.length <= 10) {
@@ -263,6 +273,15 @@ function shouldDrawView(elementsToDraw) {
     }
 }
 
+/**
+ * @function updatePackageInExplorer
+ * @description Update existing package in staruml project
+ * @param {Object} result
+ * @param {Object} searchedPackage
+ * @param {Object} newClassesAdded
+ * @param {Object} Package
+ * @param {Object} XMIData
+ */
 function updatePackageInExplorer(result, searchedPackage, newClassesAdded, Package, XMIData) {
     forEach(searchedPackage, function (selPkg) {
         if (selPkg instanceof type.UMLPackage && selPkg.name == Package.name) {
@@ -607,6 +626,12 @@ async function exportModel() {
         });
 }
 
+/**
+ * @function getNewArrived
+ * @description return list of new elements which are depened elements from othe package
+ * @param mOtherDependent
+ * @param finalOtherElement
+ */
 function getNewArrived(mOtherDependent, finalOtherElement) {
     let newArrived = [];
     forEach(mOtherDependent, function (element) {
@@ -620,6 +645,13 @@ function getNewArrived(mOtherDependent, finalOtherElement) {
     return newArrived;
 }
 
+/**
+ * @function getOtherClassPromise
+ * @description promise until all dependent class is found
+ * @param {Array} newArray
+ * @param {Array} finalOtherElement
+ * @returns {Promise} 
+ */
 function getOtherClassPromise(newArray, finalOtherElement) {
 
     return new Promise((resolve, reject) => {
@@ -632,6 +664,14 @@ function getOtherClassPromise(newArray, finalOtherElement) {
     });
 }
 
+/**
+ * @function getOtherClassRecursively
+ * @description find all depended classes recursively and return success promiss
+ * @param {Array} newArray
+ * @param {Array} finalOtherElement
+ * @param {Object} resolve
+ * @returns {Promise} 
+ */
 function getOtherClassRecursively(newArray, finalOtherElement, resolve) {
     utils.resetOtherDependentClass();
     forEach(newArray, function (mElement) {
@@ -647,6 +687,13 @@ function getOtherClassRecursively(newArray, finalOtherElement, resolve) {
     }
 }
 
+/**
+ * @function exportDependentElements
+ * @description export all depended classes as depended array with their package
+ * @param {Array} absClass
+ * @param {Array} expPackages
+ * @param {Object} jsonProcess
+ */
 function exportDependentElements(absClass, expPackages, jsonProcess) {
     console.log("absClass", absClass);
 

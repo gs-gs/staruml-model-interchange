@@ -707,7 +707,7 @@ function updatingProperties(mClass, entity, dataTypes, statusCodes) {
             if (newCreateProperties.length > 0) {
                 forEach(newCreateProperties, cProp => {
                     app.engine.addItem(mClass, fields.attributes, cProp.propAttrib);
-                    updateProp(cProp.propAttrib,cProp.propContent,dataTypes,statusCodes);
+                    updateProp(cProp.propAttrib, cProp.propContent, dataTypes, statusCodes);
                 });
             }
 
