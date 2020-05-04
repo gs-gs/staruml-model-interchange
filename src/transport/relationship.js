@@ -76,6 +76,7 @@ function addAggregationToImport(entity, attr) {
     }
     return objRelationship;
 }
+
 /**
  * @function updateAggregationToImport
  * @description Update bounded aggregation (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
@@ -155,6 +156,7 @@ function updateAggregationToImport(entity, attr, _id) {
     }
     return UMLAssociation;
 }
+
 /**
  * @function addCompositionToImport
  * @description Bind composition (UMLAssociation) relationship to entity (UMLClass or UMLInterface) 
@@ -233,6 +235,7 @@ function addCompositionToImport(entity, attr) {
 
     return objRelationship;
 }
+
 /**
  * @function updateCompositionToImport
  * @description Update bounded composition (UMLAssociation) relationship to entity (UMLClass or UMLInterface) 
@@ -366,6 +369,7 @@ function addGeneralizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+
 /**
  * @function updateGeneralizationToImport
  * @description Update bounded generalization (UMLGeneralization) relationship to entity (UMLClass or UMLInterface)  
@@ -428,6 +432,7 @@ function updateGeneralizationToImport(entity, attr, _id) {
 
     return UMLGeneralization;
 }
+
 /**
  * @function addInterfaceRealizationToImport
  * @description Bind interface realization (UMLInterfaceRealization) relationship to entity (UMLClass or UMLInterface)  
@@ -477,6 +482,7 @@ function addInterfaceRealizationToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+
 /**
  * @function updateInterfaceRealizationToImport
  * @description Update bounded interface realization (UMLInterfaceRealization) relationship to entity (UMLClass or UMLInterface)  
@@ -539,6 +545,7 @@ function updateInterfaceRealizationToImport(entity, attr, _id) {
 
     return UMLInterfaceRealization;
 }
+
 /**
  * @function addAssociationClassLink
  * @description Bind association classlink (UMLAssociationClassLink) relationship to entity (UMLClass or UMLInterface)  
@@ -558,11 +565,11 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     /* associationSide */
     let associationSide = {};
     let bindAssos = bindRelationshipToImport(entity, attr.association, true);
-    //let associationSide=app.repository.writeObject(bindAssos);
+    /* let associationSide=app.repository.writeObject(bindAssos); */
     if (bindAssos && bindAssos.hasOwnProperty('_id')) {
         associationSide['$ref'] = bindAssos._id;
     }
-    objRelationship.associationSide = associationSide; //JSON.parse(associationSide);
+    objRelationship.associationSide = associationSide; /* JSON.parse(associationSide); */
     /* classSide */
     let classSide = {};
     objRelationship.classSide = classSide;
@@ -577,6 +584,7 @@ function addAssociationClassLink(objRelationship, entity, attr) {
     }
     return objRelationship;
 }
+
 /**
  * @function updateAssociationClassLink
  * @description Update bounded association classlink (UMLAssociationClassLink) relationship to entity (UMLClass or UMLInterface)  
@@ -618,6 +626,7 @@ function updateAssociationClassLink(entity, attr, _id) {
     app.engine.setProperty(UMLAssociationClassLink, 'classSide', classSide);
     return UMLAssociationClassLink;
 }
+
 /**
  * @function addInterfaceToImport
  * @description Bind interface (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
@@ -692,7 +701,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
         throw new Error(constant.source + ' ' + eleType + ' \'' + source.name + constant.ref_not_found);
     } else if (fRefEnd2.length == 0) {
 
-        //TODO Do not remove this code. It will be used in future as required
+        /* TODO Do not remove this code. It will be used in future as required */
         /* let foundPackage = app.repository.search(target.package);
         let mainOwnedElements = [];
         if (foundPackage.length == 0) {
@@ -730,6 +739,7 @@ function addInterfaceToImport(objRelationship, entity, attr) {
 
     return objRelationship;
 }
+
 /**
  * @function updateInterfaceToImport
  * @description Update bounded interface (UMLAssociation) relationship to entity (UMLClass or UMLInterface)  
@@ -815,6 +825,7 @@ function updateInterfaceToImport(entity, attr, _id) {
     }
     return UMLAssociation;
 }
+
 /**
  * @function bindRelationshipToImport
  * @description Bind relationship (UMLAssociation, UMLGeneralization, UMLAssociationClassLink, UMLInterfaceRealization) in entity (UMLClass or UMLInterface)
@@ -920,6 +931,7 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
         }
     }
 }
+
 /**
  * @function setRelationship
  * @description Add relationship in ownedElements array
@@ -927,14 +939,14 @@ function bindRelationshipToImport(entity, attr, isACL /* isAssociationClassLink 
  * @param {Object} XMIData
  */
 function setRelationship(ownedElements, XMIData) {
-    // console.log("--------------", XMIData.name + "--------------", );
-    // console.log("--------------", XMIData.type + "--------------");
+    /* console.log("--------------", XMIData.name + "--------------", );
+    console.log("--------------", XMIData.type + "--------------"); */
     forEach(ownedElements, function (entity) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
             if (mSubObject !=null && mSubObject.Relationship.length>0) {
-                // console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship);
+                /* console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship); */
 
 
                 forEach(mSubObject.Relationship, function (relationship) {
@@ -947,7 +959,7 @@ function setRelationship(ownedElements, XMIData) {
                             relationship.type == fields.interfaceRealization ||
                             relationship.type == fields.associationClassLink
                         ) {
-                            // console.log("-----rel name-----", relationship.name);
+                            /* console.log("-----rel name-----", relationship.name); */
                             let rel = bindRelationshipToImport(entity, relationship);
                             let mIndex = oldOwnedElements.findIndex(function (ele) {
                                 return ele._id == rel._id;

@@ -260,7 +260,7 @@ function bindEntityToExport(mPackage, jsonProcess, absClass) {
  * @param {Object} jsonProcess
  */
 function bindAbstractEntityToExport(mPackage, jsonProcess) {
-    //let allEntities = app.repository.select(mPackage.name + '::@UMLClass');
+    /* let allEntities = app.repository.select(mPackage.name + '::@UMLClass'); */
     forEach(mPackage.ownedElements /* allEntities */ , function (entity) {
 
         if (entity instanceof type.UMLClass) {

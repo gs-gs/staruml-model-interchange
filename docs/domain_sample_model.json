@@ -1,0 +1,80 @@
+{
+    "resources": [
+        {
+            "name": "ContextA",
+            "entities": [
+                {
+                    "name": "Class1",
+                    "properties": [
+                        {
+                            "name": "Attribute1",
+                            "status": "deprecated",
+                            "dataType": "DataType1",
+                            "minCardinality": 0
+                        }
+                    ],
+                    "relationships": [
+                        {
+                            "name": "composition",
+                            "description": "composition relationship description",
+                            "status": "active",
+                            "target": {
+                                "name": "Class2"
+                            },
+                            "type": "contains",
+                            "minCardinality": 1,
+                            "maxCardinality": 1
+                        },
+                        {
+                            "name": "aggregation",
+                            "status": "proposed",
+                            "target": {
+                                "name": "Class3",
+                                "resource": "ContextB"
+                            },
+                            "type": "references",
+                            "minCardinality": 1
+                        }
+                    ]
+                },
+                {
+                    "name": "Class2",
+                    "properties": [
+                        {
+                            "name": "Attribute1",
+                            "dataType": "DataType2"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ContextB",
+            "entities": [
+                {
+                    "name": "Class3",
+                    "properties": [
+                        {
+                            "name": "Attribute1",
+                            "dataType": "DataType3",
+                            "minCardinality": 0,
+                            "maxCardinality": 1
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "dataTypes": [
+        {
+            "name": "DataType1",
+            "status": "deprecated"
+        },
+        {
+            "name": "DataType2"
+        },
+        {
+            "name": "DataType3"
+        }
+    ]
+}

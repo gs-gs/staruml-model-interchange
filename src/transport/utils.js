@@ -293,8 +293,8 @@ function bindProperty(attr) {
     objAttr._type = 'UMLAttribute';
     objAttr.name = attr.name;
 
-    //if(attr.DataType.type == utils.isString)
-    let dType = getDatatype(attr.DataType); //attr.DataType.type;
+    /* if(attr.DataType.type == utils.isString) */
+    let dType = getDatatype(attr.DataType); /* attr.DataType.type; */
     objAttr.type = dType;
     objAttr.isID = attr.isID;
     objAttr.multiplicity = attr.cardinality;
@@ -325,10 +325,10 @@ function bindOperation(attr) {
         let objParam = {};
         objParam._type = 'UMLParameter';
         objParam.name = param.name;
-        //TODO : Remove below comment and resolve issue
-        let dType = getDatatype(param.DataType); //attr.DataType.type;
+        /* TODO : Remove below comment and resolve issue */
+        let dType = getDatatype(param.DataType); /* attr.DataType.type; */
         /* objAttr.type = dType; */
-        objParam.type = dType //param.DataType.type;
+        objParam.type = dType /* param.DataType.type; */
         objParam.isID = param.isID;
         objParam.multiplicity = param.cardinality;
 
@@ -1042,6 +1042,11 @@ function getTagsToImport(attr) {
     return arrTags;
 }
 
+/**
+ * @function getTagsToImport
+ * @description Create view of all new elements
+ * @param {Array} newElements
+ */
 function createViewOfElements(newElements) {
     forEach(newElements, function (newEle) {
         createViewOfElement(newEle);
@@ -1049,18 +1054,37 @@ function createViewOfElements(newElements) {
 }
 let mOtherDependentClasses = [];
 
+/**
+ * @function addOtherDependentClass
+ * @description Add dependent class in depended classes list
+ * @param {Object} element
+ */
 function addOtherDependentClass(element) {
     mOtherDependentClasses.push(element);
 }
 
+/**
+ * @function getOtherDependentClass
+ * @description returns list of all dependent classes
+ * @returns {Array}
+ */
 function getOtherDependentClass() {
     return mOtherDependentClasses;
 }
 
+/**
+ * @function resetOtherDependentClass
+ * @description reset list of other dependent class
+ */
 function resetOtherDependentClass() {
     mOtherDependentClasses = [];
 }
 
+/**
+ * @function findOtherElements
+ * @description find all other element which is depended on entity
+ * @param {Object} entity
+ */
 function findOtherElements(entity) {
     let entityParent = entity._parent;
     forEach(entity.ownedElements, function (oweEle) {
@@ -1070,24 +1094,30 @@ function findOtherElements(entity) {
                            oweEle instanceof type.UMLInterfaceRealization */
         ) {
 
-            // let end1Parent = oweEle.end1.reference._parent;
-            // let end2Parent = oweEle.end2.reference._parent;
+            /* let end1Parent = oweEle.end1.reference._parent;
+            let end2Parent = oweEle.end2.reference._parent;
 
-            // if (entityParent instanceof type.UMLPackage &&
-            //     end1Parent instanceof type.UMLPackage &&
-            //     entityParent.name != end1Parent.name) {
+            if (entityParent instanceof type.UMLPackage &&
+                end1Parent instanceof type.UMLPackage &&
+                entityParent.name != end1Parent.name) { */
             addOtherDependentClass(oweEle.end1.reference);
-            // }
+            /* }
 
-            // if (entityParent instanceof type.UMLPackage &&
-            //     end2Parent instanceof type.UMLPackage &&
-            //     entityParent.name != end2Parent.name) {
+            if (entityParent instanceof type.UMLPackage &&
+                end2Parent instanceof type.UMLPackage &&
+                entityParent.name != end2Parent.name) { */
             addOtherDependentClass(oweEle.end2.reference);
-            // }
+            /*  } */
 
         }
     });
 }
+
+/**
+ * @function isNewFileSaved
+ * @description returns promise to check newaly created file is save or not
+ * @returns {Promise} entity
+ */
 function isNewFileSaved(){
     return new Promise((resolve,reject)=>{
          let fileName = app.project.filename;

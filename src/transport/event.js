@@ -287,7 +287,7 @@ function bindEventToExport(mPackage, jsonProcess, absClass) {
  * @param {Object} jsonProcess
  */
 function bindAbstractEventToExport(mPackage, jsonProcess) {
-    //let allEvents = app.repository.select(mPackage.name + '::@UMLInterface');
+    /* let allEvents = app.repository.select(mPackage.name + '::@UMLInterface'); */
     forEach(mPackage.ownedElements, function (event) {
         if (event instanceof type.UMLInterface) {
 
