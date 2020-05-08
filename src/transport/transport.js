@@ -166,7 +166,7 @@ function importDataToModel(XMIData) {
     }; */
 
     let Package = {};
-    Package[fields._type]='UMLPackage';
+    Package[fields._type] = 'UMLPackage';
     Package[fields.name] = XMIData.name;
     Package[fields.ownedElements] = mainOwnedElements;
 
@@ -219,7 +219,7 @@ function importDataToModel(XMIData) {
             newClassesAdded: newClassesAdded
         }
         forRelationshipArray.push(relationshipData);
-        
+
     }
 }
 let forRelationshipArray = [];
@@ -418,7 +418,7 @@ function addNewPackageInExplorer(Package, XMIData, mainOwnedElements) {
 async function importModel(file) {
 
     let isSave = await utils.isNewFileSaved();
-    if(!isSave){
+    if (!isSave) {
         return;
     }
 
@@ -453,7 +453,7 @@ async function importModel(file) {
                 app.dialogs.showInfoDialog(constant.mi_msg_success);
             });
         }
-    },5);
+    }, 5);
 
 }
 /**
@@ -498,7 +498,7 @@ function processImport(MainXMIData) {
 async function exportModel() {
 
     let isSave = await utils.isNewFileSaved();
-    if(!isSave){
+    if (!isSave) {
         return;
     }
 
@@ -509,7 +509,7 @@ async function exportModel() {
             returnValue
         }) {
             if (buttonId === "ok") {
-                
+
                 let varSel = returnValue.getClassName();
                 let valPackagename = type.UMLPackage.name;
                 if (varSel == valPackagename) {

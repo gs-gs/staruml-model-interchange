@@ -5,9 +5,9 @@ const prefs = {
         "mi.label": {
             text: "Repository Location : ",
             description: "repository location ",
-            type:'string',
-            default:'',
-            value:"fasdfafsdaf"
+            type: 'string',
+            default: '',
+            value: "fasdfafsdaf"
         }
     }
 }

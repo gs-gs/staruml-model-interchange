@@ -945,7 +945,7 @@ function setRelationship(ownedElements, XMIData) {
         if (entity instanceof type.UMLClass || entity instanceof type.UMLInterface) {
             let mSubObject = XMIData[entity.name];
             let oldOwnedElements = entity.ownedElements;
-            if (mSubObject !=null && mSubObject.Relationship.length>0) {
+            if (mSubObject != null && mSubObject.Relationship.length > 0) {
                 /* console.log("-----entity name-----", entity.name + " : " + mSubObject.Relationship); */
 
 

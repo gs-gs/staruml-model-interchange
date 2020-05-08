@@ -68,7 +68,7 @@ function addEventProperty(eventObj, event) {
  */
 function addEventRelationship(eventObj, event) {
     utils.findOtherElements(event);
-    
+
     let Relationship = [];
     eventObj[fields.Relationship] = Relationship;
     forEach(event.ownedElements, function (element) {

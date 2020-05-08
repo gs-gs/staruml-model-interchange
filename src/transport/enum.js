@@ -94,10 +94,9 @@ function bindEnumToImport(enumeObject, mSubObject) {
     enumeObject.name = mSubObject.name;
     enumeObject[fields.isAbstract] = mSubObject.isAbstract;
     /* #12 Type check for the properties  */
-    if(utils.isString(mSubObject.description)){
+    if (utils.isString(mSubObject.description)) {
         enumeObject.documentation = mSubObject.description;
-    }
-    else{
+    } else {
         enumeObject.documentation = "";
     }
 
@@ -150,7 +149,7 @@ function bindEnumAttributesToImport(enumeObject, mSubObject) {
  * @param {Object} XMIData
  * @param {UMLEnumeration} result
  */
-function addNewEnumeration(XMIData,result) {
+function addNewEnumeration(XMIData, result) {
     Object.keys(XMIData).forEach(function eachKey(key) {
         let mSubObject = XMIData[key];
         let mSname = key;

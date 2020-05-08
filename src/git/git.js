@@ -15,7 +15,7 @@ var junk = require('junk');
  * @description setup directory structure for git directory when project loaded
  */
 function _projectLoaded() {
-     
+
 
      dataStore.initialize();
      let repoPath = dataStore.getFileName() + '_' + dataStore.getExtension();
@@ -330,7 +330,8 @@ function isChangesAvailable() {
                /* isLocalCommitsToPush = false; */
           }
 
-          if (isLocalChanges ) { /* || isLocalCommitsToPush */
+          if (isLocalChanges) {
+               /* || isLocalCommitsToPush */
                result.result = true;
                result.message = constant.commit_changes;
                resolve(result);
@@ -428,9 +429,9 @@ function readPullDirectory(_mdirname) {
                if (filesList.length == 1) {
                     let mFile = filesList[0];
                     let finalPath = _mdirname + path.sep + mFile;
-                    setTimeout(function(){
+                    setTimeout(function () {
                          transport.importModel(finalPath);
-                    },5);
+                    }, 5);
                }
           } else if (err) {
                app.toast.error(err.message);
@@ -623,7 +624,7 @@ async function _gitClone() {
      if (resUSER == '') {
           return;
      } */
-     
+
      /* alert user to enter password  */
      /* let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
      resPASS = resPASS.returnValue;
@@ -639,7 +640,7 @@ async function _gitClone() {
 
      /*  const cloneURL = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path; */
 
-     let cloneFolderName = path.basename(repoURL/* cloneURL */);
+     let cloneFolderName = path.basename(repoURL /* cloneURL */ );
      const basePath = app.dialogs.showSaveDialog(constant.msg_clone_repository, null, null);
      if (basePath == null) {
           return;
@@ -689,7 +690,7 @@ async function _gitClone() {
  * @description write differences at deffPath file 
  * @returns {string}  
  */
-async function showDiff(){
+async function showDiff() {
      const mGit = git(_mdirname);
      let path = dataStore.getDiffPath();
 
@@ -697,19 +698,19 @@ async function showDiff(){
           'diff'
      ]);
 
-     console.log("diff",result);
+     console.log("diff", result);
      fs.writeFile(path, result, 'utf-8', async function (err) {
           if (err) {
-              console.error("Error : ", err.message);
-              return;
+               console.error("Error : ", err.message);
+               return;
           } else {
-              const open = require('open');
-              let resultOpen = await open(path);
+               const open = require('open');
+               let resultOpen = await open(path);
                console.log("resultOpen", resultOpen);
           }
-      });
+     });
 
-     console.log("Git diff result : ",result);
+     console.log("Git diff result : ", result);
 }
 
 /**
@@ -719,7 +720,7 @@ async function showDiff(){
 async function initClone() {
 
      let isSave = await utils.isNewFileSaved();
-     if(!isSave){
+     if (!isSave) {
           return;
      }
      console.log("initClone");
@@ -753,10 +754,10 @@ async function initClone() {
 async function _sync() {
      const mGit = git(_mdirname);
      let isSave = await utils.isNewFileSaved();
-     if(!isSave){
+     if (!isSave) {
           return;
      }
-     
+
      try {
           let isChanges = await isChangesAvailable();
 
@@ -811,10 +812,10 @@ async function _sync() {
 
                     if (user != null && email != null) {
                          /* add username into local git config */
-                         await mGit.raw(['config','--local','user.name',user]);
-     
+                         await mGit.raw(['config', '--local', 'user.name', user]);
+
                          /* check for email is available or not before commit  */
-                         await mGit.raw(['config','--local','user.email',email]);
+                         await mGit.raw(['config', '--local', 'user.email', email]);
 
                     }
 
@@ -843,7 +844,7 @@ async function _sync() {
                     let res = await mGit.getRemotes(true);
                     if (res.length == 1) {
 
-                         pushUntillCorrectCredential(res,user);
+                         pushUntillCorrectCredential(res, user);
 
                     } else {
                          app.dialogs.showInfoDialog(constant.add_remote);
@@ -911,18 +912,18 @@ async function _sync() {
  * @function pushUntillCorrectCredential
  * @description This function infinitely ask for correct credential to push repository
  */
-async function pushUntillCorrectCredential(res,user){
+async function pushUntillCorrectCredential(res, user) {
      try {
-          await pushData(res,user);
-          setTimeout(function(){
+          await pushData(res, user);
+          setTimeout(function () {
                app.toast.info(constant.push_success_msg);
-          },5);
+          }, 5);
      } catch (error) {
           let errMsg = error.message;
           let includeStr = constant.include_string;
-          if(errMsg.includes(includeStr)){
-               let result = app.dialogs.showConfirmDialog(error.message+constant.enter_correct_un_pw);
-               if(result == "ok"){
+          if (errMsg.includes(includeStr)) {
+               let result = app.dialogs.showConfirmDialog(error.message + constant.enter_correct_un_pw);
+               if (result == "ok") {
                     /* alert user to enter username */
                     let resUsername = await app.dialogs.showInputDialog(constant.enter_username);
                     if (resUsername.buttonId == 'ok') {
@@ -951,26 +952,26 @@ async function pushUntillCorrectCredential(res,user){
                     if (user != null && email != null) {
                          /* add username into local git config */
                          const mGit = git(_mdirname);
-                         await mGit.raw(['config','--local','user.name',user]);
+                         await mGit.raw(['config', '--local', 'user.name', user]);
 
                          /* check for email is available or not before commit  */
-                         await mGit.raw(['config','--local','user.email',email]);
+                         await mGit.raw(['config', '--local', 'user.email', email]);
 
 
                          let res = await mGit.getRemotes(true);
                          if (res.length == 1) {
 
-                              pushUntillCorrectCredential(res,user);
+                              pushUntillCorrectCredential(res, user);
 
                          } else {
                               app.dialogs.showInfoDialog(constant.add_remote);
                          }
                     }
                }
-          }else{
+          } else {
                app.dialogs.showErrorDialog(error.message);
           }
-          
+
      }
 }
 
@@ -980,7 +981,7 @@ async function pushUntillCorrectCredential(res,user){
  * @param {Object} res
  * @param {Object} user
  */
-function pushData(res,user) {
+function pushData(res, user) {
      return new Promise(async (resolve, reject) => {
           const mGit = git(_mdirname);
           let remote = res[0];
@@ -993,30 +994,30 @@ function pushData(res,user) {
                'user.pass'
           ]); */
 
-          let pURL=url.parse(pushURL);
-          let auth=pURL.auth;
-          console.log("auth : ",auth);
-          if(auth == null){
+          let pURL = url.parse(pushURL);
+          let auth = pURL.auth;
+          console.log("auth : ", auth);
+          if (auth == null) {
 
                /* if(PASS == null || PASS == ''){ */
-                    /* alert user to enter username  */
-                    let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
-                    if(resPASS.returnValue == ''){
-                         throw new Error('Please enter password');
-                    }
-                    /* await mGit.raw(['config','--local','user.pass',resPASS.returnValue]); */
-                    PASS = resPASS.returnValue;
+               /* alert user to enter username  */
+               let resPASS = await app.dialogs.showInputDialog(constant.enter_password);
+               if (resPASS.returnValue == '') {
+                    throw new Error('Please enter password');
+               }
+               /* await mGit.raw(['config','--local','user.pass',resPASS.returnValue]); */
+               PASS = resPASS.returnValue;
 
-                    const nURL = pURL.protocol + '//' + USER + ':' + PASS + '@' + pURL.host + pURL.path;
-                    await mGit.raw(['remote','set-url','origin',nURL]);
+               const nURL = pURL.protocol + '//' + USER + ':' + PASS + '@' + pURL.host + pURL.path;
+               await mGit.raw(['remote', 'set-url', 'origin', nURL]);
 
 
                /*  } */
-          }else{
+          } else {
 
-               let unpw=auth.split(":");
-               if(unpw.length==2){
-                    PASS=unpw[1];
+               let unpw = auth.split(":");
+               if (unpw.length == 2) {
+                    PASS = unpw[1];
                }
           }
 
@@ -1026,9 +1027,9 @@ function pushData(res,user) {
           let URL = url.parse(REPO);
 
           const gitPushUrl = URL.protocol + '//' + USER + ':' + PASS + '@' + URL.host + URL.path;
-          console.log("Push url : ",gitPushUrl);
-          let newURL=url.parse(gitPushUrl);
-          console.log("new URL ",newURL);
+          console.log("Push url : ", gitPushUrl);
+          let newURL = url.parse(gitPushUrl);
+          console.log("new URL ", newURL);
           /* const gitPushUrl = pushURL; */
 
           let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, "Please wait until push successfull", [], true);
@@ -1054,7 +1055,7 @@ function pushData(res,user) {
                     vDialog.close();
                     let unsetURL = url.parse(gitPushUrl);
                     const nURL = unsetURL.protocol + '//' + unsetURL.host + unsetURL.path;
-                    await mGit.raw(['remote','set-url','origin',nURL]);
+                    await mGit.raw(['remote', 'set-url', 'origin', nURL]);
                     /* await mGit.raw(['config','--local','--unset','user.pass']); */
                     reject(error);
                     /* console.error(error.message);
