@@ -72,7 +72,7 @@ function addEntityProperty(entityObj, entity) {
  * @param {*} entity
  */
 function addEntityRelationship(entityObj, entity) {
-    
+
     utils.findOtherElements(entity);
 
     let Relationship = [];

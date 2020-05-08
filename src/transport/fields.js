@@ -54,11 +54,11 @@ const fields = {
     'resource': 'resource',
     'reference': 'reference',
     'multiplicity': 'multiplicity',
-    'contains' : 'contains',
-    'references' : 'references',
-    'typeOf' : 'typeOf',
-    'end1' : 'end1',
-    'end2' : 'end2',
+    'contains': 'contains',
+    'references': 'references',
+    'typeOf': 'typeOf',
+    'end1': 'end1',
+    'end2': 'end2',
 
 };
 module.exports = fields;
