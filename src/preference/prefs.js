@@ -8,6 +8,12 @@ const prefs = {
             type:'string',
             default:'',
             value:"fasdfafsdaf"
+        },
+        "mi.ndr": {
+            text: "Apply NDR rules",
+            description: "Apply NDR rules.",
+            type: "check",
+            default: false
         }
     }
 }

@@ -59,6 +59,11 @@ const fields = {
     'typeOf' : 'typeOf',
     'end1' : 'end1',
     'end2' : 'end2',
-
+    'codes' : 'codes',
+    'code' : 'code',
+    'propertyValues' : 'propertyValues',
+    'propertyName' : 'propertyName',
+    'codeLists' : 'codeLists',
+    'literals' : 'literals',
 };
 module.exports = fields;

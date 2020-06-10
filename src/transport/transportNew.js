@@ -1,4 +1,5 @@
 var forEach = require('async-foreach').forEach;
+var utils = require('./utils');
 var path = require('path');
 const fs = require('fs');
 const fields = require('../transport/fields');
@@ -7,7 +8,7 @@ let otherResources = [];
 
 /**
  * @function exportNewModel
- * @description export selected package or all packages and datatype package from the staruml project 
+ * @description export selected package or all packages and datatype package from the staruml project
  */
 async function exportNewModel() {
 
@@ -27,34 +28,24 @@ async function exportNewModel() {
             if (returnValue == "1") {
                 /* Export all package */
                 let packages = app.repository.select("@UMLPackage");
-                let dataTypes = app.repository.select("DataTypes");
-                if (dataTypes.length == 1) {
-                    let dataTypePkgId = dataTypes[0]._id;
-                    let filterPackages = packages.filter(pkg => {
-                        return pkg._id != dataTypePkgId;
-                    })
 
-                    /* Adding Resources */
-                    forEach(filterPackages, pkg => {
+                /* Adding Resources */
+                forEach(packages, pkg => {
 
-                        let exportElement = pkg;
-                        let varSel = exportElement.getClassName();
-                        let valPackagename = type.UMLPackage.name;
+                    let exportElement = pkg;
+                    let varSel = exportElement.getClassName();
+                    let valPackagename = type.UMLPackage.name;
 
-                        if (varSel == valPackagename) {
+                    if (varSel == valPackagename) {
 
-                            addResources(arrResources, exportElement);
+                        addResources(arrResources, exportElement);
 
-                        }
+                    }
 
-                    });
+                });
 
-                    /* Adding Datatype */
-                    addDatatype(mMainObject);
-
-                    /* Save Generated File */
-                    saveFile(mMainObject)
-                }
+                /* Save Generated File */
+                saveFile(mMainObject)
 
             } else if (returnValue == "2") {
                 /* Export single package */
@@ -149,7 +140,7 @@ const JSON_FILE_FILTERS = [{
 
 /**
  * @function saveFile
- * @description Save file at selected path  
+ * @description Save file at selected path
  * @param {Object} mMainObject
  */
 function saveFile(mMainObject) {
@@ -191,76 +182,163 @@ function saveFile(mMainObject) {
 function addResources(arrResources, exportElement) {
     let selPackage = exportElement;
 
-    /* Adding Entities */
-    let umlEntities = app.repository.select(selPackage.name + "::@UMLClass");
-    if (umlEntities.length == 0) {
-        return;
-    }
-
     let objResource = {};
     arrResources.push(objResource);
     objResource[fields.name] = selPackage.name;
 
-    let entitiesArr = [];
-    objResource[fields.entities] = entitiesArr;
+    /* Adding Entities */
+    let umlEntities = app.repository.select(selPackage.name + "::@UMLClass");
+    if (umlEntities.length != 0) {
+        let entitiesArr = [];
+        objResource[fields.entities] = entitiesArr;
 
 
-    forEach(umlEntities, entity => {
-        let objEntity = {};
-        entitiesArr.push(objEntity);
-        objEntity[fields.name] = entity.name;
+        forEach(umlEntities, entity => {
+            let objEntity = {};
+            entitiesArr.push(objEntity);
+            objEntity[fields.name] = utils.upperCamelCase(entity.name);
 
-        /* Adding Properties */
-        if (entity.attributes.length > 0) {
+            if (entity.documentation != "") {
+                objEntity[fields.description] = entity.documentation;
+            }
 
-            let propertiesArr = [];
-            objEntity[fields.properties] = propertiesArr;
-            forEach(entity[fields.attributes], property => {
-                let propertyObj = {};
-                propertiesArr.push(propertyObj);
-                /* Adding property 'name' */
-                propertyObj[fields.name] = property.name;
+            /* Adding Tags */
+            if (entity.tags.length > 0) {
+                objEntity.tags = addTags(entity.tags);
+            }
 
-                /* Adding property 'status' */
-                addPropertyStatus(property, propertyObj);
+            /* Adding Properties */
+            if (entity.attributes.length > 0) {
 
-                /* Adding property 'dataType */
-                if (property.type != null) {
-                    propertyObj[fields.dataType] = property.type.name;
-                }
+                let propertiesArr = [];
+                objEntity[fields.properties] = propertiesArr;
+                forEach(entity[fields.attributes], property => {
+                    let propertyObj = {};
+                    propertiesArr.push(propertyObj);
+                    /* Adding property 'name' */
+                    propertyObj[fields.name] = utils.lowerCamelCase(property.name);
 
-                /* Adding property 'minCardinality' & 'maxCardinality' */
-                addPropertyCardinality(property, propertyObj);
+                    if (property.documentation != "") {
+                        propertyObj[fields.description] = property.documentation;
+                    }
+                    /* Adding property 'status' */
+                    addPropertyStatus(property, propertyObj);
 
+                    /* Adding property 'dataType */
+                    if (property.type != null) {
+                        propertyObj[fields.dataType] = property.type.name;
+                    }
 
-            });
-        }
+                    /* Adding property 'minCardinality' & 'maxCardinality' */
+                    addPropertyCardinality(property, propertyObj);
 
-        /* Adding Relationship */
-        let relationshipsArr = [],
-            relArrEnd1 = [],
-            relArrEnd2 = [],
-            relArrEnd3 = [],
-            relArrGeneralization = [];
+                    /* Adding Tags */
+                    if (property.tags.length > 0) {
+                        propertyObj.tags = addTags(property.tags);
+                    }
 
-        /* Add relationship that end1 have 'composition','share' and end2 have 'none' */
-        relArrEnd1 = addRelationshipTargettingEnd1(entity, selPackage);
+                });
+            }
 
-        /* Add relationship that end2 have 'composition','share' and end1 have 'none' */
-        relArrEnd2 = addRelationshipTargettingEnd2(entity, selPackage);
+            /* Adding Relationship */
+            let relationshipsArr = [],
+                relArrEnd1 = [],
+                relArrEnd2 = [],
+                relArrEnd3 = [],
+                relArrGeneralization = [];
+
+            /* Add relationship that end1 have 'composition','share' and end2 have 'none' */
+            relArrEnd1 = addRelationshipTargettingEnd1(entity, selPackage);
+
+            /* Add relationship that end2 have 'composition','share' and end1 have 'none' */
+            relArrEnd2 = addRelationshipTargettingEnd2(entity, selPackage);
 
         /* TODO Add relationship that end1 have 'none' and end2 have 'none' */
         /* relArrEnd3 = addRelationshipTargettingEndNone(entity, selPackage); */
 
-        /* Add generalization relationship */
-        relArrGeneralization = addRelationshipGeneralization(entity, selPackage);
+            /* Add generalization relationship */
+            relArrGeneralization = addRelationshipGeneralization(entity, selPackage);
 
-        relationshipsArr = relArrEnd1.concat(relArrEnd2, relArrEnd3, relArrGeneralization);
-        if (relationshipsArr.length > 0) {
-            objEntity[fields.relationships] = relationshipsArr;
-        }
+            relationshipsArr = relArrEnd1.concat(relArrEnd2, relArrEnd3, relArrGeneralization);
+            if (relationshipsArr.length > 0) {
+                objEntity[fields.relationships] = relationshipsArr;
+            }
+        });
+    }
 
+    let umlEnums = app.repository.select(selPackage.name + "::@UMLEnumeration");
+    if (umlEnums.length != 0) {
+        let codesArr = [];
+        objResource[fields.codeLists] = codesArr;
+
+        forEach(umlEnums, entity => {
+            let objEntity = {};
+            codesArr.push(objEntity);
+            objEntity[fields.name] = utils.upperCamelCase(entity.name);
+
+            if (entity.documentation != "") {
+                objEntity[fields.description] = entity.documentation;
+            }
+
+            /* Adding Properties */
+            if (entity.literals.length > 0) {
+                let propertiesArr = [];
+                objEntity[fields.codes] = propertiesArr;
+                forEach(entity.literals, literal => {
+                    let propertyObj = {};
+                    propertiesArr.push(propertyObj);
+                    /* Adding property 'name' */
+                    propertyObj[fields.name] = literal.tags[0].value;
+                    if (literal.documentation != "") {
+                        propertyObj[fields.description] = literal.documentation;
+                    }
+                    if(literal.tags != null){
+                        let propertyValuesArray = [];
+                        let propertyValueObj = {};
+                        propertyValueObj[fields.value] = literal.name;
+                        propertyValueObj[fields.propertyName] = "https://edi3.org/codes/"+ entity.name+"#definitions/businessName";
+                        propertyValuesArray.push(propertyValueObj);
+                        propertyObj[fields.propertyValues] = propertyValuesArray;
+                    }
+                });
+            }
+        });
+    }
+    let umlDataTypes = app.repository.select(selPackage.name + "::@UMLDataType");
+    umlDataTypes = umlDataTypes.filter(res => {
+        return (res instanceof type.UMLDataType) && !(res instanceof type.UMLEnumeration);
     });
+    if (umlDataTypes.length != 0) {
+        let arrDataTypesClasses = [];
+        objResource[fields.dataTypes] = arrDataTypesClasses;
+        forEach(umlDataTypes, element => {
+            let dataTypeClassObject = {};
+            dataTypeClassObject[fields.name] = element.name;
+            if (element.documentation != "") {
+                dataTypeClassObject[fields.description] = element.documentation;
+            }
+            let tags = element.tags;
+            if (tags.length > 0) {
+                let tag = tags[0];
+                if (tag.reference != null) {
+                    dataTypeClassObject[tag.name] = tag.reference.name;
+                }
+            }
+            arrDataTypesClasses.push(dataTypeClassObject);
+        });
+    }
+}
+
+function addTags(iTags) {
+    let tags = [];
+    forEach(iTags, tag => {
+        let tagObj = {};
+        tagObj.name = tag.name;
+        tagObj.value = tag.value;
+        tagObj.kind = tag.kind;
+        tags.push(tagObj);
+    });
+    return tags;
 }
 
 /**
@@ -273,13 +351,16 @@ function addDatatype(mMainObject) {
     let dataTypes = app.repository.select(constant.datatype_pkg_name);
     if (dataTypes.length > 0) {
         forEach(dataTypes, element => {
-            let dataTypeClasses = app.repository.select(element.name + "::@UMLClass");
+            let dataTypeClasses = app.repository.select(element.name + "::@UMLDataType");
             let arrDataTypesClasses = [];
             mMainObject[fields.dataTypes] = arrDataTypesClasses;
             if (dataTypeClasses.length > 0) {
                 forEach(dataTypeClasses, element => {
                     let dataTypeClassObject = {};
                     dataTypeClassObject[fields.name] = element.name;
+                    if (element.documentation != "") {
+                        dataTypeClassObject[fields.description] = element.documentation;
+                    }
                     let tags = element.tags;
                     if (tags.length > 0) {
                         let tag = tags[0];
@@ -424,7 +505,7 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
             }
 
             /* Adding relationship 'name' */
-            relationshipObj[fields.name] = rel.name;
+            relationshipObj[fields.name] = utils.lowerCamelCase(rel.name);
 
             /* Adding relationship 'description' */
             if (rel.documentation != "") {
@@ -443,7 +524,7 @@ function addRelationshipTargettingEnd2(entity, selPackage) {
             /* Addint relationship 'target */
             let target = {};
             relationshipObj.target = target;
-            target[fields.name] = rel.end1.reference.name;
+            target[fields.name] = utils.upperCamelCase(rel.end1.reference.name);
             if (rel.end1.reference._parent._id != selPackage._id) {
                 target[fields.resource] = rel.end1.reference._parent.name;
                 otherResources.push(rel.end1.reference._parent);
@@ -483,7 +564,7 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
             }
 
             /* Adding relationship 'name' */
-            relationshipObj[fields.name] = rel.name;
+            relationshipObj[fields.name] = utils.lowerCamelCase(rel.name);
 
             /* Adding relationship 'description' */
             if (rel.documentation != "") {
@@ -502,7 +583,7 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
             /* Addint relationship 'target */
             let target = {};
             relationshipObj.target = target;
-            target[fields.name] = rel.end2.reference.name;
+            target[fields.name] = utils.upperCamelCase(rel.end2.reference.name);
             if (rel.end2.reference._parent._id != selPackage._id) {
                 target[fields.resource] = rel.end2.reference._parent.name;
                 otherResources.push(rel.end2.reference._parent);
@@ -517,7 +598,7 @@ function addRelationshipTargettingEnd1(entity, selPackage) {
 
 /**
  * @function addPropertyStatus
- * @description Export tags as status of property 
+ * @description Export tags as status of property
  * @param {Object} property
  * @param {Object} propertyObj
  */
@@ -558,7 +639,7 @@ function addPropertyStatus(property, propertyObj) {
 
 /**
  * @function addPropertyCardinality
- * @description Export multiplicity of property 
+ * @description Export multiplicity of property
  * @param {Object} property
  * @param {Object} propertyObj
  */
@@ -606,7 +687,7 @@ function isDatatypePkgAvail() {
 
 /**
  * @function importNewModel
- * @description Import selected model interchange json file 
+ * @description Import selected model interchange json file
  */
 function importNewModel() {
     var mFiles = app.dialogs.showOpenDialog('Import file As JSON (.json)', null, JSON_FILE_FILTERS)
@@ -618,7 +699,7 @@ function importNewModel() {
     var contentStr = fs.readFileSync(filePath, 'utf8');
     var content = JSON.parse(contentStr);
     console.log("File Data : ", content);
-    let dataTypesContent = content.dataTypes;
+    /*let dataTypesContent = content.dataTypes;*/
 
     let fileName = path.basename(filePath);
     let vDialog = app.dialogs.showModalDialog("", constant.title_import_mi, constant.title_import_mi_1 + fileName, [], true);
@@ -628,23 +709,22 @@ function importNewModel() {
         /* Adding Status Code Enum */
         if (!isStatusCodeAvail()) {
             addStatusCodeEnum();
-        } else {
+        }/* else {
             addtatusCodeIfNotExist(dataTypesContent);
-        }
+        }*/
 
         /* Adding / Updating Data Type Package */
-        if (!isDatatypePkgAvail()) {
+        /*if (!isDatatypePkgAvail()) {
             addDataTypePackage(dataTypesContent);
         } else {
             updateDataTypePackage(dataTypesContent);
-        }
+        }*/
 
 
         let statusCodes = app.repository.select(constant.status_code_enum_name)[0];
         statusCodes = statusCodes.literals;
-
-        let dataTypes = app.repository.select(constant.datatype_pkg_name)[0];
-        dataTypes = app.repository.select(dataTypes.name + '::@UMLClass');
+        /*let statusCodes = [];*/
+        let dataTypes = app.repository.select('::@UMLDataType');
 
         /* Updating Context -> Class, Properties */
         updateContext(statusCodes, dataTypes, content);
@@ -748,6 +828,13 @@ function updateProp(cProp, entityProp, dataTypes, statusCodes) {
 
     }
 
+    /* Updating tags */
+    if (entityProp.hasOwnProperty(fields.tags)) {
+
+        updateTags(entityProp, cProp);
+
+    }
+
     /* Updating multiplicity */
     if (entityProp.hasOwnProperty(fields.minCardinality) || entityProp.hasOwnProperty(fields.maxCardinality)) {
 
@@ -802,58 +889,119 @@ function updateMultiplicity(cProp, entityProp) {
  */
 function updateContext(statusCodes, dataTypes, content) {
     let resourcesContent = content.resources;
-
-    /* Updating class and properties */
+    let existingPackages = [];
+    /**
+     * check if all packages(resources) exist in the project
+     * create ones which are missing
+     */
     forEach(resourcesContent, resource => {
-        let resourcePackage = app.repository.select(resource.name);
-        resourcePackage = resourcePackage.filter(res => {
-            return res instanceof type.UMLPackage;
+        let existingPackage = app.repository.select("::@UMLPackage[name=" + resource.name + "]");
+        if (existingPackage.length === 0) {
+            console.log("Package to create ", resource.name);
+            let createPackage = {};
+            createPackage[fields._type] = 'UMLPackage';
+            createPackage[fields.name] = resource.name;
+            createPackage[fields._parent] = {
+                '$ref': app.project.getProject()._id
+            };
+            let newPackage = app.repository.readObject(createPackage);
+            existingPackages.push(newPackage);
+            app.engine.addItem(app.project.getProject(), 'ownedElements', newPackage);
+        } else {
+            if (existingPackage.length > 1){
+                console.warn("More than a single package matched the name " + resource.name + ", picking the first matched. Please check your packages naming.");
+            }
+            existingPackages.push(existingPackage[0]);
+        }
+    });
+
+    /**
+     * Updating data types and code lists first
+     */
+    forEach(resourcesContent, resource => {
+        let resourcePackages = existingPackages.filter(res => {
+            return res.name == resource.name;
         });
-        if (resourcePackage.length != 0) {
-            let rPackage = resourcePackage[0];
+
+        if (resourcePackages.length != 0) {
+            let rPackage = resourcePackages[0];
             console.log("---------------Package to update : " + rPackage.name + "---------------");
-            let entities = resource[fields.entities];
-            let classesFromPackage = app.repository.select(rPackage.name + "::@UMLClass");
-
-            let newCreatedClasses = [];
-            forEach(entities, entity => {
-                let resClass = classesFromPackage.filter(mClass => {
-                    return mClass.name == entity.name;
-                });
-                if (resClass.length != 0) {
-                    let mClass = resClass[0];
-                    console.log("---------------Classes to update : " + mClass.name);
-
-                    updatingProperties(mClass, entity, dataTypes, statusCodes);
-
-
-                } else {
-                    console.log("Class to create ", entity.name);
-                    let createClass = {};
-                    createClass[fields._type] = 'UMLClass';
-                    createClass[fields.name] = entity.name;
-                    createClass[fields._parent] = {
-                        '$ref': rPackage._id
-                    };
-                    let newClass = app.repository.readObject(createClass);
-                    newCreatedClasses.push(newClass);
-                }
-            });
-
-            if (newCreatedClasses.length > 0) {
-                forEach(newCreatedClasses, newClass => {
-
-                    let resEntities = entities.filter(mEntity => {
-                        return mEntity.name == newClass.name;
+            if(resource.hasOwnProperty(fields.codeLists)) {
+                let codeLists = resource[fields.codeLists];
+                let codeListsFromPackage = app.repository.select(rPackage.name + "::@UMLEnumeration");
+                let newCreatedCodeLists = [];
+                forEach(codeLists, codeList => {
+                    let matches = codeListsFromPackage.filter ( res => {
+                        return res.name == codeList.name;
                     });
-                    if (resEntities.length != 0) {
-                        let entity = resEntities[0];
-                        app.engine.addItem(rPackage, fields.ownedElements, newClass);
-                        updatingProperties(newClass, entity, dataTypes, statusCodes);
+                    if(matches.length === 0){
+                        createEnumeration(codeList.name, rPackage, codes);
+                    } else {
+                        if(matches.length > 1){
+                            console.warn("More than a single code list matched the name " + codeList.name + ", picking the first matched. Please check your code lists naming.");
+                        }
                     }
 
-
                 });
+            }
+        }
+    });
+    /* Updating class and properties */
+    forEach(resourcesContent, resource => {
+        let resourcePackages = existingPackages.filter(res => {
+            return res.name == resource.name;
+        });
+
+        if (resourcePackages.length != 0) {
+            let rPackage = resourcePackages[0];
+            console.log("---------------Package to update : " + rPackage.name + "---------------");
+            if(resource.hasOwnProperty(fields.entities)) {
+                let entities = resource[fields.entities];
+                let classesFromPackage = app.repository.select(rPackage.name + "::@UMLClass");
+
+                let newCreatedClasses = [];
+                forEach(entities, entity => {
+                    let resClass = classesFromPackage.filter(mClass => {
+                        return mClass.name == entity.name;
+                    });
+                    if (resClass.length != 0) {
+                        let mClass = resClass[0];
+                        console.log("---------------Classes to update : " + mClass.name);
+
+                        updatingProperties(mClass, entity, dataTypes, statusCodes);
+                        if (entity.hasOwnProperty(fields.tags)) {
+                            updateTags(entity, mClass);
+                        }
+
+                    } else {
+                        console.log("Class to create ", entity.name);
+                        let createClass = {};
+                        createClass[fields._type] = 'UMLClass';
+                        createClass[fields.name] = entity.name;
+                        createClass[fields._parent] = {
+                            '$ref': rPackage._id
+                        };
+                        let newClass = app.repository.readObject(createClass);
+                        newCreatedClasses.push(newClass);
+                    }
+                });
+
+
+                if (newCreatedClasses.length > 0) {
+                    forEach(newCreatedClasses, newClass => {
+
+                        let resEntities = entities.filter(mEntity => {
+                            return mEntity.name == newClass.name;
+                        });
+                        if (resEntities.length != 0) {
+                            let entity = resEntities[0];
+                            app.engine.addItem(rPackage, fields.ownedElements, newClass);
+                            updatingProperties(newClass, entity, dataTypes, statusCodes);
+                        }
+
+
+                    });
+                }
             }
         }
     });
@@ -867,109 +1015,116 @@ function updateContext(statusCodes, dataTypes, content) {
         if (resourcePackage.length != 0) {
             let rPackage = resourcePackage[0];
             console.log("---------------Package to update : " + rPackage.name + "---------------");
-            let entities = resource[fields.entities];
-            let classesFromPackage = app.repository.select(rPackage.name + "::@UMLClass");
-            forEach(entities, entity => {
-                let resClass = classesFromPackage.filter(mClass => {
-                    return mClass.name == entity.name;
-                });
-                if (resClass.length != 0) {
-                    let mClass = resClass[0];
-                    console.log("---------------Classe : " + mClass.name);
+            if(resource.hasOwnProperty(fields.entities)) {
+                let entities = resource[fields.entities];
+                let classesFromPackage = app.repository.select(rPackage.name + "::@UMLClass");
+                forEach(entities, entity => {
+                    let resClass = classesFromPackage.filter(mClass => {
+                        return mClass.name == entity.name;
+                    });
+                    if (resClass.length != 0) {
+                        let mClass = resClass[0];
+                        console.log("---------------Class : " + mClass.name);
 
-                    if (entity.hasOwnProperty(fields.relationships)) {
-
-
-                        let entityRelationships = entity[fields.relationships];
+                        if (entity.hasOwnProperty(fields.relationships)) {
 
 
-                        entityRelationships.filter(eRelationship => {
+                            let entityRelationships = entity[fields.relationships];
 
-                            /* Reletionship fields */
-                            /* 'name' */
-                            /* 'description' */
-                            /* 'status' */
-                            /* 'type  */
-                            /* 'minCardinality', 'maxCardinality */
-                            /* 'target  */
 
-                            if (eRelationship.type == fields.references) {
-                                let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
+                            entityRelationships.filter(eRelationship => {
 
-                                /* Found relationship need to update*/
-                                if (foundRelationship.length != 0) {
-                                    foundRelationship = foundRelationship[0];
-                                    console.log("found relationship : aggregation : ", foundRelationship);
-
-                                    if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
-
-                                        updateAggregationRelationship(eRelationship, foundRelationship, statusCodes);
-
-                                    }
+                                /* Relationship fields */
+                                /* 'name' */
+                                /* 'description' */
+                                /* 'status' */
+                                /* 'type  */
+                                /* 'minCardinality', 'maxCardinality */
+                                /* 'target  */
+                                if(eRelationship.name == ""){
+                                    console.log("Skipping a relationship with an empty name.");
                                 } else {
-                                    /* Not found relationship need to create*/
-                                    console.log("Need to create : aggregation : ", eRelationship);
 
-                                    let newCreated = createAggregationRelationship(eRelationship, mClass);
-                                    updateAggregationRelationship(eRelationship, newCreated, statusCodes);
+                                    if (eRelationship.type == fields.references) {
+                                        console.log(eRelationship.name);
+                                        let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
 
-                                }
-                            } else if (eRelationship.type == fields.contains) {
-                                let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
+                                        /* Found relationship need to update*/
+                                        if (foundRelationship.length != 0) {
+                                            foundRelationship = foundRelationship[0];
+                                            console.log("found relationship : aggregation : ", foundRelationship);
 
-                                if (foundRelationship.length != 0) {
-                                    foundRelationship = foundRelationship[0];
-                                    console.log("found relationship : composition : ", foundRelationship);
+                                            if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
 
-                                    if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
+                                                updateAggregationRelationship(eRelationship, foundRelationship, statusCodes);
 
-                                        updateCompositeRelationship(eRelationship, foundRelationship, statusCodes);
+                                            }
+                                        } else {
+                                            /* Not found relationship need to create*/
+                                            console.log("Need to create : aggregation : ", eRelationship);
 
+                                            let newCreated = createAggregationRelationship(eRelationship, mClass);
+                                            updateAggregationRelationship(eRelationship, newCreated, statusCodes);
+
+                                        }
+                                    } else if (eRelationship.type == fields.contains) {
+                                        let foundRelationship = app.repository.select("@UMLAssociation[name=" + eRelationship.name + "]");
+
+                                        if (foundRelationship.length != 0) {
+                                            foundRelationship = foundRelationship[0];
+                                            console.log("found relationship : composition : ", foundRelationship);
+
+                                            if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
+
+                                                updateCompositeRelationship(eRelationship, foundRelationship, statusCodes);
+
+                                            }
+
+                                        } else {
+                                            /* Not found relationship need to create*/
+                                            console.log("Need to create : composition : ", eRelationship);
+
+                                            let newCreated = createCompositionRelationhip(eRelationship, mClass);
+                                            updateCompositeRelationship(eRelationship, newCreated, statusCodes);
+
+                                        }
+                                    } else if (eRelationship.type == fields.typeOf) {
+                                        let foundRelationship = app.repository.select("@UMLGeneralization[name=" + eRelationship.name + "]");
+                                        if (foundRelationship.length != 0) {
+                                            foundRelationship = foundRelationship[0];
+                                            console.log("found relationship : ", foundRelationship);
+
+                                            if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
+
+                                                updateGeneralizationRelationship(eRelationship, foundRelationship, statusCodes);
+
+
+                                            }
+
+                                        } else {
+                                            /* Not found relationship need to create*/
+                                            console.log("Need to create : generalization : ", eRelationship);
+
+                                            let newCreated = createGeneralizationRelationship(eRelationship, mClass);
+                                            updateGeneralizationRelationship(eRelationship, newCreated, statusCodes);
+
+                                        }
                                     }
-
-                                } else {
-                                    /* Not found relationship need to create*/
-                                    console.log("Need to create : composition : ", eRelationship);
-
-                                    let newCreated = createCompositionRelationhip(eRelationship, mClass);
-                                    updateCompositeRelationship(eRelationship, newCreated, statusCodes);
-
                                 }
-                            } else if (eRelationship.type == fields.typeOf) {
-                                let foundRelationship = app.repository.select("@UMLGeneralization[name=" + eRelationship.name + "]");
-                                if (foundRelationship.length != 0) {
-                                    foundRelationship = foundRelationship[0];
-                                    console.log("found relationship : ", foundRelationship);
 
-                                    if (isRelationshipValid(eRelationship, foundRelationship, mClass)) {
+                            });
+                        }
 
-                                        updateGeneralizationRelationship(eRelationship, foundRelationship, statusCodes);
-
-
-                                    }
-
-                                } else {
-                                    /* Not found relationship need to create*/
-                                    console.log("Need to create : generalization : ", eRelationship);
-
-                                    let newCreated = createGeneralizationRelationship(eRelationship, mClass);
-                                    updateGeneralizationRelationship(eRelationship, newCreated, statusCodes);
-
-                                }
-                            }
-
-                        });
                     }
-
-                }
-            });
+                });
+            }
         }
     });
 }
 
 /**
  * @function createAggregationRelationship
- * @description Create new aggregation relationship in staruml if now exist while importing model interchange json file
+ * @description Create new aggregation relationship in staruml if not exist while importing model interchange json file
  * @param {Object} eRelationship
  * @param {Object} mClass
  */
@@ -1003,11 +1158,10 @@ function createAggregationRelationship(eRelationship, mClass) {
     }
 
     if (sourceClass != null && targetClass != null) {
-        targetResource = eRelationship.target.name
         let createNewAggregation = {};
         createNewAggregation[fields._type] = 'UMLAssociation';
         createNewAggregation[fields._parent] = {
-            '$ref': targetClass._id
+            '$ref': sourceClass._id
         };
 
         createNewAggregation = app.repository.readObject(createNewAggregation);
@@ -1050,7 +1204,7 @@ function createAggregationRelationship(eRelationship, mClass) {
 
         app.engine.setProperty(createNewAggregation, fields.name, eRelationship.name);
 
-        app.engine.addItem(targetClass, fields.ownedElements, createNewAggregation);
+        app.engine.addItem(sourceClass, fields.ownedElements, createNewAggregation);
 
         return createNewAggregation;
     }
@@ -1121,7 +1275,7 @@ function createCompositionRelationhip(eRelationship, mClass) {
             '$ref': createNewComposition._id
         };
         createEnd2[fields.reference] = {
-            '$ref': targetClass._id
+            '$ref': sourceClass._id
         }
         createEnd2[fields.aggregation] = 'none';
         let tmpCreatedEnd2 = app.repository.readObject(createEnd2);
@@ -1138,7 +1292,7 @@ function createCompositionRelationhip(eRelationship, mClass) {
 
         app.engine.setProperty(createNewComposition, fields.name, eRelationship.name);
 
-        app.engine.addItem(targetClass, fields.ownedElements, createNewComposition);
+        app.engine.addItem(sourceClass, fields.ownedElements, createNewComposition);
 
         return createNewComposition;
     }
@@ -1245,7 +1399,7 @@ function updateAggregationRelationship(eRelationship, foundRelationship, statusC
             targetEnd = foundRelationship.end1;
         }
 
-        updateMultiplicity(targetEnd, eRelationship);
+        updateMultiplicity(sourceEnd, eRelationship);
 
     }
 
@@ -1275,16 +1429,16 @@ function updateCompositeRelationship(eRelationship, foundRelationship, statusCod
     /* Updating relationship multiplicity */
     if (eRelationship.hasOwnProperty(fields.minCardinality) || eRelationship.hasOwnProperty(fields.maxCardinality)) {
 
-        let targetEnd;
+        let sourceEnd;
         if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
             /*  target is end2  */
-            targetEnd = foundRelationship.end2;
+            sourceEnd = foundRelationship.end1;
         } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
             /*  target is end1 */
-            targetEnd = foundRelationship.end1;
+            sourceEnd = foundRelationship.end2;
         }
 
-        updateMultiplicity(targetEnd, eRelationship);
+        updateMultiplicity(sourceEnd, eRelationship);
 
     }
 
@@ -1339,17 +1493,20 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
     if (eRelationship.type == fields.references) {
 
         let sourceEnd, targetEnd;
-        if (foundRelationship.end1.aggregation == 'shared' && foundRelationship.end2.aggregation == 'none') {
+        if ((foundRelationship.end1.aggregation == 'shared' || foundRelationship.end1.aggregation == 'composite') && foundRelationship.end2.aggregation == 'none') {
             /* target is end2  */
             sourceEnd = foundRelationship.end1;
             targetEnd = foundRelationship.end2;
-        } else if (foundRelationship.end2.aggregation == 'shared' && foundRelationship.end1.aggregation == 'none') {
+        } else if ((foundRelationship.end2.aggregation == 'shared' || foundRelationship.end2.aggregation == 'composite') && foundRelationship.end1.aggregation == 'none') {
             /* target is end1 */
             sourceEnd = foundRelationship.end2;
             targetEnd = foundRelationship.end1;
         }
 
         if (resourceLocation == null) {
+            if(sourceEnd == undefined){
+                console.log(eRelationship);
+            }
             if (sourceEnd.reference._parent.name == mClass._parent.name &&
                 targetEnd.reference._parent.name == mClass._parent.name) {
                 return true;
@@ -1363,11 +1520,11 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
     } else if (eRelationship.type == fields.contains) {
 
         let sourceEnd, targetEnd;
-        if (foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
+        if (foundRelationship.end1.aggregation == 'shared' || foundRelationship.end1.aggregation == 'composite' && foundRelationship.end2.aggregation == 'none') {
             /* target is end2  */
             sourceEnd = foundRelationship.end1;
             targetEnd = foundRelationship.end2;
-        } else if (foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
+        } else if (foundRelationship.end2.aggregation == 'shared' || foundRelationship.end2.aggregation == 'composite' && foundRelationship.end1.aggregation == 'none') {
             /* target is end1 */
             sourceEnd = foundRelationship.end2;
             targetEnd = foundRelationship.end1;
@@ -1408,6 +1565,30 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
 }
 
 /**
+ * @function updateTag
+ * @description Update status of property or relationshp in staruml project
+ * @param {Object} sObject
+ * @param {Object} tElement
+ */
+function updateTags(sObject, tElement) {
+    let tags = sObject[fields.tags];
+    let cTags = tElement.tags;
+    forEach(tags, tag => {
+        let resTag = cTags.filter(cTag => {
+            return tag.name == cTag.name;
+        });
+        if (resTag.length != 0) {
+            let mTag = resTag[0];
+            app.engine.setProperty(mTag, fields.value, tag.value);
+            app.engine.setProperty(mTag, fields.kind, tag.kind);
+        } else {
+            console.log("Need to create a tag : ", tag.name);
+            createTag(tag, tElement);
+        }
+    });
+}
+
+/**
  * @function updateStatus
  * @description Update status of property or relationshp in staruml project
  * @param {Object} sObject
@@ -1415,6 +1596,7 @@ function isRelationshipValid(eRelationship, foundRelationship, mClass) {
  * @param {Array} statusCodes
  */
 function updateStatus(sObject, tElement, statusCodes) {
+    if(statusCodes.length == 0) return;
     let status = '';
     status = sObject[fields.status];
     let cTags = tElement.tags;
@@ -1433,7 +1615,6 @@ function updateStatus(sObject, tElement, statusCodes) {
     } else {
         console.log("Need to create status : ", status);
         createStatusTag(sObject, tElement);
-
     }
 }
 
@@ -1443,31 +1624,113 @@ function updateStatus(sObject, tElement, statusCodes) {
  */
 function addStatusCodeEnum() {
     let project = app.project.getProject();
-    let createStatusCodeEnume = {};
-    let mainOwnedElements = [];
-
-    createStatusCodeEnume[fields._type] = 'UMLEnumeration';
-    createStatusCodeEnume[fields.name] = constant.status_code_enum_name;
-    createStatusCodeEnume[fields.ownedElements] = mainOwnedElements;
-    createStatusCodeEnume[fields._parent] = {
-        '$ref': project._id
-    }
-    let enumStatusCode = app.repository.readObject(createStatusCodeEnume);
-    app.engine.addItem(project, 'ownedElements', enumStatusCode);
-
     let literals = ['active', 'deleted', 'deprecated', 'proposed'];
+    let codeList ={};
+    codeList[fields.name] = constant.status_code_enum_name;
+    createEnumeration(codeList, project, literals);
+}
+
+
+/**
+ * @function createEnumeration
+ * @description Create UMLEnumeration with literals
+ * @param {String} codeList
+ * @param {Object} parentObj
+ */
+function createEnumeration(codeList, parentObj, literals) {
+    let enumerationObj = {};
+    enumerationObj[fields._type] = 'UMLEnumeration';
+    enumerationObj[fields.name] = codeList.name;
+    enumerationObj[fields.ownedElements] = [];
+    enumerationObj[fields._parent] = {
+        '$ref': parentObj._id
+    }
+    let newEnumeration = app.repository.readObject(enumerationObj);
+    app.engine.addItem(parentObj, 'ownedElements', newEnumeration);
+
     forEach(literals, literal => {
-        let createUMLLiteral = {};
-        createUMLLiteral[fields._type] = 'UMLEnumerationLiteral';
-        createUMLLiteral[fields.name] = literal;
-        createUMLLiteral[fields._parent] = {
-            '$ref': enumStatusCode._id
+        let literalObj = {};
+        literalObj[fields._type] = 'UMLEnumerationLiteral';
+        literalObj[fields.name] = literal;
+        literalObj[fields._parent] = {
+            '$ref': newEnumeration._id
         }
 
-        let enumLiteral = app.repository.readObject(createUMLLiteral);
-        app.engine.addItem(enumStatusCode, 'literals', enumLiteral);
+        let newLiteral = app.repository.readObject(literalObj);
+        app.engine.addItem(newEnumeration, 'literals', newLiteral);
     });
 
+}
+
+/**
+ * @function updateEnumeration
+ * @description Create UMLEnumeration with literals
+ * @param {String} name
+ * @param {Object} enumerationObj
+ * @param {Array} literals
+ */
+function updateEnumeration(enumerationObj, codes) {
+    /**
+     * check literals
+     */
+    if ((enumerationObj.hasOwnProperty(fields.literals))){
+        let existingLiterals = enumerationObj.literals;
+        forEach(codes, code => {
+            let matches = existingLiterals.filter(res => {
+                return res.name === code.name;
+            });
+            if (matches.length === 0) {
+                createLiteral(code.name, enumerationObj);
+            } else {
+                if (matches.length > 1) {
+                    console.warn("More than a single literal matched the name " + code.name + ", picking the first matched. Please check your literals naming.");
+                }
+                updateLiteral(matches[0], code);
+            }
+        });
+    }
+}
+
+function createLiteral(code, parentObj) {
+    let literalObj = {};
+    literalObj[fields._type] = 'UMLEnumerationLiteral';
+    literalObj[fields.name] = code.name;
+    literalObj[fields._parent] = {
+        '$ref': parentObj._id
+    }
+    if(code.hasOwnProperty(fields.propertyValues)){
+        let propertyValues = code.propertyValues;
+        forEach(propertyValues, propertyValue => {
+            if(propertyValue.propertyName.endsWith("#definitions/businessName")){
+                literalObj[fields.name] = propertyValue.value;
+                let tag = {};
+                tag[fields.name] = fields.code;
+                tag[fields.value] = code.name;
+                tag[fields.type] = "string";
+                createTag(tag, literalObj)
+            }
+        });
+    }
+    let newLiteral = app.repository.readObject(literalObj);
+    app.engine.addItem(parentObj, fields.literals, newLiteral);
+}
+
+function updateLiteral(literalObj, code) {
+    if(code.hasOwnProperty(fields.propertyValues)){
+        let propertyValues = code.propertyValues;
+        forEach(propertyValues, propertyValue => {
+            if(propertyValue.propertyName.endsWith("#definitions/businessName")){
+                literalObj[fields.name] = propertyValue.value;
+                let tag = {};
+                tag[fields.name] = fields.code;
+                tag[fields.value] = code.name;
+                tag[fields.type] = "string";
+                createTag(tag, literalObj)
+            }
+        });
+    }
+    let newLiteral = app.repository.readObject(literalObj);
+    app.engine.addItem(parentObj, fields.literals, newLiteral);
 }
 
 /**
@@ -1531,6 +1794,8 @@ function isStatusCodeAvail() {
  * @param {Object} dataTypesContent
  */
 function updateDataTypePackage(dataTypesContent) {
+    if (dataTypesContent == null)
+        return;
     /* 'active', 'deleted', 'deprecated', 'proposed' */
     let statusCodeEnum = app.repository.select(constant.status_code_enum_name)
     statusCodeEnum = statusCodeEnum.filter(cEnum => {
@@ -1685,6 +1950,36 @@ function createStatusTag(contentClass, dtClass) {
     let cTag = app.repository.readObject(createTag);
     arrTag.push(cTag);
     app.engine.setProperty(dtClass, 'tags', arrTag);
+
+}
+/**
+ * @function createTag
+ * @description Create new tag if not exist in property or relationship while importing model interchange json file in staruml
+ * @param {Object} contentClass
+ * @param {Object} parentObj
+ * @param {string} kind
+ */
+function createTag(tag, parentObj) {
+    let arrTag = [];
+    if (parentObj.tags.length!=0){
+        arrTag = parentObj.tags;
+    }
+
+    let createTag = {};
+    createTag[fields._type] = 'Tag';
+    createTag[fields.name] = tag.name;
+    createTag[fields.value] = tag.value;
+    if (tag.kind != null) {
+        createTag[fields.kind] = tag.kind;
+    } else {
+        createTag[fields.kind] = 'hidden';
+    }
+    createTag[fields._parent] = {
+        '$ref': parentObj._id
+    }
+    let cTag = app.repository.readObject(createTag);
+    arrTag.push(cTag);
+    app.engine.setProperty(parentObj, 'tags', arrTag);
 
 }
 module.exports.exportNewModel = exportNewModel;
