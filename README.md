@@ -1,4 +1,4 @@
-# Model Interchange for StarUML
+# DEPRECATED AND NO LONGER SUPPORTED - Model Interchange for StarUML
 
 ![Raw](https://rfc.unprotocols.org/spec:2/COSS/raw.svg) v0.1
 
